@@ -3,6 +3,7 @@
 #include "semitone_export.h"
 #include "lit.h"
 #include <vector>
+#include <nlohmann/json.hpp>
 
 namespace semitone
 {
@@ -31,6 +32,8 @@ namespace semitone
         return Undefined;
       }
     }
+
+    nlohmann::json to_json() const noexcept;
 
   private:
     std::vector<lbool> assigns;                 // the current assignments..
