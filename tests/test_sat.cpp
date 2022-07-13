@@ -17,7 +17,17 @@ void test_literals()
     assert(sign(l2) == true);
 }
 
+void test_basic_core_0()
+{
+    sat_core core;
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+}
+
 int main(int, char **)
 {
     test_literals();
+
+    test_basic_core_0();
 }

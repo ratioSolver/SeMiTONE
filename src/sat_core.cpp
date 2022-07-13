@@ -15,6 +15,8 @@ namespace semitone
     SEMITONE_EXPORT var sat_core::new_var() noexcept
     {
         const auto id = assigns.size();
+        watches.emplace_back();
+        watches.emplace_back();
         assigns.emplace_back(Undefined);
         level.emplace_back(0);
         return id;
