@@ -15,12 +15,16 @@ include(CMakePackageConfigHelpers)
 include(CTest)
 enable_testing()
 
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+add_subdirectory(extern/json)
+
 file(GLOB SMT_SOURCES src/*.cpp)
 file(GLOB SMT_HEADERS include/*.h)
 
 add_library(${PROJECT_NAME} SHARED ${SMT_SOURCES})
 GENERATE_EXPORT_HEADER(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:>)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)

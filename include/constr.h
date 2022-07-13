@@ -2,6 +2,7 @@
 
 #include "lit.h"
 #include <vector>
+#include <nlohmann/json.hpp>
 
 namespace semitone
 {
@@ -18,6 +19,14 @@ namespace semitone
     constr(sat_core &s);
     constr(const constr &orig) = delete;
     virtual ~constr() = default;
+
+  protected:
+    std::vector<constr *> &watches(const lit &p) noexcept;
+
+    lbool value(const var &x) const noexcept;
+    lbool value(const lit &p) const noexcept;
+
+    virtual nlohmann::json to_json() const noexcept { return {}; }
 
   private:
     sat_core &sat;

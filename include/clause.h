@@ -19,6 +19,8 @@ namespace semitone
     clause(sat_core &s, std::vector<lit> lits);
     clause(const clause &orig) = delete;
 
+    nlohmann::json to_json() const noexcept override;
+
   private:
     std::vector<lit> lits;
   };
