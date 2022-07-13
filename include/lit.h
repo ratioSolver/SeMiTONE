@@ -1,6 +1,8 @@
 #pragma once
 
+#include "semitone_export.h"
 #include "defs.h"
+#include <limits>
 #include <string>
 
 namespace semitone

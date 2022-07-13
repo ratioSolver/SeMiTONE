@@ -1,4 +1,5 @@
 #include "sat_core.h"
+#include "sat_stack.h"
 #include <cassert>
 
 using namespace semitone;
@@ -23,6 +24,241 @@ void test_basic_core_0()
     var b0 = core.new_var();
     var b1 = core.new_var();
     var b2 = core.new_var();
+
+    bool nc = core.new_clause({lit(b0, false), !lit(b1), lit(b2)});
+    assert(nc);
+    bool ch = core.propagate();
+    assert(ch);
+    assert(core.value(b0) == Undefined);
+    assert(core.value(b1) == Undefined);
+    assert(core.value(b2) == Undefined);
+
+    bool assm = core.assume(lit(b0));
+    assert(assm);
+    assert(core.value(b0) == True);
+    assert(core.value(b1) == Undefined);
+    assert(core.value(b2) == Undefined);
+
+    assm = core.assume(lit(b1));
+    assert(assm);
+    assert(core.value(b0) == True);
+    assert(core.value(b1) == True);
+    assert(core.value(b2) == True);
+}
+
+void test_basic_core_1()
+{
+    sat_core core;
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+
+    bool nc = core.new_clause({core.new_eq(lit(b0), !lit(b1))});
+    assert(nc);
+
+    assert(core.value(b0) == Undefined);
+    assert(core.value(b1) == Undefined);
+    assert(core.value(b2) == Undefined);
+
+    nc = core.new_clause({lit(b1), lit(b2)});
+    assert(nc);
+
+    bool prop = core.propagate();
+    assert(prop);
+
+    bool assm = core.assume(lit(b0));
+    assert(assm);
+    assert(core.value(b0) == True);
+    assert(core.value(b1) == False);
+    assert(core.value(b2) == True);
+}
+
+void test_no_good()
+{
+    sat_core core;
+
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+    var b3 = core.new_var();
+    var b4 = core.new_var();
+    var b5 = core.new_var();
+    var b6 = core.new_var();
+    var b7 = core.new_var();
+    var b8 = core.new_var();
+
+    bool nc = core.new_clause({lit(b0), lit(b1)});
+    assert(nc);
+    nc = core.new_clause({lit(b0), lit(b2), lit(b6)});
+    assert(nc);
+    nc = core.new_clause({lit(b1, false), lit(b2, false), lit(b3)});
+    assert(nc);
+    nc = core.new_clause({lit(b3, false), lit(b4), lit(b7)});
+    assert(nc);
+    nc = core.new_clause({lit(b3, false), lit(b5), lit(b8)});
+    assert(nc);
+    nc = core.new_clause({lit(b4, false), lit(b5, false)});
+    assert(nc);
+
+    bool prop = core.propagate();
+    assert(prop);
+
+    bool assm = core.assume(lit(b6, false));
+    assert(assm);
+    assm = core.assume(lit(b7, false));
+    assert(assm);
+    assm = core.assume(lit(b8, false));
+    assert(assm);
+    assm = core.assume(lit(b0, false));
+    assert(assm);
+}
+
+void test_assumptions()
+{
+    sat_core core;
+
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+    var b3 = core.new_var();
+    var b4 = core.new_var();
+    var b5 = core.new_var();
+    var b6 = core.new_var();
+    var b7 = core.new_var();
+    var b8 = core.new_var();
+
+    bool nc = core.new_clause({lit(b0), lit(b1)});
+    assert(nc);
+    nc = core.new_clause({lit(b0), lit(b2), lit(b6)});
+    assert(nc);
+    nc = core.new_clause({lit(b1, false), lit(b2, false), lit(b3)});
+    assert(nc);
+    nc = core.new_clause({lit(b3, false), lit(b4), lit(b7)});
+    assert(nc);
+    nc = core.new_clause({lit(b3, false), lit(b5), lit(b8)});
+    assert(nc);
+    nc = core.new_clause({lit(b4, false), lit(b5, false)});
+    assert(nc);
+
+    bool prop = core.propagate();
+    assert(prop);
+
+    bool assm = core.check({lit(b6, false), lit(b7, false), lit(b8, false), lit(b0, false)});
+    assert(!assm);
+}
+
+void test_exct_one_0()
+{
+    sat_core core;
+
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+    var b3 = core.new_var();
+
+    lit xct_one = core.new_exct_one({lit(b0), lit(b1), lit(b2), lit(b3)});
+
+    bool prop = core.propagate();
+    assert(prop);
+
+    bool assm = core.assume(xct_one);
+    assert(assm);
+    assm = core.assume(lit(b0, false));
+    assert(assm);
+    assm = core.assume(lit(b1));
+    assert(assm);
+    assm = core.check({lit(b2, false), lit(b3, false)});
+    assert(assm);
+}
+
+void test_exct_one_1()
+{
+    sat_core core;
+
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+    var b3 = core.new_var();
+
+    lit xct_one = core.new_exct_one({lit(b0), lit(b1), lit(b2), lit(b3)});
+
+    bool prop = core.propagate();
+    assert(prop);
+
+    bool assm = core.assume(lit(b0, false));
+    assert(assm);
+    assm = core.assume(lit(b1, false));
+    assert(assm);
+    assm = core.assume(lit(b2, false));
+    assert(assm);
+    assm = core.assume(lit(b3, false));
+    assert(assm);
+
+    assert(core.value(xct_one) == False);
+}
+
+void test_exct_one_2()
+{
+    sat_core core;
+
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+    var b3 = core.new_var();
+
+    lit xct_one = core.new_exct_one({lit(b0), lit(b1), lit(b2), lit(b3)});
+
+    bool prop = core.propagate();
+    assert(prop);
+
+    bool assm = core.assume(xct_one);
+    assert(assm);
+    assm = core.assume(lit(b0, false));
+    assert(assm);
+    assm = core.assume(lit(b1, false));
+    assert(assm);
+    assm = core.assume(lit(b2, false));
+    assert(assm);
+
+    assert(core.value(b3) == True);
+}
+
+void test_sat_stack_0()
+{
+    sat_stack stack;
+    var b0 = stack.top().new_var();
+    var b1 = stack.top().new_var();
+    var b2 = stack.top().new_var();
+
+    bool nc = stack.top().new_clause({lit(b0, false), !lit(b1), lit(b2)});
+    assert(nc);
+    assert(stack.top().value(b0) == Undefined);
+    assert(stack.top().value(b1) == Undefined);
+    assert(stack.top().value(b2) == Undefined);
+
+    bool assm = stack.top().assume(lit(b0));
+    assert(assm);
+    assert(stack.top().value(b0) == True);
+    assert(stack.top().value(b1) == Undefined);
+    assert(stack.top().value(b2) == Undefined);
+
+    // we push the sat stack..
+    stack.push();
+
+    assm = stack.top().assume(lit(b1));
+    assert(assm);
+    assert(stack.top().value(b0) == True);
+    assert(stack.top().value(b1) == True);
+    assert(stack.top().value(b2) == True);
+
+    // we pop the sat stack..
+    stack.pop();
+
+    assm = stack.top().assume(!lit(b2));
+    assert(assm);
+    assert(stack.top().value(b0) == True);
+    assert(stack.top().value(b1) == False);
+    assert(stack.top().value(b2) == False);
 }
 
 int main(int, char **)
@@ -30,4 +266,15 @@ int main(int, char **)
     test_literals();
 
     test_basic_core_0();
+    test_basic_core_1();
+
+    test_no_good();
+
+    test_assumptions();
+
+    test_exct_one_0();
+    test_exct_one_1();
+    test_exct_one_2();
+
+    test_sat_stack_0();
 }
