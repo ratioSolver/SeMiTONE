@@ -93,13 +93,10 @@ namespace semitone
             switch (value(l))
             {
             case True:
-                j_lit["val"] = "T";
+                j_lit["val"] = true;
                 break;
             case False:
-                j_lit["val"] = "F";
-                break;
-            case Undefined:
-                j_lit["val"] = "U";
+                j_lit["val"] = false;
                 break;
             }
             j_lits.push_back(j_lit);

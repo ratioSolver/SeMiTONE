@@ -18,12 +18,12 @@ enable_testing()
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(extern/json)
 
-file(GLOB SMT_SOURCES src/*.cpp)
-file(GLOB SMT_HEADERS include/*.h)
+file(GLOB SMT_SOURCES src/*.cpp src/arith/*.cpp src/arith/lra/*.cpp src/arith/dl/*.cpp src/ov/*.cpp)
+file(GLOB SMT_HEADERS include/*.h include/arith/lra/*.h include/arith/*.h include/arith/dl/*.h include/ov/*.h)
 
 add_library(${PROJECT_NAME} SHARED ${SMT_SOURCES})
 GENERATE_EXPORT_HEADER(${PROJECT_NAME})
-target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:> extern/json/include)
+target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/arith $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/arith/lra $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/arith/dl $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/ov $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> $<INSTALL_INTERFACE:> extern/json/include)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 
 if(BUILD_TESTING)
