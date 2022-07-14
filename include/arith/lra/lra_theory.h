@@ -126,15 +126,5 @@ namespace semitone
     std::vector<std::unordered_set<row *>> t_watches;      // for each variable 'v', a list of tableau rows watching 'v'..
     std::vector<std::unordered_map<size_t, bound>> layers; // we store the updated bounds..
     std::unordered_map<var, std::set<lra_value_listener *>> listening;
-
-#ifdef PARALLELIZE
-    struct var_mtx : std::mutex
-    {
-      var_mtx() = default;
-      var_mtx(var_mtx const &) noexcept : std::mutex() {}
-      bool operator==(var_mtx const &other) noexcept { return this == &other; }
-    };
-    std::vector<var_mtx> t_mtxs; // for each variable 'v', a list of mutexes parallelizing pivoting..
-#endif
   };
 } // namespace semitone

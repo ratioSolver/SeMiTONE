@@ -35,9 +35,6 @@ namespace semitone
         exprs.emplace("x" + std::to_string(id), id);
         a_watches.resize(vals.size());
         t_watches.resize(vals.size());
-#ifdef PARALLELIZE
-        t_mtxs.resize(vals.size());
-#endif
         return id;
     }
 
@@ -458,33 +455,6 @@ namespace semitone
         std::unordered_set<row *> x_j_watches;
         std::swap(x_j_watches, t_watches[x_j]);
         for (const auto &r : x_j_watches)
-#ifdef PARALLELIZE
-            sat->get_thread_pool().enqueue([this, x_j, expr, r]
-                                           {
-                                               rational cc = r->l.vars[x_j];
-                                               r->l.vars.erase(x_j);
-                                               for (const auto &[v, c] : std::map<const var, rational>(expr.vars))
-                                                   if (const auto trm_it = r->l.vars.find(v); trm_it == r->l.vars.cend())
-                                                   { // we are adding a new term to 'r'..
-                                                       r->l.vars.emplace(v, c * cc);
-                                                       std::lock_guard<std::mutex> lock(t_mtxs[v]);
-                                                       t_watches[v].emplace(r);
-                                                   }
-                                                   else
-                                                   { // we are updating an existing term of 'r'..
-                                                       assert(trm_it->first == v);
-                                                       trm_it->second += c * cc;
-                                                       if (trm_it->second == rational::ZERO)
-                                                       { // the updated term's coefficient has become equal to zero, hence we can remove the term..
-                                                           r->l.vars.erase(trm_it);
-                                                           std::lock_guard<std::mutex> lock(t_mtxs[v]);
-                                                           t_watches[v].erase(r);
-                                                       }
-                                                   }
-                                               r->l.known_term += expr.known_term * cc; });
-        // we wait for all the rows to be updated..
-        sat->get_thread_pool().join();
-#else
         { // 'r' is a row in which 'x_j' appears..
             rational cc = r->l.vars[x_j];
             r->l.vars.erase(x_j);
@@ -506,7 +476,6 @@ namespace semitone
                 }
             r->l.known_term += expr.known_term * cc;
         }
-#endif
         // we add a new row into the tableau..
         new_row(x_j, expr);
     }

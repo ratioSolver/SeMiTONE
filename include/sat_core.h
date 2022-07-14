@@ -2,9 +2,6 @@
 
 #include "semitone_export.h"
 #include "lit.h"
-#ifdef PARALLELIZE
-#include "thread_pool.h"
-#endif
 #include <vector>
 #include <queue>
 #include <string>
@@ -56,13 +53,6 @@ namespace semitone
     SEMITONE_EXPORT sat_core(sat_core &&orig) = default;
     SEMITONE_EXPORT ~sat_core();
 
-#ifdef PARALLELIZE
-    thread_pool &get_thread_pool()
-    {
-      return th_pool;
-    }
-#endif
-
     SEMITONE_EXPORT var new_var() noexcept;                          // creates a new propositional variable..
     SEMITONE_EXPORT bool new_clause(std::vector<lit> lits) noexcept; // creates a new clause given the 'lits' literals returning 'false' if some trivial inconsistency is detected..
 
@@ -111,10 +101,6 @@ namespace semitone
     }
 
   private:
-#ifdef PARALLELIZE
-    thread_pool th_pool;
-#endif
-
     std::vector<constr *> constrs;              // the collection of problem constraints..
     std::vector<std::vector<constr *>> watches; // for each literal 'p', a list of constraints watching 'p'..
     std::vector<lbool> assigns;                 // the current assignments..
