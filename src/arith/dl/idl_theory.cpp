@@ -503,7 +503,7 @@ namespace semitone
 
     void idl_theory::propagate(const var &from, const var &to, const I &dist) noexcept
     {
-        assert(abs(dist) < inf());
+        assert(std::abs(dist) < inf());
         set_dist(from, to, dist);
         set_pred(from, to, from);
         std::vector<var> set_i;
