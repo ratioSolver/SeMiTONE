@@ -4,7 +4,6 @@
 #include "lin.h"
 #include "inf_rational.h"
 #include <vector>
-#include <nlohmann/json.hpp>
 
 namespace semitone
 {
@@ -34,8 +33,6 @@ namespace semitone
     bool propagate_lb(const var &x) noexcept; // propagates the lower bound of variable 'x' on the assertion returning whether propagation is successful..
     bool propagate_ub(const var &x) noexcept; // propagates the upper bound of variable 'x' on the assertion returning whether propagation is successful..
 
-    nlohmann::json to_json() const noexcept;
-
   private:
     lra_theory &th;
     const op o;           // the kind of operator..
@@ -59,8 +56,6 @@ namespace semitone
   private:
     bool propagate_lb(const var &x) noexcept; // propagates the lower bound of variable 'x' on the tableau row returning whether propagation is successful..
     bool propagate_ub(const var &x) noexcept; // propagates the upper bound of variable 'x' on the tableau row returning whether propagation is successful..
-
-    nlohmann::json to_json() const noexcept;
 
   private:
     lra_theory &th;

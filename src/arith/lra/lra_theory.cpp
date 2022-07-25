@@ -487,43 +487,4 @@ namespace semitone
         for ([[maybe_unused]] const auto &[v, c] : l.vars)
             t_watches[v].emplace(r);
     }
-
-    nlohmann::json lra_theory::to_json() const noexcept
-    {
-        nlohmann::json j_th;
-
-        nlohmann::json::array_t j_vars;
-        j_vars.reserve(vals.size());
-        for (size_t i = 0; i < vals.size(); ++i)
-        {
-            nlohmann::json var;
-            var["name"] = std::to_string(i);
-            var["value"] = to_string(value(i));
-            if (!is_negative_infinite(lb(i)))
-                var["lb"] = to_string(lb(i));
-            if (!is_positive_infinite(ub(i)))
-                var["ub"] = to_string(ub(i));
-            j_vars.push_back(var);
-        }
-        j_th["vars"] = j_vars;
-
-        nlohmann::json::array_t j_asrts;
-        j_asrts.reserve(v_asrts.size());
-        for (const auto &c_asrts : v_asrts)
-        {
-            nlohmann::json::array_t c_j_asrts;
-            c_j_asrts.reserve(v_asrts.size());
-            c_j_asrts.push_back(c_asrts.second->to_json());
-            j_asrts.push_back(c_j_asrts);
-        }
-        j_th["asrts"] = j_asrts;
-
-        nlohmann::json::array_t j_tabl;
-        j_tabl.reserve(tableau.size());
-        for (auto it = tableau.cbegin(); it != tableau.cend(); ++it)
-            j_tabl.push_back(it->second->to_json());
-        j_th["tableau"] = j_tabl;
-
-        return j_th;
-    }
 } // namespace semitone

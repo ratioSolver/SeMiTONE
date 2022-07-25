@@ -2,7 +2,6 @@
 
 #include "lit.h"
 #include <vector>
-#include <nlohmann/json.hpp>
 
 namespace semitone
 {
@@ -26,9 +25,6 @@ namespace semitone
     virtual bool simplify() = 0;
     virtual void remove() = 0;
     virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const = 0;
-
-  public:
-    virtual nlohmann::json to_json() const noexcept { return {}; }
 
   protected:
     std::vector<constr *> &watches(const lit &p) noexcept;

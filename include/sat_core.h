@@ -7,7 +7,6 @@
 #include <string>
 #include <unordered_map>
 #include <set>
-#include <nlohmann/json.hpp>
 #ifdef VERBOSE_LOG
 #include <iostream>
 
@@ -100,9 +99,6 @@ namespace semitone
       if (value(v) == Undefined)
         listening[v].insert(&l);
     }
-
-  public:
-    nlohmann::json to_json() const noexcept;
 
   private:
     std::vector<constr *> constrs;              // the collection of problem constraints..

@@ -8,7 +8,6 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <mutex>
-#include <nlohmann/json.hpp>
 
 namespace semitone
 {
@@ -103,8 +102,6 @@ namespace semitone
 
     inline static size_t lb_index(const var &v) noexcept { return v << 1; }       // the index of the lower bound of the 'v' variable..
     inline static size_t ub_index(const var &v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the 'v' variable..
-
-    nlohmann::json to_json() const noexcept;
 
   private:
     /**

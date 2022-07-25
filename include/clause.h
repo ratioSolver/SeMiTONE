@@ -31,9 +31,6 @@ namespace semitone
     void remove() noexcept override;
     void get_reason(const lit &p, std::vector<lit> &out_reason) const noexcept override;
 
-  public:
-    nlohmann::json to_json() const noexcept override;
-
   private:
     std::vector<lit> lits;
   };

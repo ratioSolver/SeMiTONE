@@ -95,23 +95,6 @@ namespace semitone
         return true;
     }
 
-    nlohmann::json assertion::to_json() const noexcept
-    {
-        nlohmann::json j_asrt;
-        j_asrt["lit"] = to_string(b);
-        switch (th.sat->value(b))
-        {
-        case True:
-            j_asrt["val"] = true;
-            break;
-        case False:
-            j_asrt["val"] = false;
-            break;
-        }
-        j_asrt["constr"] = "x" + std::to_string(x) + (o == geq ? " >= " : " <= ") + to_string(v);
-        return j_asrt;
-    }
-
     row::row(lra_theory &th, const var x, lin l) : th(th), x(x), l(l) {}
 
     bool row::propagate_lb(const var &v) noexcept
@@ -416,13 +399,5 @@ namespace semitone
 
         th.cnfl.clear();
         return true;
-    }
-
-    nlohmann::json row::to_json() const noexcept
-    {
-        nlohmann::json j_row;
-        j_row["var"] = "x" + std::to_string(x);
-        j_row["expr"] = to_string(l);
-        return j_row;
     }
 } // namespace semitone
