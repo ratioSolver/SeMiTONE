@@ -7,6 +7,7 @@
 #include <string>
 #include <unordered_map>
 #include <set>
+#include <nlohmann/json.hpp>
 #ifdef VERBOSE_LOG
 #include <iostream>
 
@@ -81,9 +82,9 @@ namespace semitone
       default:
         return Undefined;
       }
-    }                                                                                       // returns the value of literal 'p'..
-    inline size_t decision_level() const noexcept { return trail_lim.size(); }              // returns the current decision level..
-    inline bool root_level() const noexcept { return trail_lim.empty(); }                   // checks whether the current decision level is root level..
+    }                                                                                            // returns the value of literal 'p'..
+    inline size_t decision_level() const noexcept { return trail_lim.size(); }                   // returns the current decision level..
+    inline bool root_level() const noexcept { return trail_lim.empty(); }                        // checks whether the current decision level is root level..
     SEMITONE_EXPORT const std::vector<lit> &get_decisions() const noexcept { return decisions; } // returns the decisions taken so far in chronological order..
 
   private:
@@ -99,6 +100,9 @@ namespace semitone
       if (value(v) == Undefined)
         listening[v].insert(&l);
     }
+
+  public:
+    nlohmann::json to_json() const noexcept;
 
   private:
     std::vector<constr *> constrs;              // the collection of problem constraints..

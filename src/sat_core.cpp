@@ -613,4 +613,34 @@ namespace semitone
             for (const auto &l : at_v->second)
                 l->sat_value_change(v);
     }
+
+    nlohmann::json sat_core::to_json() const noexcept
+    {
+        nlohmann::json j_cr;
+
+        nlohmann::json::array_t j_cnstrs;
+        for (const auto &c : constrs)
+            j_cnstrs.push_back(c->to_json());
+        j_cr["constrs"] = j_cnstrs;
+
+        nlohmann::json::array_t j_lits;
+        for (size_t i = 0; i < assigns.size(); ++i)
+        {
+            nlohmann::json j_assigns;
+            j_assigns["var"] = i;
+            switch (assigns.at(i))
+            {
+            case True:
+                j_assigns["val"] = true;
+                break;
+            case False:
+                j_assigns["val"] = false;
+                break;
+            }
+            j_lits.push_back(j_assigns);
+        }
+        j_cr["assigns"] = j_lits;
+
+        return j_cr;
+    }
 } // namespace semitone
