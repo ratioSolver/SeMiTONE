@@ -85,6 +85,8 @@ namespace semitone
     {
         assert(root_level());
         // we try to avoid creating a new variable..
+        if (left == right)
+            return TRUE_lit; // the variables are the same variable..
         switch (value(left))
         {
         case True:
