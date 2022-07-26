@@ -229,7 +229,7 @@ namespace semitone
         }
     }
 
-    SEMITONE_EXPORT bool lra_theory::equates(const lin &l0, const lin &l1) const noexcept
+    SEMITONE_EXPORT bool lra_theory::matches(const lin &l0, const lin &l1) const noexcept
     {
         const auto [l0_lb, l0_ub] = bounds(l0);
         const auto [l1_lb, l1_ub] = bounds(l1);

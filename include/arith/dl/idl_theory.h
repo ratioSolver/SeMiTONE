@@ -39,7 +39,7 @@ namespace semitone
     SEMITONE_EXPORT std::pair<I, I> bounds(const lin &l) const;
     SEMITONE_EXPORT std::pair<I, I> distance(const lin &from, const lin &to) const;
 
-    SEMITONE_EXPORT bool equates(const lin &l0, const lin &l1) const;
+    SEMITONE_EXPORT bool matches(const lin &l0, const lin &l1) const;
 
     size_t size() const noexcept { return n_vars; }
 

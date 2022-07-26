@@ -366,7 +366,7 @@ namespace semitone
         }
     }
 
-    SEMITONE_EXPORT bool idl_theory::equates(const lin &l0, const lin &l1) const
+    SEMITONE_EXPORT bool idl_theory::matches(const lin &l0, const lin &l1) const
     {
         if (l0.vars.empty() && l1.vars.empty())
             return l0.known_term == l1.known_term;

@@ -75,7 +75,7 @@ namespace semitone
       return val;
     }
 
-    SEMITONE_EXPORT bool equates(const lin &l0, const lin &l1) const noexcept;
+    SEMITONE_EXPORT bool matches(const lin &l0, const lin &l1) const noexcept;
 
     SEMITONE_EXPORT bool set_lb(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_lower(x_i, val, p); }
     SEMITONE_EXPORT bool set_ub(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_upper(x_i, val, p); }
