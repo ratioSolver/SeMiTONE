@@ -13,12 +13,12 @@ namespace semitone
   class lit
   {
   public:
-    explicit constexpr lit(var v = -1, bool sign = true) : x((v << 1) + sign) {}
+    explicit constexpr lit(var v = std::numeric_limits<var>::max(), bool sign = true) : x((v << 1) + sign) {}
 
     inline friend var variable(const lit &p) noexcept { return p.x >> 1; }
     inline friend bool sign(const lit &p) noexcept { return p.x & 1; }
     inline friend size_t index(const lit &p) noexcept { return p.x; }
-    inline friend bool is_undefined(const lit &p) noexcept { return p.x == std::numeric_limits<size_t>::max(); }
+    inline friend bool is_undefined(const lit &p) noexcept { return p.x == std::numeric_limits<var>::max(); }
 
     inline constexpr lit operator!() const
     {
