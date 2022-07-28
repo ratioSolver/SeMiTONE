@@ -6,7 +6,7 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT rdl_theory::rdl_theory(sat_core &sat, const size_t &size) : theory(sat), _dists(std::vector<std::vector<inf_rational>>(size, std::vector<inf_rational>(size, inf_rational(rational::POSITIVE_INFINITY)))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
+    SEMITONE_EXPORT rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size) : theory(std::move(sat)), _dists(std::vector<std::vector<inf_rational>>(size, std::vector<inf_rational>(size, inf_rational(rational::POSITIVE_INFINITY)))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
     {
         for (size_t i = 0; i < size; ++i)
         {
@@ -15,7 +15,7 @@ namespace semitone
             _preds[i][i] = std::numeric_limits<size_t>::max();
         }
     }
-    SEMITONE_EXPORT rdl_theory::rdl_theory(sat_core &sat, const rdl_theory &orig) : theory(sat), n_vars(orig.n_vars), _dists(orig._dists), _preds(orig._preds), layers(orig.layers), listening(orig.listening)
+    SEMITONE_EXPORT rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig) : theory(std::move(sat)), n_vars(orig.n_vars), _dists(orig._dists), _preds(orig._preds), layers(orig.layers), listening(orig.listening)
     {
         for (const auto &[v, d] : orig.var_dists)
             var_dists.emplace(v, new rdl_distance(d->b, d->from, d->to, d->dist));
@@ -432,11 +432,13 @@ namespace semitone
             { // we propagate..
                 const auto to_from = std::make_pair(dist->to, dist->from);
                 if (!layers.empty() && !layers.back().old_constrs.count(to_from))
+                {
                     if (const auto &c_dist = dist_constr.find(to_from); c_dist != dist_constr.cend())
                         // we store the current constraint for backtracking purposes..
                         layers.back().old_constrs.emplace(c_dist->first, c_dist->second);
                     else
                         layers.back().old_constrs.emplace(to_from, nullptr);
+                }
                 dist_constr.emplace(to_from, dist);
                 propagate(dist->to, dist->from, -dist->dist - inf_rational(rational::ZERO, rational::ONE));
             }
@@ -525,6 +527,7 @@ namespace semitone
             if (const auto &c_dists = dist_constrs.find(c_pairs); c_dists != dist_constrs.cend())
                 for (const auto &c_dist : c_dists->second)
                     if (sat->value(c_dist->b) == Undefined)
+                    {
                         if (_dists[c_dist->to][c_dist->from] < -c_dist->dist)
                         { // the constraint is inconsistent..
                             cnfl.emplace_back(!c_dist->b);
@@ -532,10 +535,12 @@ namespace semitone
                             while (c_to != c_dist->to)
                             {
                                 if (const auto &c_d = dist_constr.find({_preds[c_dist->to][c_to], c_to}); c_d != dist_constr.cend())
+                                {
                                     if (sat->value(c_d->second->b) == True)
                                         cnfl.emplace_back(!c_d->second->b);
                                     else if (sat->value(c_d->second->b) == False)
                                         cnfl.emplace_back(c_d->second->b);
+                                }
                                 c_to = _preds[c_dist->to][c_to];
                             }
                             // we propagate the reason for assigning false to dist->b..
@@ -549,16 +554,19 @@ namespace semitone
                             while (c_to != c_dist->from)
                             {
                                 if (const auto &c_d = dist_constr.find({_preds[c_dist->from][c_to], c_to}); c_d != dist_constr.cend())
+                                {
                                     if (sat->value(c_d->second->b) == True)
                                         cnfl.emplace_back(!c_d->second->b);
                                     else if (sat->value(c_d->second->b) == False)
                                         cnfl.emplace_back(c_d->second->b);
+                                }
                                 c_to = _preds[c_dist->from][c_to];
                             }
                             // we propagate the reason for assigning true to dist->b..
                             record(cnfl);
                             cnfl.clear();
                         }
+                    }
     }
 
     void rdl_theory::set_dist(const var &from, const var &to, const inf_rational &dist) noexcept

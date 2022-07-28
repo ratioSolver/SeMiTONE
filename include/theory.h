@@ -2,6 +2,7 @@
 
 #include "lit.h"
 #include <vector>
+#include <memory>
 
 namespace semitone
 {
@@ -14,11 +15,11 @@ namespace semitone
     friend class sat_stack;
 
   public:
-    SEMITONE_EXPORT theory(sat_core &sat);
+    SEMITONE_EXPORT theory(std::shared_ptr<sat_core> sat);
     theory(const theory &orig) = delete;
     SEMITONE_EXPORT virtual ~theory();
 
-    inline sat_core &get_sat() const noexcept { return *sat; }
+    inline std::shared_ptr<sat_core> &get_sat() noexcept { return sat; }
 
   protected:
     SEMITONE_EXPORT void bind(const var &v) noexcept;
@@ -57,7 +58,7 @@ namespace semitone
     virtual void pop() = 0;
 
   protected:
-    sat_core *sat;
+    std::shared_ptr<sat_core> sat;
     std::vector<lit> cnfl;
   };
 } // namespace semitone

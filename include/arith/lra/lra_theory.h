@@ -22,8 +22,8 @@ namespace semitone
     friend class row;
 
   public:
-    SEMITONE_EXPORT lra_theory(sat_core &sat);
-    SEMITONE_EXPORT lra_theory(sat_core &sat, const lra_theory &orig);
+    SEMITONE_EXPORT lra_theory(std::shared_ptr<sat_core> sat);
+    SEMITONE_EXPORT lra_theory(std::shared_ptr<sat_core> sat, const lra_theory &orig);
     lra_theory(const lra_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~lra_theory();
 

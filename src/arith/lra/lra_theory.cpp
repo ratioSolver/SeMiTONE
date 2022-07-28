@@ -6,8 +6,8 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT lra_theory::lra_theory(sat_core &sat) : theory(sat) {}
-    SEMITONE_EXPORT lra_theory::lra_theory(sat_core &sat, const lra_theory &orig) : theory(sat), c_bounds(orig.c_bounds), vals(orig.vals), exprs(orig.exprs), s_asrts(orig.s_asrts), layers(orig.layers), listening(orig.listening)
+    SEMITONE_EXPORT lra_theory::lra_theory(std::shared_ptr<sat_core> sat) : theory(std::move(sat)) {}
+    SEMITONE_EXPORT lra_theory::lra_theory(std::shared_ptr<sat_core> sat, const lra_theory &orig) : theory(std::move(sat)), c_bounds(orig.c_bounds), vals(orig.vals), exprs(orig.exprs), s_asrts(orig.s_asrts), layers(orig.layers), listening(orig.listening)
     {
         t_watches.resize(orig.t_watches.size());
         for (const auto &[v, r] : orig.tableau)

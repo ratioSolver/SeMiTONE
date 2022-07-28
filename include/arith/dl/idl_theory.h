@@ -15,8 +15,8 @@ namespace semitone
     friend class idl_value_listener;
 
   public:
-    SEMITONE_EXPORT idl_theory(sat_core &sat, const size_t &size = 16);
-    SEMITONE_EXPORT idl_theory(sat_core &sat, const idl_theory &orig);
+    SEMITONE_EXPORT idl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16);
+    SEMITONE_EXPORT idl_theory(std::shared_ptr<sat_core> sat, const idl_theory &orig);
     idl_theory(const idl_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~idl_theory();
 

@@ -3,6 +3,7 @@
 
 #include "sat_core.h"
 #include <algorithm>
+#include <memory>
 
 namespace semitone
 {
@@ -12,7 +13,7 @@ namespace semitone
     friend class sat_stack;
 
   public:
-    sat_value_listener(sat_core &s) : sat(&s) { sat->listeners.push_back(this); }
+    sat_value_listener(std::shared_ptr<sat_core> s) : sat(s) { sat->listeners.push_back(this); }
     sat_value_listener(const sat_value_listener &that) = delete;
     virtual ~sat_value_listener() { sat->listeners.erase(std::find(sat->listeners.cbegin(), sat->listeners.cend(), this)); }
 
@@ -23,6 +24,6 @@ namespace semitone
     virtual void sat_value_change(const var &) {}
 
   private:
-    sat_core *sat;
+    std::shared_ptr<sat_core> sat;
   };
 } // namespace semitone

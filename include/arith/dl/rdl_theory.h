@@ -15,8 +15,8 @@ namespace semitone
     friend class rdl_value_listener;
 
   public:
-    SEMITONE_EXPORT rdl_theory(sat_core &sat, const size_t &size = 16);
-    SEMITONE_EXPORT rdl_theory(sat_core &sat, const rdl_theory &orig);
+    SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16);
+    SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig);
     rdl_theory(const rdl_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~rdl_theory();
 

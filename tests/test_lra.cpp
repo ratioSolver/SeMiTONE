@@ -78,7 +78,7 @@ void test_lin()
 
 void test_lra_theory()
 {
-    sat_core core;
+    auto core = std::make_shared<sat_core>();
     lra_theory lra(core);
 
     var x = lra.new_var();
@@ -87,33 +87,33 @@ void test_lra_theory()
     var s2 = lra.new_var(lin(x, rational::ONE) + lin(y, rational::ONE));
 
     // x <= -4
-    bool nc = core.new_clause({lra.new_leq(lin(x, rational::ONE), lin(rational(-4)))});
+    bool nc = core->new_clause({lra.new_leq(lin(x, rational::ONE), lin(rational(-4)))});
     assert(nc);
     // x >= -8
-    nc = core.new_clause({lra.new_geq(lin(x, rational::ONE), lin(-rational(8)))});
+    nc = core->new_clause({lra.new_geq(lin(x, rational::ONE), lin(-rational(8)))});
     assert(nc);
     // s1 <= 1
-    nc = core.new_clause({lra.new_leq(lin(s1, rational::ONE), lin(rational::ONE))});
+    nc = core->new_clause({lra.new_leq(lin(s1, rational::ONE), lin(rational::ONE))});
     assert(nc);
 
-    bool prop = core.propagate();
+    bool prop = core->propagate();
     assert(prop);
 
     // s2 >= -3
-    bool assm = core.assume(lra.new_geq(lin(s2, rational::ONE), lin(-rational(3))));
+    bool assm = core->assume(lra.new_geq(lin(s2, rational::ONE), lin(-rational(3))));
     assert(!assm);
 }
 
 void test_inequalities_0()
 {
-    sat_core core;
+    auto core = std::make_shared<sat_core>();
     lra_theory lra(core);
 
     var x = lra.new_var();
     var y = lra.new_var();
 
     // x >= y
-    bool nc = core.new_clause({lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
+    bool nc = core->new_clause({lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
     assert(nc);
 
     inf_rational x_val = lra.value(x);
@@ -123,10 +123,10 @@ void test_inequalities_0()
     assert(y_val == rational::ZERO);
 
     // y >= 1
-    nc = core.new_clause({lra.new_geq(lin(y, rational::ONE), lin(rational::ONE))});
+    nc = core->new_clause({lra.new_geq(lin(y, rational::ONE), lin(rational::ONE))});
     assert(nc);
 
-    bool prop = core.propagate();
+    bool prop = core->propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -138,17 +138,17 @@ void test_inequalities_0()
 
 void test_inequalities_1()
 {
-    sat_core core;
+    auto core = std::make_shared<sat_core>();
     lra_theory lra(core);
 
     var x = lra.new_var();
     var y = lra.new_var();
 
     // x >= y
-    bool nc = core.new_clause({lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
+    bool nc = core->new_clause({lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
     assert(nc);
 
-    bool prop = core.propagate();
+    bool prop = core->propagate();
     assert(prop);
 
     inf_rational x_val = lra.value(x);
@@ -158,10 +158,10 @@ void test_inequalities_1()
     assert(y_val == rational::ZERO);
 
     // y >= 1
-    nc = core.new_clause({lra.new_geq(lin(y, rational::ONE), lin(rational::ONE))});
+    nc = core->new_clause({lra.new_geq(lin(y, rational::ONE), lin(rational::ONE))});
     assert(nc);
 
-    prop = core.propagate();
+    prop = core->propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -173,17 +173,17 @@ void test_inequalities_1()
 
 void test_strict_inequalities_0()
 {
-    sat_core core;
+    auto core = std::make_shared<sat_core>();
     lra_theory lra(core);
 
     var x = lra.new_var();
     var y = lra.new_var();
 
     // x > y
-    bool nc = core.new_clause({lra.new_gt(lin(x, rational::ONE), lin(y, rational::ONE))});
+    bool nc = core->new_clause({lra.new_gt(lin(x, rational::ONE), lin(y, rational::ONE))});
     assert(nc);
 
-    bool prop = core.propagate();
+    bool prop = core->propagate();
     assert(prop);
 
     inf_rational x_val = lra.value(x);
@@ -193,10 +193,10 @@ void test_strict_inequalities_0()
     assert(y_val == rational::ZERO);
 
     // y >= 1
-    nc = core.new_clause({lra.new_geq(lin(y, rational::ONE), lin(rational::ONE))});
+    nc = core->new_clause({lra.new_geq(lin(y, rational::ONE), lin(rational::ONE))});
     assert(nc);
 
-    prop = core.propagate();
+    prop = core->propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -208,17 +208,17 @@ void test_strict_inequalities_0()
 
 void test_strict_inequalities_1()
 {
-    sat_core core;
+    auto core = std::make_shared<sat_core>();
     lra_theory lra(core);
 
     var x = lra.new_var();
     var y = lra.new_var();
 
     // ![x >= y] --> x < y
-    bool nc = core.new_clause({!lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
+    bool nc = core->new_clause({!lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
     assert(nc);
 
-    bool prop = core.propagate();
+    bool prop = core->propagate();
     assert(prop);
 
     inf_rational x_val = lra.value(x);
@@ -228,10 +228,10 @@ void test_strict_inequalities_1()
     assert(y_val == rational::ZERO);
 
     // x >= 1
-    nc = core.new_clause({lra.new_geq(lin(x, rational::ONE), lin(rational::ONE))});
+    nc = core->new_clause({lra.new_geq(lin(x, rational::ONE), lin(rational::ONE))});
     assert(nc);
 
-    prop = core.propagate();
+    prop = core->propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -243,7 +243,7 @@ void test_strict_inequalities_1()
 
 void test_nonroot_constraints()
 {
-    sat_core core;
+    auto core = std::make_shared<sat_core>();
     lra_theory lra(core);
 
     var x = lra.new_var();
@@ -252,19 +252,19 @@ void test_nonroot_constraints()
     lit x_leq_y = lra.new_leq(lin(x, rational::ONE), lin(y, rational::ONE));
     lit y_leq_x = lra.new_leq(lin(y, rational::ONE), lin(x, rational::ONE));
 
-    bool nc = core.new_clause({lra.new_leq(lin(y, rational::ONE), lin(rational::ONE))});
+    bool nc = core->new_clause({lra.new_leq(lin(y, rational::ONE), lin(rational::ONE))});
     assert(nc);
 
-    bool prop = core.propagate();
+    bool prop = core->propagate();
     assert(prop);
 
-    nc = core.new_clause({x_leq_y, y_leq_x});
+    nc = core->new_clause({x_leq_y, y_leq_x});
     assert(nc);
 
-    bool assm = core.assume({x_leq_y});
+    bool assm = core->assume({x_leq_y});
     assert(assm);
 
-    assert(core.value(x_leq_y) == True);
+    assert(core->value(x_leq_y) == True);
 
     prop = lra.set_lb(x, inf_rational(rational::ONE), TRUE_lit);
     assert(prop);
@@ -282,10 +282,10 @@ void test_sat_stack_0()
     var y = lra.new_var();
 
     // x >= y
-    bool nc = stack.top().new_clause({lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
+    bool nc = stack.top()->new_clause({lra.new_geq(lin(x, rational::ONE), lin(y, rational::ONE))});
     assert(nc);
 
-    bool prop = stack.top().propagate();
+    bool prop = stack.top()->propagate();
     assert(prop);
 
     inf_rational x_val = lra.value(x);
@@ -303,10 +303,10 @@ void test_sat_stack_0()
     // we push the sat stack..
     stack.push();
 
-    nc = stack.top().new_clause({y_geq_1});
+    nc = stack.top()->new_clause({y_geq_1});
     assert(nc);
 
-    prop = stack.top().propagate();
+    prop = stack.top()->propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -318,10 +318,10 @@ void test_sat_stack_0()
     // we pop the sat stack..
     stack.pop();
 
-    nc = stack.top().new_clause({x_leq_0});
+    nc = stack.top()->new_clause({x_leq_0});
     assert(nc);
 
-    prop = stack.top().propagate();
+    prop = stack.top()->propagate();
     assert(prop);
 
     x_val = lra.value(x);

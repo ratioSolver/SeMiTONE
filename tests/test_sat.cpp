@@ -226,39 +226,39 @@ void test_exct_one_2()
 void test_sat_stack_0()
 {
     sat_stack stack;
-    var b0 = stack.top().new_var();
-    var b1 = stack.top().new_var();
-    var b2 = stack.top().new_var();
+    var b0 = stack.top()->new_var();
+    var b1 = stack.top()->new_var();
+    var b2 = stack.top()->new_var();
 
-    bool nc = stack.top().new_clause({lit(b0, false), !lit(b1), lit(b2)});
+    bool nc = stack.top()->new_clause({lit(b0, false), !lit(b1), lit(b2)});
     assert(nc);
-    assert(stack.top().value(b0) == Undefined);
-    assert(stack.top().value(b1) == Undefined);
-    assert(stack.top().value(b2) == Undefined);
+    assert(stack.top()->value(b0) == Undefined);
+    assert(stack.top()->value(b1) == Undefined);
+    assert(stack.top()->value(b2) == Undefined);
 
-    bool assm = stack.top().assume(lit(b0));
+    bool assm = stack.top()->assume(lit(b0));
     assert(assm);
-    assert(stack.top().value(b0) == True);
-    assert(stack.top().value(b1) == Undefined);
-    assert(stack.top().value(b2) == Undefined);
+    assert(stack.top()->value(b0) == True);
+    assert(stack.top()->value(b1) == Undefined);
+    assert(stack.top()->value(b2) == Undefined);
 
     // we push the sat stack..
     stack.push();
 
-    assm = stack.top().assume(lit(b1));
+    assm = stack.top()->assume(lit(b1));
     assert(assm);
-    assert(stack.top().value(b0) == True);
-    assert(stack.top().value(b1) == True);
-    assert(stack.top().value(b2) == True);
+    assert(stack.top()->value(b0) == True);
+    assert(stack.top()->value(b1) == True);
+    assert(stack.top()->value(b2) == True);
 
     // we pop the sat stack..
     stack.pop();
 
-    assm = stack.top().assume(!lit(b2));
+    assm = stack.top()->assume(!lit(b2));
     assert(assm);
-    assert(stack.top().value(b0) == True);
-    assert(stack.top().value(b1) == False);
-    assert(stack.top().value(b2) == False);
+    assert(stack.top()->value(b0) == True);
+    assert(stack.top()->value(b1) == False);
+    assert(stack.top()->value(b2) == False);
 }
 
 int main(int, char **)

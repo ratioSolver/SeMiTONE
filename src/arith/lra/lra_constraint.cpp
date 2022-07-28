@@ -107,6 +107,7 @@ namespace semitone
             inf_rational lb(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
+                {
                     if (is_negative_infinite(th.lb(c_v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -117,7 +118,9 @@ namespace semitone
                         lb += c * th.lb(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(c_v)].reason);
                     }
+                }
                 else if (is_negative(c))
+                {
                     if (is_positive_infinite(th.ub(c_v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -128,6 +131,7 @@ namespace semitone
                         lb += c * th.ub(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(c_v)].reason);
                     }
+                }
 
             if (lb >= th.lb(x))
                 for (const auto &c : th.a_watches[x])
@@ -178,6 +182,7 @@ namespace semitone
             inf_rational ub(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
+                {
                     if (is_positive_infinite(th.ub(c_v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -188,7 +193,9 @@ namespace semitone
                         ub += c * th.ub(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(c_v)].reason);
                     }
+                }
                 else if (is_negative(c))
+                {
                     if (is_negative_infinite(th.lb(c_v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -199,6 +206,7 @@ namespace semitone
                         ub += c * th.lb(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(c_v)].reason);
                     }
+                }
 
             if (ub <= th.ub(x))
                 for (const auto &c : th.a_watches[x])
@@ -259,6 +267,7 @@ namespace semitone
             inf_rational ub(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
+                {
                     if (is_positive_infinite(th.ub(c_v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -269,7 +278,9 @@ namespace semitone
                         ub += c * th.ub(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(c_v)].reason);
                     }
+                }
                 else if (is_negative(c))
+                {
                     if (is_negative_infinite(th.lb(v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -280,6 +291,7 @@ namespace semitone
                         ub += c * th.lb(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(c_v)].reason);
                     }
+                }
 
             if (ub <= th.ub(x))
                 for (const auto &c : th.a_watches[x])
@@ -330,6 +342,7 @@ namespace semitone
             inf_rational lb(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
+                {
                     if (is_negative_infinite(th.lb(c_v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -340,7 +353,9 @@ namespace semitone
                         lb += c * th.lb(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(c_v)].reason);
                     }
+                }
                 else if (is_negative(c))
+                {
                     if (is_positive_infinite(th.ub(c_v)))
                     { // nothing to propagate..
                         th.cnfl.clear();
@@ -351,6 +366,7 @@ namespace semitone
                         lb += c * th.ub(c_v);
                         th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(c_v)].reason);
                     }
+                }
 
             if (lb >= th.lb(x))
                 for (const auto &c : th.a_watches[x])
