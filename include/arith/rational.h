@@ -18,18 +18,19 @@ namespace semitone
     SEMITONE_EXPORT explicit rational(I n);
     SEMITONE_EXPORT explicit rational(I n, I d);
 
-    SEMITONE_EXPORT inline I numerator() const noexcept { return num; }
-    SEMITONE_EXPORT inline I denominator() const noexcept { return den; }
+    inline I numerator() const noexcept { return num; }
+    inline I denominator() const noexcept { return den; }
 
-    SEMITONE_EXPORT inline friend bool is_integer(const rational &rhs) noexcept { return rhs.den == 1; }
-    SEMITONE_EXPORT inline friend bool is_zero(const rational &rhs) noexcept { return rhs.num == 0; }
-    SEMITONE_EXPORT inline friend bool is_positive(const rational &rhs) noexcept { return rhs.num > 0; }
-    SEMITONE_EXPORT inline friend bool is_positive_or_zero(const rational &rhs) noexcept { return rhs.num >= 0; }
-    SEMITONE_EXPORT inline friend bool is_negative(const rational &rhs) noexcept { return rhs.num < 0; }
-    SEMITONE_EXPORT inline friend bool is_negative_or_zero(const rational &rhs) noexcept { return rhs.num <= 0; }
-    SEMITONE_EXPORT inline friend bool is_infinite(const rational &rhs) noexcept { return rhs.den == 0; }
-    SEMITONE_EXPORT inline friend bool is_positive_infinite(const rational &rhs) noexcept { return is_positive(rhs) && is_infinite(rhs); }
-    SEMITONE_EXPORT inline friend bool is_negative_infinite(const rational &rhs) noexcept { return is_negative(rhs) && is_infinite(rhs); }
+    inline friend bool is_integer(const rational &rhs) noexcept { return rhs.den == 1; }
+    inline friend bool is_zero(const rational &rhs) noexcept { return rhs.num == 0; }
+    inline friend bool is_positive(const rational &rhs) noexcept { return rhs.num > 0; }
+    inline friend bool is_positive_or_zero(const rational &rhs) noexcept { return rhs.num >= 0; }
+    inline friend bool is_negative(const rational &rhs) noexcept { return rhs.num < 0; }
+    inline friend bool is_negative_or_zero(const rational &rhs) noexcept { return rhs.num <= 0; }
+    inline friend bool is_infinite(const rational &rhs) noexcept { return rhs.den == 0; }
+    inline friend bool is_positive_infinite(const rational &rhs) noexcept { return is_positive(rhs) && is_infinite(rhs); }
+    inline friend bool is_negative_infinite(const rational &rhs) noexcept { return is_negative(rhs) && is_infinite(rhs); }
+    inline friend double to_double(const rational &rhs) noexcept { return static_cast<double>(rhs.num) / static_cast<double>(rhs.den); }
 
     SEMITONE_EXPORT bool operator!=(const rational &rhs) const noexcept;
     SEMITONE_EXPORT bool operator<(const rational &rhs) const noexcept;
