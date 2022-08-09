@@ -15,12 +15,19 @@ include(CMakePackageConfigHelpers)
 include(CTest)
 enable_testing()
 
+option(VERBOSE_LOG "Makes log more verbose" OFF)
+
 file(GLOB SMT_SOURCES src/*.cpp src/arith/*.cpp src/arith/lra/*.cpp src/arith/dl/*.cpp src/ov/*.cpp)
 file(GLOB SMT_HEADERS include/*.h include/arith/lra/*.h include/arith/*.h include/arith/dl/*.h include/ov/*.h)
 
 add_library(${PROJECT_NAME} SHARED ${SMT_SOURCES})
 GENERATE_EXPORT_HEADER(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/arith $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/arith/lra $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/arith/dl $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/include/ov $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+
+message(STATUS "Verbose log:            ${VERBOSE_LOG}")
+if(VERBOSE_LOG)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC VERBOSE_LOG)
+endif()
 
 if(BUILD_TESTING)
     add_subdirectory(tests)
