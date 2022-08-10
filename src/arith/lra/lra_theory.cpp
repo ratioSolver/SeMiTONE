@@ -75,16 +75,16 @@ namespace semitone
         const inf_rational c_right = inf_rational(-expr.known_term, -1);
         expr.known_term = rational::ZERO;
 
-        if (ub(expr) <= c_right)
+        if (ub(expr) < c_right)
             return TRUE_lit; // the constraint is already satisfied..
-        else if (lb(expr) > c_right)
+        else if (lb(expr) >= c_right)
             return FALSE_lit; // the constraint is unsatisfable..
 
         // we create a slack variable from the current expression (notice that the variable can be reused)..
         const var slack = new_var(expr);
-        if (ub(slack) <= c_right)
+        if (ub(slack) < c_right)
             return TRUE_lit; // the constraint is already satisfied..
-        else if (lb(slack) > c_right)
+        else if (lb(slack) >= c_right)
             return FALSE_lit; // the constraint is unsatisfable..
         const std::string s_assertion = "x" + std::to_string(slack) + " <= " + to_string(c_right);
         if (const auto at_asrt = s_asrts.find(s_assertion); at_asrt != s_asrts.cend()) // this assertion already exists..
@@ -204,16 +204,16 @@ namespace semitone
         const inf_rational c_right = inf_rational(-expr.known_term, 1);
         expr.known_term = rational::ZERO;
 
-        if (lb(expr) >= c_right)
+        if (lb(expr) > c_right)
             return TRUE_lit; // the constraint is already satisfied..
-        else if (ub(expr) < c_right)
+        else if (ub(expr) <= c_right)
             return FALSE_lit; // the constraint is unsatisfable..
 
         // we create a slack variable from the current expression (notice that the variable can be reused)..
         const var slack = new_var(expr);
-        if (lb(slack) >= c_right)
+        if (lb(slack) > c_right)
             return TRUE_lit; // the constraint is already satisfied..
-        else if (ub(slack) < c_right)
+        else if (ub(slack) <= c_right)
             return FALSE_lit; // the constraint is unsatisfable..
         const std::string s_assertion = "x" + std::to_string(slack) + " >= " + to_string(c_right);
         if (const auto at_asrt = s_asrts.find(s_assertion); at_asrt != s_asrts.cend()) // this assertion already exists..
