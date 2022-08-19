@@ -38,25 +38,25 @@ namespace semitone
     SEMITONE_EXPORT lit new_geq(const lin &left, const lin &right) noexcept;
     SEMITONE_EXPORT lit new_gt(const lin &left, const lin &right) noexcept;
 
-    inline inf_rational lb(const var &v) const noexcept { return c_bounds[lb_index(v)].value; } // the current lower bound of variable 'v'..
-    inline inf_rational ub(const var &v) const noexcept { return c_bounds[ub_index(v)].value; } // the current upper bound of variable 'v'..
-    inline inf_rational value(const var &v) const noexcept { return vals[v]; }                  // the current value of variable 'v'..
+    inline inf_rational lb(const var &v) const noexcept { return c_bounds[lb_index(v)].value; } // the current lower bound of variable `v`..
+    inline inf_rational ub(const var &v) const noexcept { return c_bounds[ub_index(v)].value; } // the current upper bound of variable `v`..
+    inline inf_rational value(const var &v) const noexcept { return vals[v]; }                  // the current value of variable `v`..
 
-    inline inf_rational lb(const lin &l) const noexcept // returns the current lower bound of linear expression 'l'..
+    inline inf_rational lb(const lin &l) const noexcept // returns the current lower bound of linear expression `l`..
     {
       inf_rational b(l.known_term);
       for (const auto &[v, c] : l.vars)
         b += (is_positive(c) ? lb(v) : ub(v)) * c;
       return b;
     }
-    inline inf_rational ub(const lin &l) const noexcept // returns the current upper bound of linear expression 'l'..
+    inline inf_rational ub(const lin &l) const noexcept // returns the current upper bound of linear expression `l`..
     {
       inf_rational b(l.known_term);
       for (const auto &[v, c] : l.vars)
         b += (is_positive(c) ? ub(v) : lb(v)) * c;
       return b;
     }
-    inline std::pair<inf_rational, inf_rational> bounds(const lin &l) const noexcept // returns the current upper bound of linear expression 'l'..
+    inline std::pair<inf_rational, inf_rational> bounds(const lin &l) const noexcept // returns the current upper bound of linear expression `l`..
     {
       inf_rational c_lb(l.known_term);
       inf_rational c_ub(l.known_term);
@@ -67,7 +67,7 @@ namespace semitone
       }
       return std::make_pair(c_lb, c_ub);
     }
-    inline inf_rational value(const lin &l) const // returns the current value of linear expression 'l'..
+    inline inf_rational value(const lin &l) const // returns the current value of linear expression `l`..
     {
       inf_rational val(l.known_term);
       for (const auto &[v, c] : l.vars)
@@ -100,8 +100,8 @@ namespace semitone
         listening[v].insert(l);
     }
 
-    inline static size_t lb_index(const var &v) noexcept { return v << 1; }       // the index of the lower bound of the 'v' variable..
-    inline static size_t ub_index(const var &v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the 'v' variable..
+    inline static size_t lb_index(const var &v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
+    inline static size_t ub_index(const var &v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
   private:
     /**
@@ -119,8 +119,8 @@ namespace semitone
     std::unordered_map<std::string, var> exprs;            // the expressions (string to numeric variable) for which already exist slack variables..
     std::unordered_map<std::string, lit> s_asrts;          // the assertions (string to literal) used for reducing the number of boolean variables..
     std::unordered_map<var, assertion *> v_asrts;          // the assertions (literal to assertions) used for enforcing (negating) assertions..
-    std::vector<std::vector<assertion *>> a_watches;       // for each variable 'v', a list of assertions watching 'v'..
-    std::vector<std::unordered_set<row *>> t_watches;      // for each variable 'v', a list of tableau rows watching 'v'..
+    std::vector<std::vector<assertion *>> a_watches;       // for each variable `v`, a list of assertions watching `v`..
+    std::vector<std::unordered_set<row *>> t_watches;      // for each variable `v`, a list of tableau rows watching `v`..
     std::vector<std::unordered_map<size_t, bound>> layers; // we store the updated bounds..
     std::unordered_map<var, std::set<lra_value_listener *>> listening;
   };

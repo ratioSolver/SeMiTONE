@@ -518,7 +518,7 @@ namespace semitone
         out_btlevel = 0;
         do
         {
-            // trace reason for 'p'..
+            // trace reason for `p`..
             for (const auto &q : p_reason) // the order in which these literals are visited is not relevant..
                 if (seen.insert(variable(q)).second)
                 {
@@ -536,7 +536,7 @@ namespace semitone
             {
                 p = trail.back();
                 assert(level[variable(p)] == decision_level()); // this variable must have been assigned at the current decision level..
-                if (reason[variable(p)])                        // 'p' can be the asserting literal..
+                if (reason[variable(p)])                        // `p` can be the asserting literal..
                 {
                     p_reason.clear();
                     reason[variable(p)]->get_reason(p, p_reason);
@@ -545,10 +545,10 @@ namespace semitone
             } while (!seen.count(variable(p)));
             counter--;
         } while (counter > 0);
-        // 'p' is now the first Unique Implication Point (UIP), possibly the asserting literal, that led to the conflict..
+        // `p` is now the first Unique Implication Point (UIP), possibly the asserting literal, that led to the conflict..
         assert(value(p) == Undefined);
         assert(std::all_of(std::next(out_learnt.cbegin()), out_learnt.cend(), [this](auto &lt)
-                           { return value(lt) == False; })); // all these literals must have been assigned as false for propagating 'p'..
+                           { return value(lt) == False; })); // all these literals must have been assigned as false for propagating `p`..
         out_learnt[0] = !p;
     }
 

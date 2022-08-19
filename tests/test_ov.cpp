@@ -104,7 +104,7 @@ void test_ov_2()
     lit eq1 = ov.new_eq(v0, v1);
     assert(eq0 == eq1);
 
-    // removing the 'a' value from the 'v1' variable, however, results in the removal of the 'b' value from the 'v0' variable..
+    // removing the `a` value from the `v1` variable, however, results in the removal of the `b` value from the `v0` variable..
     assm = core->assume(!ov.allows(v1, a));
     assert(assm);
     assert(core->value(ov.allows(v0, a)) == Undefined);

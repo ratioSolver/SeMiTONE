@@ -21,12 +21,12 @@ namespace semitone
     ov_theory(const ov_theory &orig) = delete;
 
     SEMITONE_EXPORT var new_var(const std::vector<var_value *> &items, const bool enforce_exct_one = true) noexcept; // creates and returns a new object variable having the given domain..
-    SEMITONE_EXPORT var new_var(const std::vector<lit> &lits, const std::vector<var_value *> &vals) noexcept;        // creates and returns a new object variable having the given domain, the presence of the values into the domain is controlled by the 'lits' literals..
+    SEMITONE_EXPORT var new_var(const std::vector<lit> &lits, const std::vector<var_value *> &vals) noexcept;        // creates and returns a new object variable having the given domain, the presence of the values into the domain is controlled by the `lits` literals..
 
-    SEMITONE_EXPORT lit allows(const var &v, var_value &val) const noexcept; // returns the literal controlling the presence of the 'val' value into the domain of variable 'v'..
-    SEMITONE_EXPORT lit new_eq(const var &left, const var &right) noexcept;  // creates an equality constraints between 'left' and 'right' variables returning the literal that controls it..
+    SEMITONE_EXPORT lit allows(const var &v, var_value &val) const noexcept; // returns the literal controlling the presence of the `val` value into the domain of variable `v`..
+    SEMITONE_EXPORT lit new_eq(const var &left, const var &right) noexcept;  // creates an equality constraints between `left` and `right` variables returning the literal that controls it..
 
-    SEMITONE_EXPORT std::unordered_set<var_value *> value(var v) const noexcept; // returns the current domain of the object variable 'v'..
+    SEMITONE_EXPORT std::unordered_set<var_value *> value(var v) const noexcept; // returns the current domain of the object variable `v`..
 
   private:
     bool propagate(const lit &p) noexcept override;

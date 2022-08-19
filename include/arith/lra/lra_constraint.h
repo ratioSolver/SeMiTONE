@@ -18,7 +18,7 @@ namespace semitone
 
   /**
    * This class is used for representing assertions.
-   * An assertion, controlled by the literal 'b', represents the expression 'x' <op> 'v'.
+   * An assertion, controlled by the literal `b`, represents the expression `x` <op> `v`.
    */
   class assertion final
   {
@@ -30,8 +30,8 @@ namespace semitone
     assertion(const assertion &orig) = delete;
 
   private:
-    bool propagate_lb(const var &x) noexcept; // propagates the lower bound of variable 'x' on the assertion returning whether propagation is successful..
-    bool propagate_ub(const var &x) noexcept; // propagates the upper bound of variable 'x' on the assertion returning whether propagation is successful..
+    bool propagate_lb(const var &x) noexcept; // propagates the lower bound of variable `x` on the assertion returning whether propagation is successful..
+    bool propagate_ub(const var &x) noexcept; // propagates the upper bound of variable `x` on the assertion returning whether propagation is successful..
 
   private:
     lra_theory &th;
@@ -54,12 +54,12 @@ namespace semitone
     row(const row &orig) = delete;
 
   private:
-    bool propagate_lb(const var &x) noexcept; // propagates the lower bound of variable 'x' on the tableau row returning whether propagation is successful..
-    bool propagate_ub(const var &x) noexcept; // propagates the upper bound of variable 'x' on the tableau row returning whether propagation is successful..
+    bool propagate_lb(const var &x) noexcept; // propagates the lower bound of variable `x` on the tableau row returning whether propagation is successful..
+    bool propagate_ub(const var &x) noexcept; // propagates the upper bound of variable `x` on the tableau row returning whether propagation is successful..
 
   private:
     lra_theory &th;
     const var x; // the basic variable..
-    lin l;       // the linear expression which is constrained to be equal to the basic variable 'x'..
+    lin l;       // the linear expression which is constrained to be equal to the basic variable `x`..
   };
 } // namespace semitone

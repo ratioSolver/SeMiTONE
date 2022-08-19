@@ -309,7 +309,7 @@ namespace semitone
 
     void lra_theory::pop() noexcept
     {
-        // we restore the variables' c_bounds and their reason..
+        // we restore the variables' `c_bounds` and their reason..
         for (const auto &[v, bnds] : layers.back())
             c_bounds[v] = bnds;
         layers.pop_back();
@@ -323,7 +323,7 @@ namespace semitone
             return true;
         else if (val > ub(x_i))
         {
-            cnfl.push_back(!p);                              // either the literal 'p' is false ..
+            cnfl.push_back(!p);                              // either the literal `p` is false ..
             cnfl.push_back(!c_bounds[ub_index(x_i)].reason); // or what asserted the upper bound is false..
             return false;
         }
@@ -334,7 +334,7 @@ namespace semitone
             c_bounds[lb_index(x_i)] = {val, p};
 
             if (vals[x_i] < val && !is_basic(x_i))
-                update(x_i, val); // we set the value of 'x_i' to 'val' and update all the basic variables which are related to 'x_i' by the tableau..
+                update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
 
             // unate propagation..
             for (const auto &c : a_watches[x_i])
@@ -357,7 +357,7 @@ namespace semitone
             return true;
         else if (val < lb(x_i))
         {
-            cnfl.push_back(!p);                              // either the literal 'p' is false ..
+            cnfl.push_back(!p);                              // either the literal `p` is false ..
             cnfl.push_back(!c_bounds[lb_index(x_i)].reason); // or what asserted the lower bound is false..
             return false;
         }
@@ -368,7 +368,7 @@ namespace semitone
             c_bounds[ub_index(x_i)] = {val, p};
 
             if (vals[x_i] > val && !is_basic(x_i))
-                update(x_i, val); // we set the value of 'x_i' to 'val' and update all the basic variables which are related to 'x_i' by the tableau..
+                update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
 
             // unate propagation..
             for (const auto &c : a_watches[x_i])
@@ -386,7 +386,7 @@ namespace semitone
     void lra_theory::update(const var &x_i, const inf_rational &v) noexcept
     {
         assert(!is_basic(x_i) && "x_i should be a non-basic variable..");
-        // the tableau rows containing 'x_i' as a non-basic variable..
+        // the tableau rows containing `x_i` as a non-basic variable..
         for (const auto &c : t_watches[x_i])
         { // x_j = x_j + a_ji(v - x_i)..
             vals[c->x] += c->l.vars.at(x_i) * (v - vals[x_i]);
@@ -422,7 +422,7 @@ namespace semitone
             for (const auto &l : at_x_j->second)
                 l->lra_value_change(x_j);
 
-        // the tableau rows containing 'x_j' as a non-basic variable..
+        // the tableau rows containing `x_j` as a non-basic variable..
         for (const auto &c : t_watches[x_j])
             if (c->x != x_i)
             { // x_k += a_kj * theta..
@@ -455,17 +455,17 @@ namespace semitone
         std::unordered_set<row *> x_j_watches;
         std::swap(x_j_watches, t_watches[x_j]);
         for (const auto &r : x_j_watches)
-        { // 'r' is a row in which 'x_j' appears..
+        { // `r` is a row in which `x_j` appears..
             rational cc = r->l.vars[x_j];
             r->l.vars.erase(x_j);
             for (const auto &[v, c] : std::map<const var, rational>(expr.vars))
                 if (const auto trm_it = r->l.vars.find(v); trm_it == r->l.vars.cend())
-                { // we are adding a new term to 'r'..
+                { // we are adding a new term to `r`..
                     r->l.vars.emplace(v, c * cc);
                     t_watches[v].emplace(r);
                 }
                 else
-                { // we are updating an existing term of 'r'..
+                { // we are updating an existing term of `r`..
                     assert(trm_it->first == v);
                     trm_it->second += c * cc;
                     if (trm_it->second == rational::ZERO)

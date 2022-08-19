@@ -22,7 +22,7 @@ namespace semitone
 
     SEMITONE_EXPORT var new_var() noexcept; // creates and returns a new distance logic variable..
 
-    SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const inf_rational &dist) noexcept; // creates and returns a new propositional variable for controlling the constraint 'to - from <= dist'..
+    SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const inf_rational &dist) noexcept; // creates and returns a new propositional variable for controlling the constraint `to - from <= dist`..
     SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const inf_rational &min, const inf_rational &max) noexcept { return sat->new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
     SEMITONE_EXPORT lit new_lt(const lin &left, const lin &right);

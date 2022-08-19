@@ -19,7 +19,7 @@ var b1 = sat.new_var();
 // we create a propositional constraint (i.e. the (¬b0 ∨ b1) clause)
 bool nc = sat.new_clause({lit(b0, false), b1});
 
-// the current value of 'b0' (i.e. Undefined)
+// the current value of `b0` (i.e. Undefined)
 lbool b0_val = sat.value(b0);
 ```
 
@@ -29,9 +29,9 @@ Once propositional variables and constraints are created, it is possible to assu
 // we store the context and assume b0
 bool assm = core.assume(lit(b0));
 
-// the current value of 'b0' is now True as a consequence of the assignment
+// the current value of `b0` is now True as a consequence of the assignment
 b0_val = sat.value(b0);
-// the current value of 'b1' is now True as a consequence of the propagation
+// the current value of `b1` is now True as a consequence of the propagation
 lbool b1_val = sat.value(b1);
 ```
 
@@ -40,7 +40,7 @@ Finally, it is possible to restore the context prior of the assignment through t
 ```cpp
 sat.pop();
 
-// the current values of the 'b0' and 'b1' variables is now back to Undefined
+// the current values of the `b0` and `b1` variables is now back to Undefined
 b0_val = sat.value(b0);
 b1_val = sat.value(b1);
 ```

@@ -54,7 +54,7 @@ namespace semitone
     SEMITONE_EXPORT ~sat_core();
 
     SEMITONE_EXPORT var new_var() noexcept;                          // creates a new propositional variable..
-    SEMITONE_EXPORT bool new_clause(std::vector<lit> lits) noexcept; // creates a new clause given the 'lits' literals returning 'false' if some trivial inconsistency is detected..
+    SEMITONE_EXPORT bool new_clause(std::vector<lit> lits) noexcept; // creates a new clause given the `lits` literals returning `false` if some trivial inconsistency is detected..
 
     SEMITONE_EXPORT lit new_eq(const lit &left, const lit &right) noexcept; // creates a new reified equality..
     SEMITONE_EXPORT lit new_conj(std::vector<lit> ls) noexcept;             // creates a new reified conjunction..
@@ -69,7 +69,7 @@ namespace semitone
     SEMITONE_EXPORT bool next() noexcept;
     SEMITONE_EXPORT bool check(std::vector<lit> lits) noexcept;
 
-    inline lbool value(const var &x) const noexcept { return assigns.at(x); } // returns the value of variable 'x'..
+    inline lbool value(const var &x) const noexcept { return assigns.at(x); } // returns the value of variable `x`..
     inline lbool value(const lit &p) const noexcept
     {
       switch (value(variable(p)))
@@ -81,7 +81,7 @@ namespace semitone
       default:
         return Undefined;
       }
-    }                                                                                            // returns the value of literal 'p'..
+    }                                                                                            // returns the value of literal `p`..
     inline size_t decision_level() const noexcept { return trail_lim.size(); }                   // returns the current decision level..
     inline bool root_level() const noexcept { return trail_lim.empty(); }                        // checks whether the current decision level is root level..
     SEMITONE_EXPORT const std::vector<lit> &get_decisions() const noexcept { return decisions; } // returns the decisions taken so far in chronological order..
@@ -102,12 +102,12 @@ namespace semitone
 
   private:
     std::vector<constr *> constrs;              // the collection of problem constraints..
-    std::vector<std::vector<constr *>> watches; // for each literal 'p', a list of constraints watching 'p'..
+    std::vector<std::vector<constr *>> watches; // for each literal `p`, a list of constraints watching `p`..
     std::vector<lbool> assigns;                 // the current assignments..
 
     std::queue<lit> prop_q;                     // propagation queue..
     std::vector<lit> trail;                     // the list of assignment in chronological order..
-    std::vector<size_t> trail_lim;              // separator indices for different decision levels in 'trail'..
+    std::vector<size_t> trail_lim;              // separator indices for different decision levels in `trail`..
     std::vector<lit> decisions;                 // the list of decisions in chronological order..
     std::vector<constr *> reason;               // for each variable, the constraint that implied its value..
     std::vector<size_t> level;                  // for each variable, the decision level it was assigned..
