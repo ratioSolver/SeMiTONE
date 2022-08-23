@@ -487,4 +487,38 @@ namespace semitone
         for ([[maybe_unused]] const auto &[v, c] : l.vars)
             t_watches[v].emplace(r);
     }
+
+    SEMITONE_EXPORT json::json to_json(const lra_theory &rhs) noexcept
+    {
+        json::json j_th;
+
+        json::array j_vars;
+        j_vars.reserve(rhs.vals.size());
+        for (size_t i = 0; i < rhs.vals.size(); ++i)
+        {
+            json::json var;
+            var["name"] = std::to_string(i);
+            var["value"] = to_string(rhs.value(i));
+            if (!is_negative_infinite(rhs.lb(i)))
+                var["lb"] = to_string(rhs.lb(i));
+            if (!is_positive_infinite(rhs.ub(i)))
+                var["ub"] = to_string(rhs.ub(i));
+            j_vars.push_back(std::move(var));
+        }
+        j_th["vars"] = std::move(j_vars);
+
+        json::array j_asrts;
+        j_asrts.reserve(rhs.v_asrts.size());
+        for (const auto &c_asrts : rhs.v_asrts)
+            j_asrts.push_back(to_json(*c_asrts.second));
+        j_th["asrts"] = std::move(j_asrts);
+
+        json::array j_tabl;
+        j_tabl.reserve(rhs.tableau.size());
+        for (auto it = rhs.tableau.cbegin(); it != rhs.tableau.cend(); ++it)
+            j_tabl.push_back(to_json(*it->second));
+        j_th["tableau"] = std::move(j_tabl);
+
+        return j_th;
+    }
 } // namespace semitone

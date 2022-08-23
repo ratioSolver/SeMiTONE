@@ -80,4 +80,32 @@ namespace semitone
             out_reason.push_back(!lits[i]);
         }
     }
+
+    json::json clause::to_json() const noexcept
+    {
+        json::json j_cl;
+
+        json::array j_lits;
+        for (const auto &l : lits)
+        {
+            json::json j_lit;
+            j_lit["lit"] = to_string(l);
+            switch (value(l))
+            {
+            case True:
+                j_lit["val"] = "T";
+                break;
+            case False:
+                j_lit["val"] = "F";
+                break;
+            case Undefined:
+                j_lit["val"] = "U";
+                break;
+            }
+            j_lits.push_back(std::move(j_lit));
+        }
+        j_cl["lits"] = std::move(j_lits);
+
+        return j_cl;
+    }
 } // namespace semitone

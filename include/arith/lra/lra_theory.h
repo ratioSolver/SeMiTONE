@@ -103,6 +103,8 @@ namespace semitone
     inline static size_t lb_index(const var &v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     inline static size_t ub_index(const var &v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
+    friend SEMITONE_EXPORT json::json to_json(const lra_theory &rhs) noexcept;
+
   private:
     /**
      * Represents the bound of a variable and the reason for its existence.

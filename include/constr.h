@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lit.h"
+#include "json.h"
 #include <vector>
 
 namespace semitone
@@ -25,6 +26,8 @@ namespace semitone
     virtual bool simplify() = 0;
     virtual void remove() = 0;
     virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const = 0;
+
+    virtual json::json to_json() const noexcept { return json::json(); }
 
   protected:
     std::vector<constr *> &watches(const lit &p) noexcept;

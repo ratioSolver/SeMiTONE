@@ -2,6 +2,7 @@
 
 #include "semitone_export.h"
 #include "defs.h"
+#include "json.h"
 #include <string>
 
 namespace semitone
@@ -77,6 +78,13 @@ namespace semitone
     void normalize() noexcept;
 
     friend SEMITONE_EXPORT std::string to_string(const rational &rhs) noexcept;
+    friend json::json to_json(const rational &rhs) noexcept
+    {
+      json::json j_rat;
+      j_rat["num"] = std::to_string(rhs.num);
+      j_rat["den"] = std::to_string(rhs.den);
+      return j_rat;
+    }
 
   private:
     I num; // the numerator..

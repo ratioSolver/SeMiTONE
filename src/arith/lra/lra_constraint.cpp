@@ -95,6 +95,26 @@ namespace semitone
         return true;
     }
 
+    SEMITONE_EXPORT json::json to_json(const assertion &rhs) noexcept
+    {
+        json::json j_asrt;
+        j_asrt["lit"] = to_string(rhs.b);
+        switch (rhs.th.get_sat_core()->value(rhs.b))
+        {
+        case True:
+            j_asrt["val"] = "T";
+            break;
+        case False:
+            j_asrt["val"] = "F";
+            break;
+        case Undefined:
+            j_asrt["val"] = "U";
+            break;
+        }
+        j_asrt["constr"] = "x" + std::to_string(rhs.x) + (rhs.o == geq ? " >= " : " <= ") + to_string(rhs.v);
+        return j_asrt;
+    }
+
     row::row(lra_theory &th, const var x, lin l) : th(th), x(x), l(l) {}
 
     bool row::propagate_lb(const var &v) noexcept
@@ -415,5 +435,13 @@ namespace semitone
 
         th.cnfl.clear();
         return true;
+    }
+
+    SEMITONE_EXPORT json::json to_json(const row &rhs) noexcept
+    {
+        json::json j_row;
+        j_row["var"] = "x" + std::to_string(rhs.x);
+        j_row["expr"] = to_string(rhs.l);
+        return j_row;
     }
 } // namespace semitone
