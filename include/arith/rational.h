@@ -81,8 +81,8 @@ namespace semitone
     friend json::json to_json(const rational &rhs) noexcept
     {
       json::json j_rat;
-      j_rat["num"] = std::to_string(rhs.num);
-      j_rat["den"] = std::to_string(rhs.den);
+      j_rat["num"] = rhs.num;
+      j_rat["den"] = rhs.den;
       return j_rat;
     }
 
