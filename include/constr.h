@@ -27,7 +27,7 @@ namespace semitone
     virtual void remove() = 0;
     virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const = 0;
 
-    virtual json::json to_json() const noexcept { return json::json(); }
+    virtual json::json to_json() const noexcept { return json::object(); }
 
   protected:
     std::vector<constr *> &watches(const lit &p) noexcept;
