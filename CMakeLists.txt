@@ -15,9 +15,10 @@ include(CMakePackageConfigHelpers)
 include(CTest)
 enable_testing()
 
-add_subdirectory(extern/json)
-
 option(VERBOSE_LOG "Makes log more verbose" OFF)
+option(ADD_COVERAGE "Add coverage" OFF)
+
+add_subdirectory(extern/json)
 
 file(GLOB SMT_SOURCES src/*.cpp src/arith/*.cpp src/arith/lra/*.cpp src/arith/dl/*.cpp src/ov/*.cpp)
 file(GLOB SMT_HEADERS include/*.h include/arith/lra/*.h include/arith/*.h include/arith/dl/*.h include/ov/*.h include/utils/*.h)
@@ -40,6 +41,12 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+    if (ADD_COVERAGE)
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+            target_compile_options(${PROJECT_NAME} PRIVATE --coverage)
+            target_link_libraries(${PROJECT_NAME} PUBLIC gcov)
+        endif()
+    endif()
 endif()
 
 install(
