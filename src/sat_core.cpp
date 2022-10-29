@@ -630,8 +630,10 @@ namespace semitone
             {
             case False:
                 var["value"] = "False";
+                break;
             case True:
                 var["value"] = "True";
+                break;
             default:
                 var["value"] = "Undefined";
             }
