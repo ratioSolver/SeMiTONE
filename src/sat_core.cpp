@@ -615,4 +615,36 @@ namespace semitone
             for (const auto &l : at_v->second)
                 l->sat_value_change(v);
     }
+
+    SEMITONE_EXPORT json::json to_json(const sat_core &rhs) noexcept
+    {
+        json::json j_th;
+
+        json::array j_vars;
+        j_vars.reserve(rhs.assigns.size());
+        for (size_t i = 0; i < rhs.assigns.size(); ++i)
+        {
+            json::json var;
+            var["name"] = std::to_string(i);
+            switch (rhs.value(i))
+            {
+            case False:
+                var["value"] = "False";
+            case True:
+                var["value"] = "True";
+            default:
+                var["value"] = "Undefined";
+            }
+            j_vars.push_back(std::move(var));
+        }
+        j_th["vars"] = std::move(j_vars);
+
+        json::array j_asrts;
+        j_asrts.reserve(rhs.constrs.size());
+        for (const auto &c : rhs.constrs)
+            j_asrts.push_back(to_json(*c));
+        j_th["constrs"] = std::move(j_asrts);
+
+        return j_th;
+    }
 } // namespace semitone

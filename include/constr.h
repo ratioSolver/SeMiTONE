@@ -28,6 +28,7 @@ namespace semitone
     virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const = 0;
 
     virtual json::json to_json() const noexcept { return json::object(); }
+    friend SEMITONE_EXPORT json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
 
   protected:
     std::vector<constr *> &watches(const lit &p) noexcept;

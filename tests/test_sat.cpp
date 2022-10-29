@@ -261,6 +261,21 @@ void test_sat_stack_0()
     assert(stack.top()->value(b2) == False);
 }
 
+void test_to_json()
+{
+    sat_core core;
+
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+    var b3 = core.new_var();
+
+    bool nc = core.new_clause({lit(b0, false), !lit(b1), lit(b2)});
+    assert(nc);
+
+    auto j_sat = to_json(core);
+}
+
 int main(int, char **)
 {
     test_literals();
@@ -277,4 +292,6 @@ int main(int, char **)
     test_exct_one_2();
 
     test_sat_stack_0();
+
+    test_to_json();
 }

@@ -2,6 +2,7 @@
 
 #include "semitone_export.h"
 #include "lit.h"
+#include "json.h"
 #include "logging.h"
 #include <vector>
 #include <queue>
@@ -75,6 +76,8 @@ namespace semitone
       if (value(v) == Undefined)
         listening[v].insert(&l);
     }
+
+    friend SEMITONE_EXPORT json::json to_json(const sat_core &rhs) noexcept;
 
   private:
     std::vector<constr *> constrs;              // the collection of problem constraints..
