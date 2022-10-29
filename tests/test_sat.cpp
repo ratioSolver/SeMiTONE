@@ -272,8 +272,21 @@ void test_to_json()
 
     bool nc = core.new_clause({lit(b0, false), !lit(b1), lit(b2)});
     assert(nc);
+    nc = core.new_clause({lit(b0), lit(b2)});
+    assert(nc);
 
     auto j_sat = to_json(core);
+
+    bool assm = core.new_clause({lit(b0)});
+    assert(assm);
+
+    assm = core.new_clause({!lit(b2)});
+    assert(assm);
+
+    j_sat = to_json(core);
+
+    bool simplify = core.simplify_db();
+    assert(simplify);
 }
 
 int main(int, char **)
