@@ -311,7 +311,7 @@ namespace semitone
         case 1:
         {
             auto it = l.vars.cbegin();
-            if (!is_integer(it->second) | !is_integer(l.known_term))
+            if (!is_integer(it->second) || !is_integer(l.known_term))
                 throw std::invalid_argument("not a valid integer difference logic constraint..");
             c_lb += lb(it->first) * it->second.numerator() + l.known_term.numerator();
             c_ub += ub(it->first) * it->second.numerator() + l.known_term.numerator();

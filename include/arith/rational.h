@@ -7,7 +7,7 @@
 
 namespace semitone
 {
-  class rational
+  class rational final
   {
   public:
     SEMITONE_EXPORT static const rational ZERO;

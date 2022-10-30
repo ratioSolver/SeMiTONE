@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-  class lin
+  class lin final
   {
   public:
     SEMITONE_EXPORT explicit lin();
