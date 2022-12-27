@@ -179,7 +179,7 @@ namespace semitone
      * @param p the literal that caused the assertion.
      * @return bool whether the assertion was successful.
      */
-    bool assert_lower(const var &x_i, const inf_rational &val, const lit &p) noexcept;
+    SEMITONE_EXPORT bool assert_lower(const var &x_i, const inf_rational &val, const lit &p) noexcept;
     /**
      * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
      *
@@ -188,7 +188,7 @@ namespace semitone
      * @param p the literal that caused the assertion.
      * @return bool whether the assertion was successful.
      */
-    bool assert_upper(const var &x_i, const inf_rational &val, const lit &p) noexcept;
+    SEMITONE_EXPORT bool assert_upper(const var &x_i, const inf_rational &val, const lit &p) noexcept;
     void update(const var &x_i, const inf_rational &v) noexcept;
     void pivot_and_update(const var &x_i, const var &x_j, const inf_rational &v) noexcept;
     void pivot(const var x_i, const var x_j) noexcept;
