@@ -8,8 +8,23 @@ namespace semitone
   class lin final
   {
   public:
+    /**
+     * @brief Construct a new linear expression object.
+     *
+     */
     SEMITONE_EXPORT explicit lin();
+    /**
+     * @brief Construct a new linear expression object given the `known_term`.
+     *
+     * @param known_term the known term of the linear expression.
+     */
     SEMITONE_EXPORT explicit lin(const rational &known_term);
+    /**
+     * @brief Construct a new linear expression object given the `v` variable and the `c` coefficient.
+     *
+     * @param v the variable of the linear expression.
+     * @param c the coefficient of the `v` variable.
+     */
     SEMITONE_EXPORT explicit lin(const var v, const rational &c);
 
   public:

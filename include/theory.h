@@ -15,6 +15,11 @@ namespace semitone
     friend class sat_stack;
 
   public:
+    /**
+     * @brief Construct a new theory object.
+     *
+     * @param sat the sat core this theory belongs to.
+     */
     SEMITONE_EXPORT theory(std::shared_ptr<sat_core> sat);
     theory(const theory &orig) = delete;
     SEMITONE_EXPORT virtual ~theory();

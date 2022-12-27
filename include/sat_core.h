@@ -25,23 +25,95 @@ namespace semitone
     friend class sat_value_listener;
 
   public:
+    /**
+     * @brief Construct a new sat core object.
+     *
+     */
     SEMITONE_EXPORT sat_core();
+    /**
+     * @brief Construct a new sat core object.
+     *
+     * @param orig the sat core to copy.
+     */
     SEMITONE_EXPORT sat_core(const sat_core &orig);
     SEMITONE_EXPORT sat_core(sat_core &&orig) = default;
     SEMITONE_EXPORT ~sat_core();
 
-    SEMITONE_EXPORT var new_var() noexcept;                          // creates a new propositional variable..
-    SEMITONE_EXPORT bool new_clause(std::vector<lit> lits) noexcept; // creates a new clause given the `lits` literals returning `false` if some trivial inconsistency is detected..
+    /**
+     * @brief Create a new propositional variable
+     *
+     * @return var the new variable.
+     */
+    SEMITONE_EXPORT var new_var() noexcept;
 
-    SEMITONE_EXPORT lit new_eq(const lit &left, const lit &right) noexcept; // creates a new reified equality..
-    SEMITONE_EXPORT lit new_conj(std::vector<lit> ls) noexcept;             // creates a new reified conjunction..
-    SEMITONE_EXPORT lit new_disj(std::vector<lit> ls) noexcept;             // creates a new reified disjunction..
-    SEMITONE_EXPORT lit new_at_most_one(std::vector<lit> ls) noexcept;      // creates a new reified at-most-one..
-    SEMITONE_EXPORT lit new_exct_one(std::vector<lit> ls) noexcept;         // creates a new reified exct-one..
+    /**
+     * @brief Create a new clause given the `lits` literals returning `false` if some trivial inconsistency is detected.
+     *
+     * @param lits the literals of the clause.
+     * @return bool `true` if the clause was added, `false` otherwise.
+     */
+    SEMITONE_EXPORT bool new_clause(std::vector<lit> lits) noexcept;
 
+    /**
+     * @brief Create a new reified equality between `left` and `right`.
+     *
+     * @param left the left-hand side of the equality.
+     * @param right the right-hand side of the equality.
+     * @return lit the reified equality.
+     */
+    SEMITONE_EXPORT lit new_eq(const lit &left, const lit &right) noexcept;
+    /**
+     * @brief Create a new reified conjunction of the literals in `ls`.
+     *
+     * @param ls the literals of the conjunction.
+     * @return lit the reified conjunction.
+     */
+    SEMITONE_EXPORT lit new_conj(std::vector<lit> ls) noexcept;
+    /**
+     * @brief Create a new reified disjunction of the literals in `ls`.
+     *
+     * @param ls the literals of the disjunction.
+     * @return lit the reified disjunction.
+     */
+    SEMITONE_EXPORT lit new_disj(std::vector<lit> ls) noexcept;
+    /**
+     * @brief Create a new reified at-most-one of the literals in `ls`.
+     *
+     * @param ls the literals of the at-most-one.
+     * @return lit the reified at-most-one.
+     */
+    SEMITONE_EXPORT lit new_at_most_one(std::vector<lit> ls) noexcept;
+    /**
+     * @brief Create a new reified exactly-one of the literals in `ls`.
+     *
+     * @param ls the literals of the exactly-one.
+     * @return lit the reified exactly-one.
+     */
+    SEMITONE_EXPORT lit new_exct_one(std::vector<lit> ls) noexcept;
+
+    /**
+     * @brief Assume the literal `p`.
+     *
+     * @param p the literal to assume.
+     * @return bool `true` if the assumption is consistent, `false` otherwise.
+     */
     SEMITONE_EXPORT bool assume(const lit &p) noexcept;
+    /**
+     * @brief Pop the last assumption.
+     *
+     */
     SEMITONE_EXPORT void pop() noexcept;
+    /**
+     * @brief Simplify the current set of assumptions.
+     *
+     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
+     */
     SEMITONE_EXPORT bool simplify_db() noexcept;
+    /**
+     * @brief Check whether the current set of assumptions is satisfiable.
+     *
+     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
+     */
     SEMITONE_EXPORT bool propagate() noexcept;
     SEMITONE_EXPORT bool next() noexcept;
     SEMITONE_EXPORT bool check(std::vector<lit> lits) noexcept;
@@ -64,6 +136,13 @@ namespace semitone
     SEMITONE_EXPORT const std::vector<lit> &get_decisions() const noexcept { return decisions; } // returns the decisions taken so far in chronological order..
 
   private:
+    /**
+     * @brief Analyze the conflict `cnfl` and return the learnt clause in `out_learnt` and the backtracking level in `out_btlevel`.
+     *
+     * @param cnfl the conflict to analyze.
+     * @param out_learnt the learnt clause.
+     * @param out_btlevel the backtracking level.
+     */
     void analyze(constr &cnfl, std::vector<lit> &out_learnt, size_t &out_btlevel) noexcept;
     void record(std::vector<lit> lits) noexcept;
 

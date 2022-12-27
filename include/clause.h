@@ -16,6 +16,12 @@ namespace semitone
     friend class theory;
 
   private:
+    /**
+     * @brief Construct a new clause object given the `lits` literals.
+     *
+     * @param s the sat core.
+     * @param lits the literals of the clause.
+     */
     clause(sat_core &s, std::vector<lit> lits);
     clause(const clause &orig) = delete;
 

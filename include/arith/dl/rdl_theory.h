@@ -15,32 +15,128 @@ namespace semitone
     friend class rdl_value_listener;
 
   public:
+    /**
+     * @brief Construct a new rational difference logic theory object.
+     *
+     * @param sat the SAT solver to use.
+     * @param size the initial size of the theory.
+     */
     SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16);
     SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig);
     rdl_theory(const rdl_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~rdl_theory();
 
-    SEMITONE_EXPORT var new_var() noexcept; // creates and returns a new distance logic variable..
+    /**
+     * @brief Creates a new difference logice variable.
+     *
+     * @return var the new variable.
+     */
+    SEMITONE_EXPORT var new_var() noexcept;
 
     SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const inf_rational &dist) noexcept; // creates and returns a new propositional variable for controlling the constraint `to - from <= dist`..
     SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const inf_rational &min, const inf_rational &max) noexcept { return sat->new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
+    /**
+     * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_lt(const lin &left, const lin &right);
+    /**
+     * @brief Creates a new lower then or equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_leq(const lin &left, const lin &right);
+    /**
+     * @brief Creates a new equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_eq(const lin &left, const lin &right);
+    /**
+     * @brief Creates a new greater then or equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_geq(const lin &left, const lin &right);
+    /**
+     * @brief Creates a new greater then constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_gt(const lin &left, const lin &right);
 
-    SEMITONE_EXPORT inline inf_rational lb(const var &v) const noexcept { return -_dists[v][0]; }
-    SEMITONE_EXPORT inline inf_rational ub(const var &v) const noexcept { return _dists[0][v]; }
-    SEMITONE_EXPORT inline std::pair<inf_rational, inf_rational> bounds(const var &v) const noexcept { return std::make_pair(-_dists[v][0], _dists[0][v]); }
-    SEMITONE_EXPORT inline std::pair<inf_rational, inf_rational> distance(const var &from, const var &to) const noexcept { return std::make_pair(-_dists[to][from], _dists[from][to]); }
+    /**
+     * @brief Returns the lower bound of the given variable.
+     *
+     * @param v the variable to get the lower bound of.
+     * @return inf_rational the lower bound of the variable.
+     */
+    inline inf_rational lb(const var &v) const noexcept { return -_dists[v][0]; }
+    /**
+     * @brief Returns the upper bound of the given variable.
+     *
+     * @param v the variable to get the upper bound of.
+     * @return inf_rational the upper bound of the variable.
+     */
+    inline inf_rational ub(const var &v) const noexcept { return _dists[0][v]; }
+    /**
+     * @brief Returns the bounds of the given variable.
+     *
+     * @param v the variable to get the bounds of.
+     * @return std::pair<inf_rational, inf_rational> the bounds of the variable.
+     */
+    inline std::pair<inf_rational, inf_rational> bounds(const var &v) const noexcept { return std::make_pair(-_dists[v][0], _dists[0][v]); }
+    /**
+     * @brief Returns the distance between the given variables.
+     *
+     * @param from the variable to start from.
+     * @param to the variable to end at.
+     * @return std::pair<inf_rational, inf_rational> the distance between the variables.
+     */
+    inline std::pair<inf_rational, inf_rational> distance(const var &from, const var &to) const noexcept { return std::make_pair(-_dists[to][from], _dists[from][to]); }
 
+    /**
+     * @brief Returns the bounds of the given linear expression.
+     *
+     * @param l the linear expression to get the bounds of.
+     * @return std::pair<inf_rational, inf_rational> the bounds of the linear expression.
+     */
     SEMITONE_EXPORT std::pair<inf_rational, inf_rational> bounds(const lin &l) const;
+    /**
+     * @brief Returns the distance between the given linear expressions.
+     *
+     * @param from the linear expression to start from.
+     * @param to the linear expression to end at.
+     * @return std::pair<inf_rational, inf_rational> the distance between the linear expressions.
+     */
     SEMITONE_EXPORT std::pair<inf_rational, inf_rational> distance(const lin &from, const lin &to) const;
 
+    /**
+     * @brief Returns whether the given linear expressions can be equal.
+     *
+     * @param l0 the first linear expression.
+     * @param l1 the second linear expression.
+     * @return bool whether the linear expressions can be equal.
+     */
     SEMITONE_EXPORT bool matches(const lin &l0, const lin &l1) const;
 
+    /**
+     * @brief Returns the number of variables in the theory.
+     *
+     * @return size_t the number of variables in the theory.
+     */
     size_t size() const noexcept { return n_vars; }
 
   private:

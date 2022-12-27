@@ -32,31 +32,102 @@ namespace semitone
 
     inline bool is_basic(const var &v) const noexcept { return tableau.count(v); }
 
+    /**
+     * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_lt(const lin &left, const lin &right) noexcept;
+    /**
+     * @brief Creates a new lower or equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_leq(const lin &left, const lin &right) noexcept;
+    /**
+     * @brief Creates a new equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_eq(const lin &left, const lin &right) noexcept { return sat->new_conj({new_geq(left, right), new_leq(left, right)}); }
+    /**
+     * @brief Creates a new greater or equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_geq(const lin &left, const lin &right) noexcept;
+    /**
+     * @brief Creates a new greater then constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return lit the literal corresponding to the constraint.
+     */
     SEMITONE_EXPORT lit new_gt(const lin &left, const lin &right) noexcept;
 
-    inline inf_rational lb(const var &v) const noexcept { return c_bounds[lb_index(v)].value; } // the current lower bound of variable `v`..
-    inline inf_rational ub(const var &v) const noexcept { return c_bounds[ub_index(v)].value; } // the current upper bound of variable `v`..
-    inline inf_rational value(const var &v) const noexcept { return vals[v]; }                  // the current value of variable `v`..
+    /**
+     * @brief Returns the current lower bound of variable `v`.
+     *
+     * @param v the variable to get the lower bound of.
+     * @return inf_rational the current lower bound of variable `v`.
+     */
+    inline inf_rational lb(const var &v) const noexcept { return c_bounds[lb_index(v)].value; }
+    /**
+     * @brief Returns the current upper bound of variable `v`.
+     *
+     * @param v the variable to get the upper bound of.
+     * @return inf_rational the current upper bound of variable `v`.
+     */
+    inline inf_rational ub(const var &v) const noexcept { return c_bounds[ub_index(v)].value; }
+    /**
+     * @brief Returns the current value of variable `v`.
+     *
+     * @param v the variable to get the value of.
+     * @return inf_rational the current value of variable `v`.
+     */
+    inline inf_rational value(const var &v) const noexcept { return vals[v]; }
 
-    inline inf_rational lb(const lin &l) const noexcept // returns the current lower bound of linear expression `l`..
+    /**
+     * @brief Returns the current lower bound of linear expression `l`.
+     *
+     * @param l the linear expression to get the lower bound of.
+     * @return inf_rational the current lower bound of linear expression `l`.
+     */
+    inline inf_rational lb(const lin &l) const noexcept
     {
       inf_rational b(l.known_term);
       for (const auto &[v, c] : l.vars)
         b += (is_positive(c) ? lb(v) : ub(v)) * c;
       return b;
     }
-    inline inf_rational ub(const lin &l) const noexcept // returns the current upper bound of linear expression `l`..
+    /**
+     * @brief Returns the current upper bound of linear expression `l`.
+     *
+     * @param l the linear expression to get the upper bound of.
+     * @return inf_rational the current upper bound of linear expression `l`.
+     */
+    inline inf_rational ub(const lin &l) const noexcept
     {
       inf_rational b(l.known_term);
       for (const auto &[v, c] : l.vars)
         b += (is_positive(c) ? ub(v) : lb(v)) * c;
       return b;
     }
-    inline std::pair<inf_rational, inf_rational> bounds(const lin &l) const noexcept // returns the current upper bound of linear expression `l`..
+    /**
+     * @brief Returns the current bounds of linear expression `l`.
+     *
+     * @param l the linear expression to get the bounds of.
+     * @return std::pair<inf_rational, inf_rational> the current bounds of linear expression `l`.
+     */
+    inline std::pair<inf_rational, inf_rational> bounds(const lin &l) const noexcept
     {
       inf_rational c_lb(l.known_term);
       inf_rational c_ub(l.known_term);
@@ -67,7 +138,13 @@ namespace semitone
       }
       return std::make_pair(c_lb, c_ub);
     }
-    inline inf_rational value(const lin &l) const // returns the current value of linear expression `l`..
+    /**
+     * @brief Returns the current value of linear expression `l`.
+     *
+     * @param l the linear expression to get the value of.
+     * @return inf_rational the current value of linear expression `l`.
+     */
+    inline inf_rational value(const lin &l) const
     {
       inf_rational val(l.known_term);
       for (const auto &[v, c] : l.vars)
@@ -75,11 +152,18 @@ namespace semitone
       return val;
     }
 
+    /**
+     * @brief Returns whether the given linear expressions can be equal.
+     *
+     * @param l0 the first linear expression.
+     * @param l1 the second linear expression.
+     * @return bool whether the given linear expressions can be equal.
+     */
     SEMITONE_EXPORT bool matches(const lin &l0, const lin &l1) const noexcept;
 
-    SEMITONE_EXPORT bool set_lb(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_lower(x_i, val, p); }
-    SEMITONE_EXPORT bool set_ub(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_upper(x_i, val, p); }
-    SEMITONE_EXPORT bool set(const var &x_i, const inf_rational &val, const lit &p) noexcept { return set_lb(x_i, val, p) && set_ub(x_i, val, p); }
+    bool set_lb(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_lower(x_i, val, p); }
+    bool set_ub(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_upper(x_i, val, p); }
+    bool set(const var &x_i, const inf_rational &val, const lit &p) noexcept { return set_lb(x_i, val, p) && set_ub(x_i, val, p); }
 
   private:
     bool propagate(const lit &p) noexcept override;
@@ -87,7 +171,23 @@ namespace semitone
     void push() noexcept override;
     void pop() noexcept override;
 
+    /**
+     * @brief Asserts that the lower bound of variable `x_i` is `val` and returns whether the assertion was successful.
+     *
+     * @param x_i the variable to assert the lower bound of.
+     * @param val the lower bound to assert.
+     * @param p the literal that caused the assertion.
+     * @return bool whether the assertion was successful.
+     */
     bool assert_lower(const var &x_i, const inf_rational &val, const lit &p) noexcept;
+    /**
+     * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
+     *
+     * @param x_i the variable to assert the upper bound of.
+     * @param val the upper bound to assert.
+     * @param p the literal that caused the assertion.
+     * @return bool whether the assertion was successful.
+     */
     bool assert_upper(const var &x_i, const inf_rational &val, const lit &p) noexcept;
     void update(const var &x_i, const inf_rational &v) noexcept;
     void pivot_and_update(const var &x_i, const var &x_j, const inf_rational &v) noexcept;

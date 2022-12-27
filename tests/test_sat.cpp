@@ -73,6 +73,30 @@ void test_basic_core_1()
     assert(core.value(b2) == True);
 }
 
+void test_basic_core_2()
+{
+    sat_core core;
+
+    var b0 = core.new_var();
+    var b1 = core.new_var();
+    var b2 = core.new_var();
+
+    bool nc = core.new_clause({lit(b0, false), !lit(b1), lit(b2)});
+    assert(nc);
+    nc = core.new_clause({lit(b0), lit(b2)});
+    assert(nc);
+    nc = core.new_clause({lit(b0, false), lit(b1, false), lit(b2, false)});
+    assert(nc);
+
+    bool prop = core.propagate();
+    assert(prop);
+
+    bool assm = core.assume(lit(b0));
+    assert(assm);
+    assm = core.check({lit(b1, false), lit(b2, false)});
+    assert(assm);
+}
+
 void test_no_good()
 {
     sat_core core;
@@ -295,6 +319,7 @@ int main(int, char **)
 
     test_basic_core_0();
     test_basic_core_1();
+    test_basic_core_2();
 
     test_no_good();
 
