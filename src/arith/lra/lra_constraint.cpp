@@ -99,7 +99,7 @@ namespace semitone
     {
         json::json j_asrt;
         j_asrt["lit"] = to_string(rhs.b);
-        switch (rhs.th.get_sat_core()->value(rhs.b))
+        switch (rhs.th.get_sat_core().value(rhs.b))
         {
         case True:
             j_asrt["val"] = "T";

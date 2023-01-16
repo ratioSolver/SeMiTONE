@@ -24,7 +24,9 @@ namespace semitone
     theory(const theory &orig) = delete;
     SEMITONE_EXPORT virtual ~theory();
 
-    inline std::shared_ptr<sat_core> &get_sat_core() noexcept { return sat; }
+    inline sat_core &get_sat_core() noexcept { return *sat; }
+    inline const sat_core &get_sat_core() const noexcept { return *sat; }
+    inline std::shared_ptr<sat_core> &get_sat_core_ptr() noexcept { return sat; }
 
   protected:
     SEMITONE_EXPORT void bind(const var &v) noexcept;
