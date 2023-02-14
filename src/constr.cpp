@@ -3,7 +3,7 @@
 
 namespace semitone
 {
-    constr::constr(sat_core &s) : sat(s), id(s.constrs.size()) {}
+    constr::constr(sat_core &s) : sat(s) {}
 
     std::vector<constr *> &constr::watches(const lit &p) noexcept { return sat.watches[index(p)]; }
     bool constr::enqueue(const lit &p) noexcept { return sat.enqueue(p, this); }

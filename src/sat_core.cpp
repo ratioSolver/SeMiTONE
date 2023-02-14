@@ -20,13 +20,18 @@ namespace semitone
         assert(orig.prop_q.empty());
         constrs.reserve(orig.constrs.size());
         watches.resize(orig.watches.size());
+        std::unordered_map<constr *, size_t> constr_map;
+        constr_map.reserve(orig.constrs.size());
         for (auto &c : orig.constrs)
+        {
+            constr_map[c] = constrs.size();
             constrs.push_back(c->copy(*this));
+        }
 
         reason.reserve(orig.reason.size());
         for (auto &c : orig.reason)
             if (c)
-                reason.push_back(constrs.at(c->id));
+                reason.push_back(constrs.at(constr_map.at(c)));
             else
                 reason.push_back(nullptr);
 
@@ -620,8 +625,8 @@ namespace semitone
     {
         json::json j_th;
 
-        json::array j_vars;
-        j_vars.reserve(rhs.assigns.size());
+        json::json j_vars(json::json_type::array);
+        j_vars.get_array().reserve(rhs.assigns.size());
         for (size_t i = 0; i < rhs.assigns.size(); ++i)
         {
             json::json var;
@@ -641,8 +646,8 @@ namespace semitone
         }
         j_th["vars"] = std::move(j_vars);
 
-        json::array j_asrts;
-        j_asrts.reserve(rhs.constrs.size());
+        json::json j_asrts(json::json_type::array);
+        j_asrts.get_array().reserve(rhs.constrs.size());
         for (const auto &c : rhs.constrs)
             j_asrts.push_back(to_json(*c));
         j_th["constrs"] = std::move(j_asrts);

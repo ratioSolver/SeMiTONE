@@ -292,7 +292,6 @@ void test_to_json()
     var b0 = core.new_var();
     var b1 = core.new_var();
     var b2 = core.new_var();
-    var b3 = core.new_var();
 
     bool nc = core.new_clause({lit(b0, false), !lit(b1), lit(b2)});
     assert(nc);

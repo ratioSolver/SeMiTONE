@@ -492,8 +492,8 @@ namespace semitone
     {
         json::json j_th;
 
-        json::array j_vars;
-        j_vars.reserve(rhs.vals.size());
+        json::json j_vars(json::json_type::array);
+        j_vars.get_array().reserve(rhs.vals.size());
         for (size_t i = 0; i < rhs.vals.size(); ++i)
         {
             json::json var;
@@ -507,14 +507,14 @@ namespace semitone
         }
         j_th["vars"] = std::move(j_vars);
 
-        json::array j_asrts;
-        j_asrts.reserve(rhs.v_asrts.size());
+        json::json j_asrts(json::json_type::array);
+        j_vars.get_array().reserve(rhs.v_asrts.size());
         for (const auto &c_asrts : rhs.v_asrts)
             j_asrts.push_back(to_json(*c_asrts.second));
         j_th["asrts"] = std::move(j_asrts);
 
-        json::array j_tabl;
-        j_tabl.reserve(rhs.tableau.size());
+        json::json j_tabl(json::json_type::array);
+        j_vars.get_array().reserve(rhs.tableau.size());
         for (auto it = rhs.tableau.cbegin(); it != rhs.tableau.cend(); ++it)
             j_tabl.push_back(to_json(*it->second));
         j_th["tableau"] = std::move(j_tabl);

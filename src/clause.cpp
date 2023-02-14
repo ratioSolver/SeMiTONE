@@ -85,7 +85,7 @@ namespace semitone
     {
         json::json j_cl;
 
-        json::array j_lits;
+        json::json j_lits(json::json_type::array);
         for (const auto &l : lits)
         {
             json::json j_lit;
