@@ -3,7 +3,6 @@
 
 #include "sat_core.h"
 #include <algorithm>
-#include <memory>
 
 namespace semitone
 {
