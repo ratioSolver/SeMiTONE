@@ -1,8 +1,8 @@
 #pragma once
 
 #include "semitone_export.h"
-#include "lit.h"
-#include "json.h"
+#include "constr.h"
+#include "memory.h"
 #include "logging.h"
 #include <vector>
 #include <queue>
@@ -13,11 +13,11 @@
 namespace semitone
 {
   class sat_stack;
-  class constr;
+  using constr_ptr = utils::u_ptr<constr>;
   class theory;
   class sat_value_listener;
 
-  class sat_core
+  class sat_core final : public utils::countable
   {
     friend class sat_stack;
     friend class constr;
@@ -159,7 +159,7 @@ namespace semitone
     friend SEMITONE_EXPORT json::json to_json(const sat_core &rhs) noexcept;
 
   private:
-    std::vector<constr *> constrs;              // the collection of problem constraints..
+    std::vector<constr_ptr> constrs;            // the collection of problem constraints..
     std::vector<std::vector<constr *>> watches; // for each literal `p`, a list of constraints watching `p`..
     std::vector<lbool> assigns;                 // the current assignments..
 

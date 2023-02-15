@@ -17,7 +17,7 @@ namespace semitone
     friend class ov_value_listener;
 
   public:
-    SEMITONE_EXPORT ov_theory(std::shared_ptr<sat_core> sat);
+    SEMITONE_EXPORT ov_theory(sat_ptr sat);
     ov_theory(const ov_theory &orig) = delete;
 
     SEMITONE_EXPORT var new_var(const std::vector<var_value *> &items, const bool enforce_exct_one = true) noexcept; // creates and returns a new object variable having the given domain..

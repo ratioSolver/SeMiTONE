@@ -5,15 +5,21 @@
 
 namespace semitone
 {
-    clause::clause(sat_core &s, std::vector<lit> lits) : constr(s), lits(std::move(lits)) {}
-
-    clause *clause::new_clause(sat_core &s, std::vector<lit> lits)
+    clause::clause(sat_core &s, std::vector<lit> ls) : constr(s), lits(std::move(ls))
     {
+        assert(lits.size() >= 2);
         auto l0 = lits[0], l1 = lits[1];
-        clause *c = new clause(s, std::move(lits));
-        c->watches(!l0).push_back(c);
-        c->watches(!l1).push_back(c);
-        return c;
+        watches(!l0).push_back(this);
+        watches(!l1).push_back(this);
+    }
+    clause::~clause()
+    {
+        auto &l0_w = watches(!lits[0]);
+        l0_w.erase(std::find(l0_w.cbegin(), l0_w.cend(), this));
+        auto &l1_w = watches(!lits[1]);
+        l1_w.erase(std::find(l1_w.cbegin(), l1_w.cend(), this));
+        for (const auto &l : lits)
+            remove_constr_from_reason(variable(l));
     }
 
     bool clause::propagate(const lit &p) noexcept
@@ -57,17 +63,6 @@ namespace semitone
             }
         lits.resize(j);
         return false;
-    }
-
-    void clause::remove() noexcept
-    {
-        auto &l0_w = watches(!lits[0]);
-        l0_w.erase(std::find(l0_w.cbegin(), l0_w.cend(), this));
-        auto &l1_w = watches(!lits[1]);
-        l1_w.erase(std::find(l1_w.cbegin(), l1_w.cend(), this));
-        for (const auto &l : lits)
-            remove_constr_from_reason(variable(l));
-        delete this;
     }
 
     void clause::get_reason(const lit &p, std::vector<lit> &out_reason) const noexcept

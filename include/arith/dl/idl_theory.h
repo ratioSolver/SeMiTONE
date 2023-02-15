@@ -21,8 +21,8 @@ namespace semitone
      * @param sat the SAT solver to use.
      * @param size the initial size of the theory.
      */
-    SEMITONE_EXPORT idl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16);
-    SEMITONE_EXPORT idl_theory(std::shared_ptr<sat_core> sat, const idl_theory &orig);
+    SEMITONE_EXPORT idl_theory(sat_ptr sat, const size_t &size = 16);
+    SEMITONE_EXPORT idl_theory(sat_ptr sat, const idl_theory &orig);
     idl_theory(const idl_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~idl_theory();
 

@@ -21,8 +21,8 @@ namespace semitone
      * @param sat the SAT solver to use.
      * @param size the initial size of the theory.
      */
-    SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16);
-    SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig);
+    SEMITONE_EXPORT rdl_theory(sat_ptr sat, const size_t &size = 16);
+    SEMITONE_EXPORT rdl_theory(sat_ptr sat, const rdl_theory &orig);
     rdl_theory(const rdl_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~rdl_theory();
 

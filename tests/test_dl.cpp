@@ -6,7 +6,7 @@ using namespace semitone;
 
 void test_config()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     idl_theory idl(core, 5);
     var origin = idl.new_var();
     var horizon = idl.new_var();
@@ -83,7 +83,7 @@ void test_config()
 
 void test_real_distance_logic()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     rdl_theory rdl(core, 5);
     var origin = rdl.new_var();
     var horizon = rdl.new_var();
@@ -158,7 +158,7 @@ void test_real_distance_logic()
 
 void test_constraints_0()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     idl_theory idl(core, 5);
     var origin = idl.new_var();
     // origin >= 0..
@@ -227,7 +227,7 @@ void test_constraints_0()
 
 void test_constraints_1()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     idl_theory idl(core, 5);
     var origin = idl.new_var();
     // origin >= 0..
@@ -296,7 +296,7 @@ void test_constraints_1()
 
 void test_constraints_2()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     rdl_theory rdl(core, 5);
     var origin = rdl.new_var();
     // origin >= 0..
@@ -365,7 +365,7 @@ void test_constraints_2()
 
 void test_constraints_3()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     rdl_theory rdl(core, 5);
     var origin = rdl.new_var();
     // origin >= 0..
@@ -434,7 +434,7 @@ void test_constraints_3()
 
 void test_constraints_4()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     rdl_theory rdl(core, 5);
     var origin = rdl.new_var();
     // origin >= 0..
@@ -470,7 +470,7 @@ void test_constraints_4()
 
 void test_constraints_5()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     rdl_theory rdl(core, 5);
     var origin = rdl.new_var();
     // origin >= 0..
@@ -528,7 +528,7 @@ void test_constraints_5()
 
 void test_semantic_branching()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     rdl_theory rdl(core, 5);
     var origin = rdl.new_var();
     // origin >= 0..

@@ -6,7 +6,7 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const size_t &size) : theory(std::move(sat)), _dists(std::vector<std::vector<I>>(size, std::vector<I>(size, inf()))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
+    SEMITONE_EXPORT idl_theory::idl_theory(sat_ptr sat, const size_t &size) : theory(std::move(sat)), _dists(std::vector<std::vector<I>>(size, std::vector<I>(size, inf()))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
     {
         for (size_t i = 0; i < size; ++i)
         {
@@ -15,7 +15,7 @@ namespace semitone
             _preds[i][i] = std::numeric_limits<size_t>::max();
         }
     }
-    SEMITONE_EXPORT idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const idl_theory &orig) : theory(std::move(sat)), n_vars(orig.n_vars), _dists(orig._dists), _preds(orig._preds), layers(orig.layers), listening(orig.listening)
+    SEMITONE_EXPORT idl_theory::idl_theory(sat_ptr sat, const idl_theory &orig) : theory(std::move(sat)), n_vars(orig.n_vars), _dists(orig._dists), _preds(orig._preds), layers(orig.layers), listening(orig.listening)
     {
         for (const auto &[v, d] : orig.var_dists)
             var_dists.emplace(v, new idl_distance(d->b, d->from, d->to, d->dist));

@@ -15,7 +15,7 @@ namespace semitone
         assigns[FALSE_var] = False;
         level[FALSE_var] = 0;
     }
-    SEMITONE_EXPORT sat_core::sat_core(const sat_core &orig) : assigns(orig.assigns), level(orig.level.size()), exprs(orig.exprs), theories(orig.theories), bounds(orig.bounds), listeners(orig.listeners), listening(orig.listening)
+    SEMITONE_EXPORT sat_core::sat_core(const sat_core &orig) : countable(), assigns(orig.assigns), level(orig.level.size()), exprs(orig.exprs), theories(orig.theories), bounds(orig.bounds), listeners(orig.listeners), listening(orig.listening)
     {
         assert(orig.prop_q.empty());
         constrs.reserve(orig.constrs.size());
@@ -24,25 +24,20 @@ namespace semitone
         constr_map.reserve(orig.constrs.size());
         for (auto &c : orig.constrs)
         {
-            constr_map[c] = constrs.size();
+            constr_map[&*c] = constrs.size();
             constrs.push_back(c->copy(*this));
         }
 
         reason.reserve(orig.reason.size());
         for (auto &c : orig.reason)
             if (c)
-                reason.push_back(constrs.at(constr_map.at(c)));
+                reason.push_back(&*constrs.at(constr_map.at(c)));
             else
                 reason.push_back(nullptr);
 
         simplify_db();
     }
-    SEMITONE_EXPORT sat_core::~sat_core()
-    {
-        // we delete all the constraints..
-        for (const auto &c : constrs)
-            delete c;
-    }
+    SEMITONE_EXPORT sat_core::~sat_core() { constrs.clear(); }
 
     SEMITONE_EXPORT var sat_core::new_var() noexcept
     {
@@ -81,7 +76,7 @@ namespace semitone
         case 1: // the clause is unique under the current assignment..
             return enqueue(lits[0]);
         default: // we need to create a new clause..
-            constrs.push_back(clause::new_clause(*this, std::move(lits)));
+            constrs.push_back(new clause(*this, std::move(lits)));
             return true;
         }
     }
@@ -387,12 +382,13 @@ namespace semitone
         assert(root_level());
         if (!propagate())
             return false;
-        size_t j = 0;
-        for (size_t i = 0; i < constrs.size(); ++i)
+
+        size_t i = 0, j = constrs.size();
+        while (i < j)
             if (constrs[i]->simplify())
-                constrs[i]->remove();
+                constrs[i].swap(constrs[--j]);
             else
-                constrs[j++] = constrs[i];
+                ++i;
         constrs.resize(j);
         return true;
     }
@@ -579,7 +575,7 @@ namespace semitone
                       { return level[variable(a)] > level[variable(b)]; });
 
             auto l0 = lits[0];
-            clause *c = clause::new_clause(*this, std::move(lits));
+            auto c = new clause(*this, std::move(lits));
             [[maybe_unused]] bool e = enqueue(l0, c);
             assert(e);
             constrs.push_back(c);

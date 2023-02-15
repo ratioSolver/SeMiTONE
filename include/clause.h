@@ -22,19 +22,17 @@ namespace semitone
      * @param s the sat core.
      * @param lits the literals of the clause.
      */
-    clause(sat_core &s, std::vector<lit> lits);
+    clause(sat_core &s, std::vector<lit> ls);
     clause(const clause &orig) = delete;
-
-    static clause *new_clause(sat_core &s, std::vector<lit> lits);
+    ~clause();
 
   public:
     inline const std::vector<lit> get_lits() const noexcept { return lits; }
 
   private:
-    constr *copy(sat_core &s) noexcept override { return new_clause(s, lits); }
+    constr *copy(sat_core &s) noexcept override { return new clause(s, lits); }
     bool propagate(const lit &p) noexcept override;
     bool simplify() noexcept override;
-    void remove() noexcept override;
     void get_reason(const lit &p, std::vector<lit> &out_reason) const noexcept override;
 
     virtual json::json to_json() const noexcept override;

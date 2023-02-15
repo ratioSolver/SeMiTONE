@@ -249,6 +249,7 @@ void test_exct_one_2()
 
 void test_sat_stack_0()
 {
+    LOG("test_sat_stack_0");
     sat_stack stack;
     var b0 = stack.top()->new_var();
     var b1 = stack.top()->new_var();
@@ -268,6 +269,7 @@ void test_sat_stack_0()
 
     // we push the sat stack..
     stack.push();
+    LOG("sat: " << to_json(*stack.top()));
 
     assm = stack.top()->assume(lit(b1));
     assert(assm);

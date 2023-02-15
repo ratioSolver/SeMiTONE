@@ -78,7 +78,7 @@ void test_lin()
 
 void test_lra_theory()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     lra_theory lra(core);
 
     var x = lra.new_var();
@@ -106,7 +106,7 @@ void test_lra_theory()
 
 void test_inequalities_0()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     lra_theory lra(core);
 
     var x = lra.new_var();
@@ -138,7 +138,7 @@ void test_inequalities_0()
 
 void test_inequalities_1()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     lra_theory lra(core);
 
     var x = lra.new_var();
@@ -173,7 +173,7 @@ void test_inequalities_1()
 
 void test_strict_inequalities_0()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     lra_theory lra(core);
 
     var x = lra.new_var();
@@ -208,7 +208,7 @@ void test_strict_inequalities_0()
 
 void test_strict_inequalities_1()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     lra_theory lra(core);
 
     var x = lra.new_var();
@@ -243,7 +243,7 @@ void test_strict_inequalities_1()
 
 void test_nonroot_constraints()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     lra_theory lra(core);
 
     var x = lra.new_var();

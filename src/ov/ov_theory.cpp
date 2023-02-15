@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT ov_theory::ov_theory(std::shared_ptr<sat_core> sat) : theory(std::move(sat)) {}
+    SEMITONE_EXPORT ov_theory::ov_theory(sat_ptr sat) : theory(std::move(sat)) {}
 
     SEMITONE_EXPORT var ov_theory::new_var(const std::vector<var_value *> &items, const bool enforce_exct_one) noexcept
     {

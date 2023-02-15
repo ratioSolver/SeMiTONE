@@ -10,7 +10,7 @@ class test_val : public var_value
 
 void test_ov_0()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     ov_theory ov(core);
 
     test_val a;
@@ -42,7 +42,7 @@ void test_ov_0()
 
 void test_ov_1()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     ov_theory ov(core);
 
     test_val a;
@@ -74,7 +74,7 @@ void test_ov_1()
 
 void test_ov_2()
 {
-    auto core = std::make_shared<sat_core>();
+    auto core = sat_ptr(new sat_core());
     ov_theory ov(core);
 
     test_val a;

@@ -15,17 +15,18 @@ namespace semitone
   {
     friend class sat_core;
 
+  public:
+    virtual ~constr() = default;
+
   protected:
     constr(sat_core &s);
     constr(const constr &orig) = delete;
-    virtual ~constr() = default;
 
   private:
-    virtual constr *copy(sat_core &s) = 0;
-    virtual bool propagate(const lit &p) = 0;
-    virtual bool simplify() = 0;
-    virtual void remove() = 0;
-    virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const = 0;
+    virtual constr *copy(sat_core &s) noexcept = 0;
+    virtual bool propagate(const lit &p) noexcept = 0;
+    virtual bool simplify() noexcept = 0;
+    virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const noexcept = 0;
 
     virtual json::json to_json() const noexcept { return json::json(); }
     friend json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
