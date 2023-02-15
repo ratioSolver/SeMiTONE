@@ -6,11 +6,11 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT rdl_theory::rdl_theory(sat_ptr sat, const size_t &size) : theory(std::move(sat)), _dists(std::vector<std::vector<inf_rational>>(size, std::vector<inf_rational>(size, inf_rational(rational::POSITIVE_INFINITY)))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
+    SEMITONE_EXPORT rdl_theory::rdl_theory(sat_ptr sat, const size_t &size) : theory(std::move(sat)), _dists(std::vector<std::vector<utils::inf_rational>>(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::POSITIVE_INFINITY)))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
     {
         for (size_t i = 0; i < size; ++i)
         {
-            _dists[i][i] = inf_rational(rational::ZERO);
+            _dists[i][i] = utils::inf_rational(utils::rational::ZERO);
             std::fill(_preds[i].begin(), _preds[i].end(), i);
             _preds[i][i] = std::numeric_limits<size_t>::max();
         }
@@ -39,7 +39,7 @@ namespace semitone
         return tp;
     }
 
-    SEMITONE_EXPORT lit rdl_theory::new_distance(const var &from, const var &to, const inf_rational &dist) noexcept
+    SEMITONE_EXPORT lit rdl_theory::new_distance(const var &from, const var &to, const utils::inf_rational &dist) noexcept
     {
         if (_dists[to][from] < -dist)
             return FALSE_lit; // the constraint is inconsistent..
@@ -63,40 +63,40 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term < rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term < utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(expr.vars.cbegin()->first, 0, inf_rational(expr.known_term, -1));
+                return new_distance(expr.vars.cbegin()->first, 0, utils::inf_rational(expr.known_term, -1));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(0, expr.vars.cbegin()->first, -inf_rational(expr.known_term, 1));
+                return new_distance(0, expr.vars.cbegin()->first, -utils::inf_rational(expr.known_term, 1));
             }
         case 2:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v0, v1, inf_rational(expr.known_term, -1));
+                return new_distance(v0, v1, utils::inf_rational(expr.known_term, -1));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v1, v0, -inf_rational(expr.known_term, 1));
+                return new_distance(v1, v0, -utils::inf_rational(expr.known_term, 1));
             }
         default:
             throw std::invalid_argument("not a valid real difference logic constraint..");
@@ -109,40 +109,40 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term <= rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term <= utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(expr.vars.cbegin()->first, 0, inf_rational(expr.known_term));
+                return new_distance(expr.vars.cbegin()->first, 0, utils::inf_rational(expr.known_term));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(0, expr.vars.cbegin()->first, -inf_rational(expr.known_term));
+                return new_distance(0, expr.vars.cbegin()->first, -utils::inf_rational(expr.known_term));
             }
         case 2:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v0, v1, inf_rational(expr.known_term));
+                return new_distance(v0, v1, utils::inf_rational(expr.known_term));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v1, v0, -inf_rational(expr.known_term));
+                return new_distance(v1, v0, -utils::inf_rational(expr.known_term));
             }
         default:
             throw std::invalid_argument("not a valid real difference logic constraint..");
@@ -155,13 +155,13 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term == rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term == utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
         {
             expr = expr / expr.vars.cbegin()->second;
             const auto dist = distance(expr.vars.cbegin()->first, 0);
             if (dist.first <= expr.known_term && dist.second >= expr.known_term)
-                return sat->new_conj({new_distance(expr.vars.cbegin()->first, 0, inf_rational(expr.known_term)), new_distance(0, expr.vars.cbegin()->first, -inf_rational(expr.known_term))});
+                return sat->new_conj({new_distance(expr.vars.cbegin()->first, 0, utils::inf_rational(expr.known_term)), new_distance(0, expr.vars.cbegin()->first, -utils::inf_rational(expr.known_term))});
             else
                 return FALSE_lit;
         }
@@ -170,13 +170,13 @@ namespace semitone
             expr = expr / expr.vars.cbegin()->second;
             auto it = expr.vars.cbegin();
             const auto [v0, c0] = *it++;
-            assert(c0 == rational::ONE);
+            assert(c0 == utils::rational::ONE);
             const auto [v1, c1] = *it;
-            if (c1 != -rational::ONE)
+            if (c1 != -utils::rational::ONE)
                 throw std::invalid_argument("not a valid real difference logic constraint..");
             const auto dist = distance(v0, v1);
             if (dist.first <= expr.known_term && dist.second >= expr.known_term)
-                return sat->new_conj({new_distance(v0, v1, inf_rational(expr.known_term)), new_distance(v1, v0, -inf_rational(expr.known_term))});
+                return sat->new_conj({new_distance(v0, v1, utils::inf_rational(expr.known_term)), new_distance(v1, v0, -utils::inf_rational(expr.known_term))});
             else
                 return FALSE_lit;
         }
@@ -191,41 +191,41 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term >= rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term >= utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(0, expr.vars.cbegin()->first, -inf_rational(expr.known_term));
+                return new_distance(0, expr.vars.cbegin()->first, -utils::inf_rational(expr.known_term));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(expr.vars.cbegin()->first, 0, inf_rational(expr.known_term));
+                return new_distance(expr.vars.cbegin()->first, 0, utils::inf_rational(expr.known_term));
             }
         case 2:
         {
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v1, v0, -inf_rational(expr.known_term));
+                return new_distance(v1, v0, -utils::inf_rational(expr.known_term));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v0, v1, inf_rational(expr.known_term));
+                return new_distance(v0, v1, utils::inf_rational(expr.known_term));
             }
         }
         default:
@@ -239,50 +239,50 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term > rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term > utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(0, expr.vars.cbegin()->first, -inf_rational(expr.known_term, 1));
+                return new_distance(0, expr.vars.cbegin()->first, -utils::inf_rational(expr.known_term, 1));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
-                return new_distance(expr.vars.cbegin()->first, 0, inf_rational(expr.known_term, -1));
+                return new_distance(expr.vars.cbegin()->first, 0, utils::inf_rational(expr.known_term, -1));
             }
         case 2:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v1, v0, -inf_rational(expr.known_term, 1));
+                return new_distance(v1, v0, -utils::inf_rational(expr.known_term, 1));
             }
             else
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE)
+                if (c1 != -utils::rational::ONE)
                     throw std::invalid_argument("not a valid real difference logic constraint..");
-                return new_distance(v0, v1, inf_rational(expr.known_term, -1));
+                return new_distance(v0, v1, utils::inf_rational(expr.known_term, -1));
             }
         default:
             throw std::invalid_argument("not a valid real difference logic constraint..");
         }
     }
 
-    SEMITONE_EXPORT std::pair<inf_rational, inf_rational> rdl_theory::bounds(const lin &l) const
+    SEMITONE_EXPORT std::pair<utils::inf_rational, utils::inf_rational> rdl_theory::bounds(const lin &l) const
     {
-        inf_rational c_lb;
-        inf_rational c_ub;
+        utils::inf_rational c_lb;
+        utils::inf_rational c_ub;
 
         switch (l.vars.size())
         {
@@ -302,9 +302,9 @@ namespace semitone
             const auto expr = l / l.vars.cbegin()->second;
             auto it = expr.vars.cbegin();
             const auto [v0, c0] = *it++;
-            assert(c0 == rational::ONE);
+            assert(c0 == utils::rational::ONE);
             const auto [v1, c1] = *it;
-            if (c1 != -rational::ONE)
+            if (c1 != -utils::rational::ONE)
                 throw std::invalid_argument("not a valid real difference logic expression..");
             const auto dist = distance(v0, v1);
             c_lb += dist.first + expr.known_term;
@@ -317,13 +317,13 @@ namespace semitone
         return std::make_pair(c_lb, c_ub);
     }
 
-    SEMITONE_EXPORT std::pair<inf_rational, inf_rational> rdl_theory::distance(const lin &from, const lin &to) const
+    SEMITONE_EXPORT std::pair<utils::inf_rational, utils::inf_rational> rdl_theory::distance(const lin &from, const lin &to) const
     {
         lin expr = from - to;
         switch (expr.vars.size())
         {
         case 0:
-            return std::make_pair(inf_rational(expr.known_term), inf_rational(expr.known_term));
+            return std::make_pair(utils::inf_rational(expr.known_term), utils::inf_rational(expr.known_term));
         case 1:
         {
             expr = expr / expr.vars.cbegin()->second;
@@ -334,9 +334,9 @@ namespace semitone
             expr = expr / expr.vars.cbegin()->second;
             auto it = expr.vars.cbegin();
             const auto [v0, c0] = *it++;
-            assert(c0 == rational::ONE);
+            assert(c0 == utils::rational::ONE);
             const auto [v1, c1] = *it;
-            if (c1 != -rational::ONE)
+            if (c1 != -utils::rational::ONE)
                 throw std::invalid_argument("not a valid real difference logic constraint..");
             return distance(v0, v1);
         }
@@ -440,7 +440,7 @@ namespace semitone
                         layers.back().old_constrs.emplace(to_from, nullptr);
                 }
                 dist_constr.emplace(to_from, dist);
-                propagate(dist->to, dist->from, -dist->dist - inf_rational(rational::ZERO, rational::ONE));
+                propagate(dist->to, dist->from, -dist->dist - utils::inf_rational(utils::rational::ZERO, utils::rational::ONE));
             }
             break;
         }
@@ -480,7 +480,7 @@ namespace semitone
         layers.pop_back();
     }
 
-    void rdl_theory::propagate(const var &from, const var &to, const inf_rational &dist) noexcept
+    void rdl_theory::propagate(const var &from, const var &to, const utils::inf_rational &dist) noexcept
     {
         assert(!is_infinite(dist));
         set_dist(from, to, dist);
@@ -569,7 +569,7 @@ namespace semitone
                     }
     }
 
-    void rdl_theory::set_dist(const var &from, const var &to, const inf_rational &dist) noexcept
+    void rdl_theory::set_dist(const var &from, const var &to, const utils::inf_rational &dist) noexcept
     {
         assert(_dists[from][to] > dist);
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))
@@ -605,10 +605,10 @@ namespace semitone
     {
         const size_t c_size = _dists.size();
         for (auto &row : _dists)
-            row.resize(size, inf_rational(rational::POSITIVE_INFINITY));
-        _dists.resize(size, std::vector<inf_rational>(size, inf_rational(rational::POSITIVE_INFINITY)));
+            row.resize(size, utils::inf_rational(utils::rational::POSITIVE_INFINITY));
+        _dists.resize(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::POSITIVE_INFINITY)));
         for (size_t i = c_size; i < size; ++i)
-            _dists[i][i] = inf_rational(rational::ZERO);
+            _dists[i][i] = utils::inf_rational(utils::rational::ZERO);
 
         for (size_t i = 0; i < c_size; ++i)
             _preds[i].resize(size, i);

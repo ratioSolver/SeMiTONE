@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    assertion::assertion(lra_theory &th, const op o, const lit b, const var x, const inf_rational &v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
+    assertion::assertion(lra_theory &th, const op o, const lit b, const var x, const utils::inf_rational &v) : th(th), o(o), b(b), x(x), v(v) { th.a_watches[x].push_back(this); }
 
     bool assertion::propagate_lb(const var &x_i) noexcept
     {
@@ -124,7 +124,7 @@ namespace semitone
         th.cnfl.push_back(lit());
         if (is_positive(l.vars.at(v)))
         { // we compute the lower bound of the linear expression along with its reason..
-            inf_rational lb(0);
+            utils::inf_rational lb(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
                 {
@@ -199,7 +199,7 @@ namespace semitone
         }
         else
         { // we compute the upper bound of the linear expression along with its reason..
-            inf_rational ub(0);
+            utils::inf_rational ub(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
                 {
@@ -284,7 +284,7 @@ namespace semitone
         th.cnfl.push_back(lit());
         if (is_positive(l.vars.at(v)))
         { // we compute the upper bound of the linear expression along with its reason..
-            inf_rational ub(0);
+            utils::inf_rational ub(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
                 {
@@ -359,7 +359,7 @@ namespace semitone
         }
         else
         { // we compute the lower bound of the linear expression along with its reason..
-            inf_rational lb(0);
+            utils::inf_rational lb(0);
             for (const auto &[c_v, c] : l.vars)
                 if (is_positive(c))
                 {

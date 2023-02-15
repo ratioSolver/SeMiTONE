@@ -11,6 +11,4 @@ namespace semitone
   constexpr lbool False = 0;
   constexpr lbool True = 1;
   constexpr lbool Undefined = 2;
-
-  using I = long;
 } // namespace semitone
