@@ -4,7 +4,7 @@
 
 using namespace semitone;
 
-class test_val : public var_value
+class test_val : public utils::enum_val
 {
 };
 
