@@ -29,7 +29,7 @@ namespace semitone
             std::swap(*(lits.begin()), *(std::next(lits.begin())));
 
         // if 0th watch is true, the clause is already satisfied..
-        if (value(lits[0]) == True)
+        if (value(lits[0]) == utils::True)
         {
             watches(p).push_back(this);
             return true;
@@ -37,7 +37,7 @@ namespace semitone
 
         // we look for a new literal to watch..
         for (size_t i = 1; i < lits.size(); ++i)
-            if (value(lits[i]) != False)
+            if (value(lits[i]) != utils::False)
             {
                 std::swap(*(std::next(lits.begin())), *(std::next(lits.begin(), i)));
                 watches(!lits[1]).push_back(this);
@@ -55,9 +55,9 @@ namespace semitone
         for (size_t i = 0; i < lits.size(); ++i)
             switch (value(lits[i]))
             {
-            case True:
+            case utils::True:
                 return true;
-            case Undefined:
+            case utils::Undefined:
                 lits[j++] = lits[i];
                 break;
             }
@@ -71,7 +71,7 @@ namespace semitone
         out_reason.reserve(is_undefined(p) ? lits.size() : lits.size() - 1);
         for (size_t i = is_undefined(p) ? 0 : 1; i < lits.size(); ++i)
         {
-            assert(value(lits[i]) == False);
+            assert(value(lits[i]) == utils::False);
             out_reason.push_back(!lits[i]);
         }
     }
@@ -87,13 +87,13 @@ namespace semitone
             j_lit["lit"] = to_string(l);
             switch (value(l))
             {
-            case True:
+            case utils::True:
                 j_lit["val"] = "T";
                 break;
-            case False:
+            case utils::False:
                 j_lit["val"] = "F";
                 break;
-            case Undefined:
+            case utils::Undefined:
                 j_lit["val"] = "U";
                 break;
             }

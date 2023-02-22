@@ -242,11 +242,11 @@ namespace semitone
         const auto &a = v_asrts[variable(p)];
         switch (sat->value(a->b))
         {
-        case True: // the assertion is direct..
+        case utils::True: // the assertion is direct..
             if (!((a->o == op::leq) ? assert_upper(a->x, a->v, p) : assert_lower(a->x, a->v, p)))
                 return false;
             break;
-        case False: // the assertion is negated..
+        case utils::False: // the assertion is negated..
             if (!((a->o == op::leq) ? assert_lower(a->x, a->v + utils::inf_rational(utils::rational::ZERO, utils::rational::ONE), p) : assert_upper(a->x, a->v - utils::inf_rational(utils::rational::ZERO, utils::rational::ONE), p)))
                 return false;
             break;
@@ -317,7 +317,7 @@ namespace semitone
 
     bool lra_theory::assert_lower(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept
     {
-        assert(sat->value(p) != Undefined);
+        assert(sat->value(p) != utils::Undefined);
         assert(cnfl.empty());
         if (val <= lb(x_i))
             return true;
@@ -351,7 +351,7 @@ namespace semitone
 
     bool lra_theory::assert_upper(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept
     {
-        assert(sat->value(p) != Undefined);
+        assert(sat->value(p) != utils::Undefined);
         assert(cnfl.empty());
         if (val >= ub(x_i))
             return true;

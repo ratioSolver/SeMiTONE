@@ -29,21 +29,21 @@ void test_basic_core_0()
     assert(nc);
     bool ch = core.propagate();
     assert(ch);
-    assert(core.value(b0) == Undefined);
-    assert(core.value(b1) == Undefined);
-    assert(core.value(b2) == Undefined);
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
 
     bool assm = core.assume(lit(b0));
     assert(assm);
-    assert(core.value(b0) == True);
-    assert(core.value(b1) == Undefined);
-    assert(core.value(b2) == Undefined);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
 
     assm = core.assume(lit(b1));
     assert(assm);
-    assert(core.value(b0) == True);
-    assert(core.value(b1) == True);
-    assert(core.value(b2) == True);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::True);
+    assert(core.value(b2) == utils::True);
 }
 
 void test_basic_core_1()
@@ -56,9 +56,9 @@ void test_basic_core_1()
     bool nc = core.new_clause({core.new_eq(lit(b0), !lit(b1))});
     assert(nc);
 
-    assert(core.value(b0) == Undefined);
-    assert(core.value(b1) == Undefined);
-    assert(core.value(b2) == Undefined);
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
 
     nc = core.new_clause({lit(b1), lit(b2)});
     assert(nc);
@@ -68,9 +68,9 @@ void test_basic_core_1()
 
     bool assm = core.assume(lit(b0));
     assert(assm);
-    assert(core.value(b0) == True);
-    assert(core.value(b1) == False);
-    assert(core.value(b2) == True);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::False);
+    assert(core.value(b2) == utils::True);
 }
 
 void test_basic_core_2()
@@ -218,7 +218,7 @@ void test_exct_one_1()
     assm = core.assume(lit(b3, false));
     assert(assm);
 
-    assert(core.value(xct_one) == False);
+    assert(core.value(xct_one) == utils::False);
 }
 
 void test_exct_one_2()
@@ -244,7 +244,7 @@ void test_exct_one_2()
     assm = core.assume(lit(b2, false));
     assert(assm);
 
-    assert(core.value(b3) == True);
+    assert(core.value(b3) == utils::True);
 }
 
 void test_sat_stack_0()
@@ -257,15 +257,15 @@ void test_sat_stack_0()
 
     bool nc = stack.top()->new_clause({lit(b0, false), !lit(b1), lit(b2)});
     assert(nc);
-    assert(stack.top()->value(b0) == Undefined);
-    assert(stack.top()->value(b1) == Undefined);
-    assert(stack.top()->value(b2) == Undefined);
+    assert(stack.top()->value(b0) == utils::Undefined);
+    assert(stack.top()->value(b1) == utils::Undefined);
+    assert(stack.top()->value(b2) == utils::Undefined);
 
     bool assm = stack.top()->assume(lit(b0));
     assert(assm);
-    assert(stack.top()->value(b0) == True);
-    assert(stack.top()->value(b1) == Undefined);
-    assert(stack.top()->value(b2) == Undefined);
+    assert(stack.top()->value(b0) == utils::True);
+    assert(stack.top()->value(b1) == utils::Undefined);
+    assert(stack.top()->value(b2) == utils::Undefined);
 
     // we push the sat stack..
     stack.push();
@@ -273,18 +273,18 @@ void test_sat_stack_0()
 
     assm = stack.top()->assume(lit(b1));
     assert(assm);
-    assert(stack.top()->value(b0) == True);
-    assert(stack.top()->value(b1) == True);
-    assert(stack.top()->value(b2) == True);
+    assert(stack.top()->value(b0) == utils::True);
+    assert(stack.top()->value(b1) == utils::True);
+    assert(stack.top()->value(b2) == utils::True);
 
     // we pop the sat stack..
     stack.pop();
 
     assm = stack.top()->assume(!lit(b2));
     assert(assm);
-    assert(stack.top()->value(b0) == True);
-    assert(stack.top()->value(b1) == False);
-    assert(stack.top()->value(b2) == False);
+    assert(stack.top()->value(b0) == utils::True);
+    assert(stack.top()->value(b1) == utils::False);
+    assert(stack.top()->value(b2) == utils::False);
 }
 
 void test_to_json()

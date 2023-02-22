@@ -514,16 +514,16 @@ void test_constraints_5()
     assert(nc);
 
     lit v2_v3 = rdl.new_leq(lin(v2, utils::rational::ONE), lin(v3, utils::rational::ONE));
-    assert(core->value(v2_v3) == Undefined);
+    assert(core->value(v2_v3) == utils::Undefined);
     lit v4_v1 = rdl.new_leq(lin(v4, utils::rational::ONE), lin(v1, utils::rational::ONE));
-    assert(core->value(v4_v1) == Undefined);
+    assert(core->value(v4_v1) == utils::Undefined);
 
     nc = core->new_clause({rdl.new_distance(v1, v3, utils::inf_rational(utils::rational::ZERO), utils::inf_rational(utils::rational::ZERO))});
     assert(nc);
     prop = core->propagate();
     assert(prop);
-    assert(core->value(v2_v3) == False);
-    assert(core->value(v4_v1) == False);
+    assert(core->value(v2_v3) == utils::False);
+    assert(core->value(v4_v1) == utils::False);
 }
 
 void test_semantic_branching()

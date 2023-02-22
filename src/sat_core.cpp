@@ -12,7 +12,7 @@ namespace semitone
     {
         [[maybe_unused]] var c_false = new_var(); // the false constant..
         assert(c_false == FALSE_var);
-        assigns[FALSE_var] = False;
+        assigns[FALSE_var] = utils::False;
         level[FALSE_var] = 0;
     }
     SEMITONE_EXPORT sat_core::sat_core(const sat_core &orig) : countable(), assigns(orig.assigns), level(orig.level.size()), exprs(orig.exprs), theories(orig.theories), bounds(orig.bounds), listeners(orig.listeners), listening(orig.listening)
@@ -44,7 +44,7 @@ namespace semitone
         const var id = assigns.size();
         watches.emplace_back();
         watches.emplace_back();
-        assigns.emplace_back(Undefined);
+        assigns.emplace_back(utils::Undefined);
         exprs.emplace("b" + std::to_string(id), id);
         level.emplace_back(0);
         reason.emplace_back(nullptr);
@@ -60,9 +60,9 @@ namespace semitone
         lit p;
         size_t j = 0;
         for (auto it = lits.cbegin(); it != lits.cend(); ++it)
-            if (value(*it) == True || *it == !p)
+            if (value(*it) == utils::True || *it == !p)
                 return true; // the clause is already satisfied or represents a tautology..
-            else if (value(*it) != False && *it != p)
+            else if (value(*it) != utils::False && *it != p)
             { // we need to include this literal in the clause..
                 p = *it;
                 lits[j++] = p;
@@ -89,36 +89,36 @@ namespace semitone
             return TRUE_lit; // the variables are the same variable..
         switch (value(left))
         {
-        case True:
+        case utils::True:
             switch (value(right))
             {
-            case True:
+            case utils::True:
                 return TRUE_lit; // the variables assume the same value..
-            case False:
+            case utils::False:
                 return FALSE_lit; // the variables cannot assume the same value..
-            case Undefined:
+            case utils::Undefined:
                 return sign(left) == sign(right) ? right : !right;
             }
             [[fallthrough]];
-        case False:
+        case utils::False:
             switch (value(right))
             {
-            case True:
+            case utils::True:
                 return FALSE_lit; // the variables cannot assume the same value..
-            case False:
+            case utils::False:
                 return TRUE_lit; // the variables assume the same value..
-            case Undefined:
+            case utils::Undefined:
                 return sign(left) == sign(right) ? !right : right;
             }
             [[fallthrough]];
-        case Undefined:
+        case utils::Undefined:
             switch (value(right))
             {
-            case True:
+            case utils::True:
                 return sign(left) == sign(right) ? left : !left;
-            case False:
+            case utils::False:
                 return sign(left) == sign(right) ? !left : left;
-            case Undefined:
+            case utils::Undefined:
                 break;
             }
         }
@@ -150,9 +150,9 @@ namespace semitone
         size_t j = 0;
         std::string s_expr = "&";
         for (auto it = ls.cbegin(); it != ls.cend(); ++it)
-            if (value(*it) == False || *it == !p)
+            if (value(*it) == utils::False || *it == !p)
                 return FALSE_lit; // the conjunction cannot be satisfied..
-            else if (value(*it) != True && *it != p)
+            else if (value(*it) != utils::True && *it != p)
             { // we need to include this literal in the conjunction..
                 p = *it;
                 s_expr += to_string(p);
@@ -195,9 +195,9 @@ namespace semitone
         size_t j = 0;
         std::string s_expr = "|";
         for (auto it = ls.cbegin(); it != ls.cend(); ++it)
-            if (value(*it) == True || *it == !p)
+            if (value(*it) == utils::True || *it == !p)
                 return TRUE_lit; // the disjunction is already satisfied..
-            else if (value(*it) != False && *it != p)
+            else if (value(*it) != utils::False && *it != p)
             { // we need to include this literal in the conjunction..
                 p = *it;
                 s_expr += to_string(p);
@@ -240,13 +240,13 @@ namespace semitone
         size_t lits_size = 0;
         std::string s_expr = "amo";
         for (auto it0 = ls.cbegin(); it0 != ls.cend(); ++it0)
-            if (value(*it0) == True)
+            if (value(*it0) == utils::True)
             {
                 for (auto it1 = it0 + 1; it1 != ls.cend(); ++it1)
                 {
-                    if (value(*it1) == True || *it1 == !p)
+                    if (value(*it1) == utils::True || *it1 == !p)
                         return FALSE_lit; // the at-most-one cannot be satisfied..
-                    else if (value(*it1) != False && *it1 != p)
+                    else if (value(*it1) != utils::False && *it1 != p)
                     { // we need to include this literal in the at-most-one..
                         p = *it1;
                         s_expr += to_string(p);
@@ -255,7 +255,7 @@ namespace semitone
                 }
                 break;
             }
-            else if (value(*it0) != False && *it0 != p)
+            else if (value(*it0) != utils::False && *it0 != p)
             { // we need to include this literal in the at-most-one..
                 p = *it0;
                 s_expr += to_string(p);
@@ -314,13 +314,13 @@ namespace semitone
         size_t j = 0;
         std::string s_expr = "^";
         for (auto it0 = ls.cbegin(); it0 != ls.cend(); ++it0)
-            if (value(*it0) == True)
+            if (value(*it0) == utils::True)
             {
                 for (auto it1 = it0 + 1; it1 != ls.cend(); ++it1)
                 {
-                    if (value(*it1) == True || *it1 == !p)
+                    if (value(*it1) == utils::True || *it1 == !p)
                         return FALSE_lit; // the exact-one cannot be satisfied..
-                    else if (value(*it1) != False && *it1 != p)
+                    else if (value(*it1) != utils::False && *it1 != p)
                     { // we need to include this literal in the exact-one..
                         p = *it1;
                         s_expr += to_string(p);
@@ -329,7 +329,7 @@ namespace semitone
                 }
                 break;
             }
-            else if (value(*it0) != False && *it0 != p)
+            else if (value(*it0) != utils::False && *it0 != p)
             { // we need to include this literal in the exact-one..
                 p = *it0;
                 s_expr += to_string(p);
@@ -479,7 +479,7 @@ namespace semitone
         pop();
 
         assert(!no_good.empty());
-        assert(value(no_good.back()) == Undefined);
+        assert(value(no_good.back()) == utils::Undefined);
 
         // we reverse the no-good and store it..
         std::reverse(no_good.begin(), no_good.end());
@@ -523,7 +523,7 @@ namespace semitone
             for (const auto &q : p_reason) // the order in which these literals are visited is not relevant..
                 if (seen.insert(variable(q)).second)
                 {
-                    assert(value(q) == True); // this literal should have propagated the clause..
+                    assert(value(q) == utils::True); // this literal should have propagated the clause..
                     if (level[variable(q)] == decision_level())
                         counter++;
                     else if (level[variable(q)] > 0) // exclude variables from decision level 0..
@@ -547,21 +547,21 @@ namespace semitone
             counter--;
         } while (counter > 0);
         // `p` is now the first Unique Implication Point (UIP), possibly the asserting literal, that led to the conflict..
-        assert(value(p) == Undefined);
+        assert(value(p) == utils::Undefined);
         assert(std::all_of(std::next(out_learnt.cbegin()), out_learnt.cend(), [this](auto &lt)
-                           { return value(lt) == False; })); // all these literals must have been assigned as false for propagating `p`..
+                           { return value(lt) == utils::False; })); // all these literals must have been assigned as false for propagating `p`..
         out_learnt[0] = !p;
     }
 
     void sat_core::record(std::vector<lit> lits) noexcept
     {
-        assert(value(lits[0]) == Undefined);
+        assert(value(lits[0]) == utils::Undefined);
         assert(std::count_if(lits.cbegin(), lits.cend(), [this](auto &p)
-                             { return value(p) == True; }) == 0);
+                             { return value(p) == utils::True; }) == 0);
         assert(std::count_if(lits.cbegin(), lits.cend(), [this](auto &p)
-                             { return value(p) == Undefined; }) == 1);
+                             { return value(p) == utils::Undefined; }) == 1);
         assert(static_cast<size_t>(std::count_if(lits.cbegin(), lits.cend(), [this](auto &p)
-                                                 { return value(p) == False; })) == lits.size() - 1);
+                                                 { return value(p) == utils::False; })) == lits.size() - 1);
         if (lits.size() == 1)
         {
             assert(root_level());
@@ -584,7 +584,7 @@ namespace semitone
 
     bool sat_core::enqueue(const lit &p, constr *const c) noexcept
     {
-        if (lbool val = value(p); val != Undefined)
+        if (auto val = value(p); val != utils::Undefined)
             return val;
         else
         {
@@ -608,7 +608,7 @@ namespace semitone
     void sat_core::pop_one() noexcept
     {
         const var v = variable(trail.back());
-        assigns[v] = Undefined;
+        assigns[v] = utils::Undefined;
         level[v] = 0;
         reason[v] = nullptr;
         trail.pop_back();
@@ -629,10 +629,10 @@ namespace semitone
             var["name"] = std::to_string(i);
             switch (rhs.value(i))
             {
-            case False:
+            case utils::False:
                 var["value"] = "False";
                 break;
-            case True:
+            case utils::True:
                 var["value"] = "True";
                 break;
             default:

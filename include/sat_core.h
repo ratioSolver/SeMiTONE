@@ -118,17 +118,17 @@ namespace semitone
     SEMITONE_EXPORT bool next() noexcept;
     SEMITONE_EXPORT bool check(std::vector<lit> lits) noexcept;
 
-    inline lbool value(const var &x) const noexcept { return assigns.at(x); } // returns the value of variable `x`..
-    inline lbool value(const lit &p) const noexcept
+    inline utils::lbool value(const var &x) const noexcept { return assigns.at(x); } // returns the value of variable `x`..
+    inline utils::lbool value(const lit &p) const noexcept
     {
       switch (value(variable(p)))
       {
-      case True:
-        return sign(p) ? True : False;
-      case False:
-        return sign(p) ? False : True;
+      case utils::True:
+        return sign(p) ? utils::True : utils::False;
+      case utils::False:
+        return sign(p) ? utils::False : utils::True;
       default:
-        return Undefined;
+        return utils::Undefined;
       }
     }                                                                                            // returns the value of literal `p`..
     inline size_t decision_level() const noexcept { return trail_lim.size(); }                   // returns the current decision level..
@@ -152,7 +152,7 @@ namespace semitone
     inline void bind(const var &v, theory &th) noexcept { bounds[v].insert(&th); }
     inline void listen(const var &v, sat_value_listener &l) noexcept
     {
-      if (value(v) == Undefined)
+      if (value(v) == utils::Undefined)
         listening[v].insert(&l);
     }
 
@@ -161,7 +161,7 @@ namespace semitone
   private:
     std::vector<constr_ptr> constrs;            // the collection of problem constraints..
     std::vector<std::vector<constr *>> watches; // for each literal `p`, a list of constraints watching `p`..
-    std::vector<lbool> assigns;                 // the current assignments..
+    std::vector<utils::lbool> assigns;          // the current assignments..
 
     std::queue<lit> prop_q;                     // propagation queue..
     std::vector<lit> trail;                     // the list of assignment in chronological order..

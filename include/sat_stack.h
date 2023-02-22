@@ -21,8 +21,8 @@ namespace semitone
 
     SEMITONE_EXPORT sat_core &operator[](const size_t &idx) { return *stack[idx]; }
 
-    inline lbool value(const var &x) const noexcept { return stack.back()->value(x); }
-    inline lbool value(const lit &p) const noexcept { return stack.back()->value(p); }
+    inline utils::lbool value(const var &x) const noexcept { return stack.back()->value(x); }
+    inline utils::lbool value(const lit &p) const noexcept { return stack.back()->value(p); }
 
   private:
     std::vector<sat_ptr> stack;

@@ -15,7 +15,7 @@ namespace semitone
         case leq:
             switch (th.sat->value(b))
             {
-            case True:
+            case utils::True:
                 if (th.lb(x_i) > v)
                 {                                                                      // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                     th.cnfl.push_back(!b);                                             // either the literal `b` is false ..
@@ -23,7 +23,7 @@ namespace semitone
                     return false;
                 }
                 break;
-            case Undefined:
+            case utils::Undefined:
                 if (th.lb(x_i) > v) // we propagate information to the sat core: [x_i >= lb(x_i)] -> ![x_i <= v]..
                     th.record({!b, !th.c_bounds[lra_theory::lb_index(x_i)].reason});
                 break;
@@ -32,7 +32,7 @@ namespace semitone
         case geq:
             switch (th.sat->value(b))
             {
-            case False:
+            case utils::False:
                 if (th.lb(x_i) >= v)
                 {                                                                      // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                     th.cnfl.push_back(b);                                              // either the literal `b` is true ..
@@ -40,7 +40,7 @@ namespace semitone
                     return false;
                 }
                 break;
-            case Undefined:
+            case utils::Undefined:
                 if (th.lb(x_i) >= v) // we propagate information to the sat core: [x_i >= lb(x_i)] -> [x_i >= v]..
                     th.record({b, !th.c_bounds[lra_theory::lb_index(x_i)].reason});
                 break;
@@ -59,7 +59,7 @@ namespace semitone
         case leq:
             switch (th.sat->value(b))
             {
-            case False:
+            case utils::False:
                 if (th.ub(x_i) <= v)
                 {                                                                      // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                     th.cnfl.push_back(b);                                              // either the literal `b` is true ..
@@ -67,7 +67,7 @@ namespace semitone
                     return false;
                 }
                 break;
-            case Undefined:
+            case utils::Undefined:
                 if (th.ub(x_i) <= v) // we propagate information to the sat core: [x_i <= ub(x_i)] -> [x_i <= v]..
                     th.record({b, !th.c_bounds[lra_theory::ub_index(x_i)].reason});
                 break;
@@ -76,7 +76,7 @@ namespace semitone
         case geq:
             switch (th.sat->value(b))
             {
-            case True:
+            case utils::True:
                 if (th.ub(x_i) < v)
                 {                                                                      // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                     th.cnfl.push_back(!b);                                             // either the literal `b` is false ..
@@ -84,7 +84,7 @@ namespace semitone
                     return false;
                 }
                 break;
-            case Undefined: // we propagate information to the sat core: [x_i <= ub(x_i)] -> ![x_i >= v]..
+            case utils::Undefined: // we propagate information to the sat core: [x_i <= ub(x_i)] -> ![x_i >= v]..
                 if (th.ub(x_i) < v)
                     th.record({!b, !th.c_bounds[lra_theory::ub_index(x_i)].reason});
                 break;
@@ -101,13 +101,13 @@ namespace semitone
         j_asrt["lit"] = to_string(rhs.b);
         switch (rhs.th.get_sat_core().value(rhs.b))
         {
-        case True:
+        case utils::True:
             j_asrt["val"] = "T";
             break;
-        case False:
+        case utils::False:
             j_asrt["val"] = "F";
             break;
-        case Undefined:
+        case utils::Undefined:
             j_asrt["val"] = "U";
             break;
         }
@@ -160,14 +160,14 @@ namespace semitone
                     case leq: // the assertion is unsatisfable..
                         switch (th.sat->value(c->b))
                         {
-                        case True:
+                        case utils::True:
                             if (lb > c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = !c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (lb > c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = !c->b;
@@ -179,14 +179,14 @@ namespace semitone
                     case geq: // the assertion is satisfied..
                         switch (th.sat->value(c->b))
                         {
-                        case False:
+                        case utils::False:
                             if (lb >= c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (lb >= c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = c->b;
@@ -235,14 +235,14 @@ namespace semitone
                     case leq: // the assertion is satisfied..
                         switch (th.sat->value(c->b))
                         {
-                        case False:
+                        case utils::False:
                             if (ub <= c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (ub <= c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = c->b;
@@ -254,14 +254,14 @@ namespace semitone
                     case geq: // the assertion is unsatisfable..
                         switch (th.sat->value(c->b))
                         {
-                        case True:
+                        case utils::True:
                             if (ub < c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = !c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (ub < c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = !c->b;
@@ -320,14 +320,14 @@ namespace semitone
                     case leq: // the assertion is satisfied..
                         switch (th.sat->value(c->b))
                         {
-                        case False:
+                        case utils::False:
                             if (ub <= c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (ub <= c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = c->b;
@@ -339,14 +339,14 @@ namespace semitone
                     case geq: // the assertion is unsatisfable..
                         switch (th.sat->value(c->b))
                         {
-                        case True:
+                        case utils::True:
                             if (ub < c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = !c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (ub < c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = !c->b;
@@ -395,14 +395,14 @@ namespace semitone
                     case leq: // the assertion is unsatisfable..
                         switch (th.sat->value(c->b))
                         {
-                        case True:
+                        case utils::True:
                             if (lb > c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = !c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (lb > c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = !c->b;
@@ -414,14 +414,14 @@ namespace semitone
                     case geq: // the assertion is satisfied..
                         switch (th.sat->value(c->b))
                         {
-                        case False:
+                        case utils::False:
                             if (lb >= c->v)
                             { // we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                                 th.cnfl[0] = c->b;
                                 return false;
                             }
                             break;
-                        case Undefined:
+                        case utils::Undefined:
                             if (lb >= c->v)
                             { // we propagate information to the sat core..
                                 th.cnfl[0] = c->b;

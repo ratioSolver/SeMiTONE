@@ -208,7 +208,7 @@ void test_nonroot_constraints()
     bool assm = core->assume({x_leq_y});
     assert(assm);
 
-    assert(core->value(x_leq_y) == True);
+    assert(core->value(x_leq_y) == utils::True);
 
     prop = lra.set_lb(x, utils::inf_rational(utils::rational::ONE), TRUE_lit);
     assert(prop);

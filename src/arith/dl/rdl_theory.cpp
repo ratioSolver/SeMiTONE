@@ -377,7 +377,7 @@ namespace semitone
         const auto &dist = var_dists.at(variable(p));
         switch (sat->value(dist->b))
         {
-        case True: // the assertion is direct..
+        case utils::True: // the assertion is direct..
             if (_dists[dist->to][dist->from] < -dist->dist)
             { // we build the cause for the conflict..
                 var c_to = dist->from;
@@ -385,9 +385,9 @@ namespace semitone
                 {
                     if (const auto &c_d = dist_constr.find({_preds[dist->to][c_to], c_to}); c_d != dist_constr.cend())
                     {
-                        if (sat->value(c_d->second->b) == True)
+                        if (sat->value(c_d->second->b) == utils::True)
                             cnfl.emplace_back(!c_d->second->b);
-                        else if (sat->value(c_d->second->b) == False)
+                        else if (sat->value(c_d->second->b) == utils::False)
                             cnfl.emplace_back(c_d->second->b);
                     }
                     c_to = _preds[dist->to][c_to];
@@ -410,7 +410,7 @@ namespace semitone
                 propagate(dist->from, dist->to, dist->dist);
             }
             break;
-        case False: // the assertion is negated (semantic branching)..
+        case utils::False: // the assertion is negated (semantic branching)..
             if (_dists[dist->from][dist->to] <= dist->dist)
             { // we build the cause for the conflict..
                 var c_from = dist->to;
@@ -418,9 +418,9 @@ namespace semitone
                 {
                     if (const auto &c_d = dist_constr.find({_preds[dist->from][c_from], c_from}); c_d != dist_constr.cend())
                     {
-                        if (sat->value(c_d->second->b) == True)
+                        if (sat->value(c_d->second->b) == utils::True)
                             cnfl.emplace_back(!c_d->second->b);
-                        else if (sat->value(c_d->second->b) == False)
+                        else if (sat->value(c_d->second->b) == utils::False)
                             cnfl.emplace_back(c_d->second->b);
                     }
                     c_from = _preds[dist->from][c_from];
@@ -454,9 +454,9 @@ namespace semitone
                            {
                                switch (sat->value(dist.second->b))
                                {
-                               case True: // the constraint is asserted..
+                               case utils::True: // the constraint is asserted..
                                    return _dists[dist.second->from][dist.second->to] <= dist.second->dist;
-                               case False: // the constraint is negated..
+                               case utils::False: // the constraint is negated..
                                    return _dists[dist.second->to][dist.second->from] < -dist.second->dist;
                                default: // the constraint is not asserted..
                                    return true;
@@ -526,7 +526,7 @@ namespace semitone
         for (const auto &c_pairs : c_updates)
             if (const auto &c_dists = dist_constrs.find(c_pairs); c_dists != dist_constrs.cend())
                 for (const auto &c_dist : c_dists->second)
-                    if (sat->value(c_dist->b) == Undefined)
+                    if (sat->value(c_dist->b) == utils::Undefined)
                     {
                         if (_dists[c_dist->to][c_dist->from] < -c_dist->dist)
                         { // the constraint is inconsistent..
@@ -536,9 +536,9 @@ namespace semitone
                             {
                                 if (const auto &c_d = dist_constr.find({_preds[c_dist->to][c_to], c_to}); c_d != dist_constr.cend())
                                 {
-                                    if (sat->value(c_d->second->b) == True)
+                                    if (sat->value(c_d->second->b) == utils::True)
                                         cnfl.emplace_back(!c_d->second->b);
-                                    else if (sat->value(c_d->second->b) == False)
+                                    else if (sat->value(c_d->second->b) == utils::False)
                                         cnfl.emplace_back(c_d->second->b);
                                 }
                                 c_to = _preds[c_dist->to][c_to];
@@ -555,9 +555,9 @@ namespace semitone
                             {
                                 if (const auto &c_d = dist_constr.find({_preds[c_dist->from][c_to], c_to}); c_d != dist_constr.cend())
                                 {
-                                    if (sat->value(c_d->second->b) == True)
+                                    if (sat->value(c_d->second->b) == utils::True)
                                         cnfl.emplace_back(!c_d->second->b);
-                                    else if (sat->value(c_d->second->b) == False)
+                                    else if (sat->value(c_d->second->b) == utils::False)
                                         cnfl.emplace_back(c_d->second->b);
                                 }
                                 c_to = _preds[c_dist->from][c_to];

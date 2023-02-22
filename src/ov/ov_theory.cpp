@@ -118,7 +118,7 @@ namespace semitone
     {
         std::unordered_set<utils::enum_val *> vals;
         for (const auto &[val, l] : assigns[v])
-            if (sat->value(l) != False)
+            if (sat->value(l) != utils::False)
                 vals.insert(val);
         return vals;
     }

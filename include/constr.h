@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lit.h"
+#include "bool.h"
 #include "json.h"
 #include <vector>
 
@@ -35,8 +36,8 @@ namespace semitone
     std::vector<constr *> &watches(const lit &p) noexcept;
     bool enqueue(const lit &p) noexcept;
 
-    lbool value(const var &x) const noexcept;
-    lbool value(const lit &p) const noexcept;
+    utils::lbool value(const var &x) const noexcept;
+    utils::lbool value(const lit &p) const noexcept;
 
     void remove_constr_from_reason(const var &x) noexcept;
 
