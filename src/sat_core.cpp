@@ -24,14 +24,14 @@ namespace semitone
         constr_map.reserve(orig.constrs.size());
         for (auto &c : orig.constrs)
         {
-            constr_map[&*c] = constrs.size();
+            constr_map[c.operator->()] = constrs.size();
             constrs.push_back(c->copy(*this));
         }
 
         reason.reserve(orig.reason.size());
         for (auto &c : orig.reason)
             if (c)
-                reason.push_back(&*constrs.at(constr_map.at(c)));
+                reason.push_back(constrs.at(constr_map.at(c)).operator->());
             else
                 reason.push_back(nullptr);
 
