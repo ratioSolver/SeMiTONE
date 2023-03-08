@@ -6,7 +6,7 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const size_t &size) : theory(std::move(sat)), _dists(std::vector<std::vector<I>>(size, std::vector<I>(size, inf()))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
+    SEMITONE_EXPORT idl_theory::idl_theory(sat_ptr sat, const size_t &size) : theory(std::move(sat)), _dists(std::vector<std::vector<utils::I>>(size, std::vector<utils::I>(size, inf()))), _preds(std::vector<std::vector<var>>(size, std::vector<var>(size, std::numeric_limits<size_t>::max())))
     {
         for (size_t i = 0; i < size; ++i)
         {
@@ -15,7 +15,7 @@ namespace semitone
             _preds[i][i] = std::numeric_limits<size_t>::max();
         }
     }
-    SEMITONE_EXPORT idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const idl_theory &orig) : theory(std::move(sat)), n_vars(orig.n_vars), _dists(orig._dists), _preds(orig._preds), layers(orig.layers), listening(orig.listening)
+    SEMITONE_EXPORT idl_theory::idl_theory(sat_ptr sat, const idl_theory &orig) : theory(std::move(sat)), n_vars(orig.n_vars), _dists(orig._dists), _preds(orig._preds), layers(orig.layers), listening(orig.listening)
     {
         for (const auto &[v, d] : orig.var_dists)
             var_dists.emplace(v, new idl_distance(d->b, d->from, d->to, d->dist));
@@ -39,7 +39,7 @@ namespace semitone
         return tp;
     }
 
-    SEMITONE_EXPORT lit idl_theory::new_distance(const var &from, const var &to, const I &dist) noexcept
+    SEMITONE_EXPORT lit idl_theory::new_distance(const var &from, const var &to, const utils::I &dist) noexcept
     {
         if (_dists[to][from] < -dist)
             return FALSE_lit; // the constraint is inconsistent..
@@ -63,9 +63,9 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term < rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term < utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 if (!is_integer(expr.known_term))
@@ -80,14 +80,14 @@ namespace semitone
                 return new_distance(0, expr.vars.cbegin()->first, -expr.known_term.numerator() - 1);
             }
         case 2:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v0, v1, expr.known_term.numerator() - 1);
             }
@@ -96,9 +96,9 @@ namespace semitone
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v1, v0, -expr.known_term.numerator() - 1);
             }
@@ -113,9 +113,9 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term <= rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term <= utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 if (!is_integer(expr.known_term))
@@ -130,14 +130,14 @@ namespace semitone
                 return new_distance(0, expr.vars.cbegin()->first, -expr.known_term.numerator());
             }
         case 2:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v0, v1, expr.known_term.numerator());
             }
@@ -146,9 +146,9 @@ namespace semitone
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v1, v0, -expr.known_term.numerator());
             }
@@ -163,7 +163,7 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term == rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term == utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
         {
             expr = expr / expr.vars.cbegin()->second;
@@ -180,9 +180,9 @@ namespace semitone
             expr = expr / expr.vars.cbegin()->second;
             auto it = expr.vars.cbegin();
             const auto [v0, c0] = *it++;
-            assert(c0 == rational::ONE);
+            assert(c0 == utils::rational::ONE);
             const auto [v1, c1] = *it;
-            if (c1 != -rational::ONE || !is_integer(expr.known_term))
+            if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                 throw std::invalid_argument("not a valid integer difference logic constraint..");
             const auto dist = distance(v0, v1);
             if (dist.first <= expr.known_term.numerator() && dist.second >= expr.known_term.numerator())
@@ -201,9 +201,9 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term >= rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term >= utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 if (!is_integer(expr.known_term))
@@ -218,14 +218,14 @@ namespace semitone
                 return new_distance(expr.vars.cbegin()->first, 0, expr.known_term.numerator());
             }
         case 2:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v1, v0, -expr.known_term.numerator());
             }
@@ -234,9 +234,9 @@ namespace semitone
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v0, v1, expr.known_term.numerator());
             }
@@ -251,9 +251,9 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0:
-            return expr.known_term > rational::ZERO ? TRUE_lit : FALSE_lit;
+            return expr.known_term > utils::rational::ZERO ? TRUE_lit : FALSE_lit;
         case 1:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 if (!is_integer(expr.known_term))
@@ -268,14 +268,14 @@ namespace semitone
                 return new_distance(expr.vars.cbegin()->first, 0, expr.known_term.numerator() - 1);
             }
         case 2:
-            if (expr.vars.cbegin()->second < rational::ZERO)
+            if (expr.vars.cbegin()->second < utils::rational::ZERO)
             {
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v1, v0, -expr.known_term.numerator() - 1);
             }
@@ -284,9 +284,9 @@ namespace semitone
                 expr = expr / expr.vars.cbegin()->second;
                 auto it = expr.vars.cbegin();
                 const auto [v0, c0] = *it++;
-                assert(c0 == rational::ONE);
+                assert(c0 == utils::rational::ONE);
                 const auto [v1, c1] = *it;
-                if (c1 != -rational::ONE || !is_integer(expr.known_term))
+                if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                     throw std::invalid_argument("not a valid integer difference logic constraint..");
                 return new_distance(v0, v1, expr.known_term.numerator(), -1);
             }
@@ -295,10 +295,10 @@ namespace semitone
         }
     }
 
-    SEMITONE_EXPORT std::pair<I, I> idl_theory::bounds(const lin &l) const
+    SEMITONE_EXPORT std::pair<utils::I, utils::I> idl_theory::bounds(const lin &l) const
     {
-        I c_lb(0);
-        I c_ub(0);
+        utils::I c_lb(0);
+        utils::I c_ub(0);
 
         switch (l.vars.size())
         {
@@ -336,7 +336,7 @@ namespace semitone
         return std::make_pair(c_lb, c_ub);
     }
 
-    SEMITONE_EXPORT std::pair<I, I> idl_theory::distance(const lin &from, const lin &to) const
+    SEMITONE_EXPORT std::pair<utils::I, utils::I> idl_theory::distance(const lin &from, const lin &to) const
     {
         lin expr = from - to;
         switch (expr.vars.size())
@@ -355,9 +355,9 @@ namespace semitone
             expr = expr / expr.vars.cbegin()->second;
             auto it = expr.vars.cbegin();
             const auto [v0, c0] = *it++;
-            assert(c0 == rational::ONE);
+            assert(c0 == utils::rational::ONE);
             const auto [v1, c1] = *it;
-            if (c1 != -rational::ONE || !is_integer(expr.known_term))
+            if (c1 != -utils::rational::ONE || !is_integer(expr.known_term))
                 throw std::invalid_argument("not a valid real difference logic constraint..");
             return distance(v0, v1);
         }
@@ -373,18 +373,18 @@ namespace semitone
         else if (l0.vars.empty() && l1.vars.size() == 1)
         {
             const auto [lb, ub] = bounds(l1);
-            return rational(lb) <= l0.known_term && rational(ub) >= l0.known_term;
+            return utils::rational(lb) <= l0.known_term && utils::rational(ub) >= l0.known_term;
         }
         else if (l0.vars.size() == 1 && l1.vars.empty())
         {
             const auto [lb, ub] = bounds(l0);
-            return rational(lb) <= l1.known_term && rational(ub) >= l1.known_term;
+            return utils::rational(lb) <= l1.known_term && utils::rational(ub) >= l1.known_term;
         }
         else if (l0.vars.size() == 1 && l1.vars.size() == 1)
         {
             const auto [lb, ub] = distance(l0.vars.cbegin()->first, l1.vars.cbegin()->first);
             const auto kt = l0.known_term - l1.known_term;
-            return lb + kt <= rational::ZERO && ub + kt >= rational::ZERO;
+            return lb + kt <= utils::rational::ZERO && ub + kt >= utils::rational::ZERO;
         }
         else
             throw std::invalid_argument("not a valid comparison between real difference logic expressions..");
@@ -398,7 +398,7 @@ namespace semitone
         const auto &dist = var_dists.at(variable(p));
         switch (sat->value(dist->b))
         {
-        case True: // the assertion is direct..
+        case utils::True: // the assertion is direct..
             if (_dists[dist->to][dist->from] < -dist->dist)
             { // we build the cause for the conflict..
                 var c_to = dist->from;
@@ -406,9 +406,9 @@ namespace semitone
                 {
                     if (const auto &c_d = dist_constr.find({_preds[dist->to][c_to], c_to}); c_d != dist_constr.cend())
                     {
-                        if (sat->value(c_d->second->b) == True)
+                        if (sat->value(c_d->second->b) == utils::True)
                             cnfl.emplace_back(!c_d->second->b);
-                        else if (sat->value(c_d->second->b) == False)
+                        else if (sat->value(c_d->second->b) == utils::False)
                             cnfl.emplace_back(c_d->second->b);
                     }
                     c_to = _preds[dist->to][c_to];
@@ -431,7 +431,7 @@ namespace semitone
                 propagate(dist->from, dist->to, dist->dist);
             }
             break;
-        case False: // the assertion is negated (semantic branching)..
+        case utils::False: // the assertion is negated (semantic branching)..
             if (_dists[dist->from][dist->to] <= dist->dist)
             { // we build the cause for the conflict..
                 var c_from = dist->to;
@@ -439,9 +439,9 @@ namespace semitone
                 {
                     if (const auto &c_d = dist_constr.find({_preds[dist->from][c_from], c_from}); c_d != dist_constr.cend())
                     {
-                        if (sat->value(c_d->second->b) == True)
+                        if (sat->value(c_d->second->b) == utils::True)
                             cnfl.emplace_back(!c_d->second->b);
-                        else if (sat->value(c_d->second->b) == False)
+                        else if (sat->value(c_d->second->b) == utils::False)
                             cnfl.emplace_back(c_d->second->b);
                     }
                     c_from = _preds[dist->from][c_from];
@@ -475,9 +475,9 @@ namespace semitone
                            {
                                switch (sat->value(dist.second->b))
                                {
-                               case True: // the constraint is asserted..
+                               case utils::True: // the constraint is asserted..
                                    return _dists[dist.second->from][dist.second->to] <= dist.second->dist;
-                               case False: // the constraint is negated..
+                               case utils::False: // the constraint is negated..
                                    return _dists[dist.second->to][dist.second->from] < -dist.second->dist;
                                default: // the constraint is not asserted..
                                    return true;
@@ -501,7 +501,7 @@ namespace semitone
         layers.pop_back();
     }
 
-    void idl_theory::propagate(const var &from, const var &to, const I &dist) noexcept
+    void idl_theory::propagate(const var &from, const var &to, const utils::I &dist) noexcept
     {
         assert(std::abs(dist) < inf());
         set_dist(from, to, dist);
@@ -547,7 +547,7 @@ namespace semitone
         for (const auto &c_pairs : c_updates)
             if (const auto &c_dists = dist_constrs.find(c_pairs); c_dists != dist_constrs.cend())
                 for (const auto &c_dist : c_dists->second)
-                    if (sat->value(c_dist->b) == Undefined)
+                    if (sat->value(c_dist->b) == utils::Undefined)
                     {
                         if (_dists[c_dist->to][c_dist->from] < -c_dist->dist)
                         { // the constraint is inconsistent..
@@ -557,9 +557,9 @@ namespace semitone
                             {
                                 if (const auto &c_d = dist_constr.find({_preds[c_dist->to][c_to], c_to}); c_d != dist_constr.cend())
                                 {
-                                    if (sat->value(c_d->second->b) == True)
+                                    if (sat->value(c_d->second->b) == utils::True)
                                         cnfl.emplace_back(!c_d->second->b);
-                                    else if (sat->value(c_d->second->b) == False)
+                                    else if (sat->value(c_d->second->b) == utils::False)
                                         cnfl.emplace_back(c_d->second->b);
                                 }
                                 c_to = _preds[c_dist->to][c_to];
@@ -576,9 +576,9 @@ namespace semitone
                             {
                                 if (const auto &c_d = dist_constr.find({_preds[c_dist->from][c_to], c_to}); c_d != dist_constr.cend())
                                 {
-                                    if (sat->value(c_d->second->b) == True)
+                                    if (sat->value(c_d->second->b) == utils::True)
                                         cnfl.emplace_back(!c_d->second->b);
-                                    else if (sat->value(c_d->second->b) == False)
+                                    else if (sat->value(c_d->second->b) == utils::False)
                                         cnfl.emplace_back(c_d->second->b);
                                 }
                                 c_to = _preds[c_dist->from][c_to];
@@ -590,7 +590,7 @@ namespace semitone
                     }
     }
 
-    void idl_theory::set_dist(const var &from, const var &to, const I &dist) noexcept
+    void idl_theory::set_dist(const var &from, const var &to, const utils::I &dist) noexcept
     {
         assert(_dists[from][to] > dist);
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))
@@ -627,7 +627,7 @@ namespace semitone
         const size_t c_size = _dists.size();
         for (auto &row : _dists)
             row.resize(size, inf());
-        _dists.resize(size, std::vector<I>(size, inf()));
+        _dists.resize(size, std::vector<utils::I>(size, inf()));
         for (size_t i = c_size; i < size; ++i)
             _dists[i][i] = 0;
 

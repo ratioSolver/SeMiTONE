@@ -5,11 +5,11 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT sat_stack::sat_stack() { stack.push_back(std::make_shared<sat_core>()); }
+    SEMITONE_EXPORT sat_stack::sat_stack() { stack.push_back(new sat_core()); }
 
     SEMITONE_EXPORT void sat_stack::push() noexcept
     {
-        stack.push_back(std::make_shared<sat_core>(*stack.back()));
+        stack.push_back(new sat_core(*stack.back()));
         for (auto &th : stack.back()->theories)
         {
             th->sat = stack.back();

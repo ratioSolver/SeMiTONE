@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lit.h"
+#include "bool.h"
 #include "json.h"
 #include <vector>
 
@@ -15,32 +16,32 @@ namespace semitone
   {
     friend class sat_core;
 
+  public:
+    virtual ~constr() = default;
+
   protected:
     constr(sat_core &s);
     constr(const constr &orig) = delete;
-    virtual ~constr() = default;
 
   private:
-    virtual constr *copy(sat_core &s) = 0;
-    virtual bool propagate(const lit &p) = 0;
-    virtual bool simplify() = 0;
-    virtual void remove() = 0;
-    virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const = 0;
+    virtual constr *copy(sat_core &s) noexcept = 0;
+    virtual bool propagate(const lit &p) noexcept = 0;
+    virtual bool simplify() noexcept = 0;
+    virtual void get_reason(const lit &p, std::vector<lit> &out_reason) const noexcept = 0;
 
-    virtual json::json to_json() const noexcept { return json::object(); }
-    friend SEMITONE_EXPORT json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
+    virtual json::json to_json() const noexcept { return json::json(); }
+    friend json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
 
   protected:
     std::vector<constr *> &watches(const lit &p) noexcept;
     bool enqueue(const lit &p) noexcept;
 
-    lbool value(const var &x) const noexcept;
-    lbool value(const lit &p) const noexcept;
+    utils::lbool value(const var &x) const noexcept;
+    utils::lbool value(const lit &p) const noexcept;
 
     void remove_constr_from_reason(const var &x) noexcept;
 
   private:
     sat_core &sat;
-    size_t id;
   };
 } // namespace semitone

@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT theory::theory(std::shared_ptr<sat_core> s) : sat(std::move(s)) { sat->theories.push_back(this); }
+    SEMITONE_EXPORT theory::theory(sat_ptr s) : sat(std::move(s)) { sat->theories.push_back(this); }
     SEMITONE_EXPORT theory::~theory() { sat->theories.erase(std::find(sat->theories.cbegin(), sat->theories.cend(), this)); }
 
     SEMITONE_EXPORT void theory::bind(const var &v) noexcept { sat->bind(v, *this); }

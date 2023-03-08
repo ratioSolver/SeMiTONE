@@ -22,8 +22,8 @@ namespace semitone
     friend class row;
 
   public:
-    SEMITONE_EXPORT lra_theory(std::shared_ptr<sat_core> sat);
-    SEMITONE_EXPORT lra_theory(std::shared_ptr<sat_core> sat, const lra_theory &orig);
+    SEMITONE_EXPORT lra_theory(sat_ptr sat);
+    SEMITONE_EXPORT lra_theory(sat_ptr sat, const lra_theory &orig);
     lra_theory(const lra_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~lra_theory();
 
@@ -77,33 +77,33 @@ namespace semitone
      * @brief Returns the current lower bound of variable `v`.
      *
      * @param v the variable to get the lower bound of.
-     * @return inf_rational the current lower bound of variable `v`.
+     * @return utils::inf_rational the current lower bound of variable `v`.
      */
-    inline inf_rational lb(const var &v) const noexcept { return c_bounds[lb_index(v)].value; }
+    inline utils::inf_rational lb(const var &v) const noexcept { return c_bounds[lb_index(v)].value; }
     /**
      * @brief Returns the current upper bound of variable `v`.
      *
      * @param v the variable to get the upper bound of.
-     * @return inf_rational the current upper bound of variable `v`.
+     * @return utils::inf_rational the current upper bound of variable `v`.
      */
-    inline inf_rational ub(const var &v) const noexcept { return c_bounds[ub_index(v)].value; }
+    inline utils::inf_rational ub(const var &v) const noexcept { return c_bounds[ub_index(v)].value; }
     /**
      * @brief Returns the current value of variable `v`.
      *
      * @param v the variable to get the value of.
-     * @return inf_rational the current value of variable `v`.
+     * @return utils::inf_rational the current value of variable `v`.
      */
-    inline inf_rational value(const var &v) const noexcept { return vals[v]; }
+    inline utils::inf_rational value(const var &v) const noexcept { return vals[v]; }
 
     /**
      * @brief Returns the current lower bound of linear expression `l`.
      *
      * @param l the linear expression to get the lower bound of.
-     * @return inf_rational the current lower bound of linear expression `l`.
+     * @return utils::inf_rational the current lower bound of linear expression `l`.
      */
-    inline inf_rational lb(const lin &l) const noexcept
+    inline utils::inf_rational lb(const lin &l) const noexcept
     {
-      inf_rational b(l.known_term);
+      utils::inf_rational b(l.known_term);
       for (const auto &[v, c] : l.vars)
         b += (is_positive(c) ? lb(v) : ub(v)) * c;
       return b;
@@ -112,11 +112,11 @@ namespace semitone
      * @brief Returns the current upper bound of linear expression `l`.
      *
      * @param l the linear expression to get the upper bound of.
-     * @return inf_rational the current upper bound of linear expression `l`.
+     * @return utils::inf_rational the current upper bound of linear expression `l`.
      */
-    inline inf_rational ub(const lin &l) const noexcept
+    inline utils::inf_rational ub(const lin &l) const noexcept
     {
-      inf_rational b(l.known_term);
+      utils::inf_rational b(l.known_term);
       for (const auto &[v, c] : l.vars)
         b += (is_positive(c) ? ub(v) : lb(v)) * c;
       return b;
@@ -125,12 +125,12 @@ namespace semitone
      * @brief Returns the current bounds of linear expression `l`.
      *
      * @param l the linear expression to get the bounds of.
-     * @return std::pair<inf_rational, inf_rational> the current bounds of linear expression `l`.
+     * @return std::pair<utils::inf_rational, utils::inf_rational> the current bounds of linear expression `l`.
      */
-    inline std::pair<inf_rational, inf_rational> bounds(const lin &l) const noexcept
+    inline std::pair<utils::inf_rational, utils::inf_rational> bounds(const lin &l) const noexcept
     {
-      inf_rational c_lb(l.known_term);
-      inf_rational c_ub(l.known_term);
+      utils::inf_rational c_lb(l.known_term);
+      utils::inf_rational c_ub(l.known_term);
       for (const auto &[v, c] : l.vars)
       {
         c_lb += (is_positive(c) ? lb(v) : ub(v)) * c;
@@ -142,11 +142,11 @@ namespace semitone
      * @brief Returns the current value of linear expression `l`.
      *
      * @param l the linear expression to get the value of.
-     * @return inf_rational the current value of linear expression `l`.
+     * @return utils::inf_rational the current value of linear expression `l`.
      */
-    inline inf_rational value(const lin &l) const
+    inline utils::inf_rational value(const lin &l) const
     {
-      inf_rational val(l.known_term);
+      utils::inf_rational val(l.known_term);
       for (const auto &[v, c] : l.vars)
         val += value(v) * c;
       return val;
@@ -161,9 +161,9 @@ namespace semitone
      */
     SEMITONE_EXPORT bool matches(const lin &l0, const lin &l1) const noexcept;
 
-    bool set_lb(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_lower(x_i, val, p); }
-    bool set_ub(const var &x_i, const inf_rational &val, const lit &p) noexcept { return assert_upper(x_i, val, p); }
-    bool set(const var &x_i, const inf_rational &val, const lit &p) noexcept { return set_lb(x_i, val, p) && set_ub(x_i, val, p); }
+    bool set_lb(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept { return assert_lower(x_i, val, p); }
+    bool set_ub(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept { return assert_upper(x_i, val, p); }
+    bool set(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept { return set_lb(x_i, val, p) && set_ub(x_i, val, p); }
 
   private:
     bool propagate(const lit &p) noexcept override;
@@ -179,7 +179,7 @@ namespace semitone
      * @param p the literal that caused the assertion.
      * @return bool whether the assertion was successful.
      */
-    SEMITONE_EXPORT bool assert_lower(const var &x_i, const inf_rational &val, const lit &p) noexcept;
+    SEMITONE_EXPORT bool assert_lower(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept;
     /**
      * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
      *
@@ -188,9 +188,9 @@ namespace semitone
      * @param p the literal that caused the assertion.
      * @return bool whether the assertion was successful.
      */
-    SEMITONE_EXPORT bool assert_upper(const var &x_i, const inf_rational &val, const lit &p) noexcept;
-    void update(const var &x_i, const inf_rational &v) noexcept;
-    void pivot_and_update(const var &x_i, const var &x_j, const inf_rational &v) noexcept;
+    SEMITONE_EXPORT bool assert_upper(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept;
+    void update(const var &x_i, const utils::inf_rational &v) noexcept;
+    void pivot_and_update(const var &x_i, const var &x_j, const utils::inf_rational &v) noexcept;
     void pivot(const var x_i, const var x_j) noexcept;
     void new_row(const var &x, const lin &l) noexcept;
 
@@ -211,12 +211,12 @@ namespace semitone
      */
     struct bound
     {
-      inf_rational value; // the value of the bound..
+      utils::inf_rational value; // the value of the bound..
       lit reason;         // the reason for the value..
     };
 
     std::vector<bound> c_bounds;                           // the current bounds..
-    std::vector<inf_rational> vals;                        // the current values..
+    std::vector<utils::inf_rational> vals;                        // the current values..
     std::map<const var, row *> tableau;                    // the sparse matrix..
     std::unordered_map<std::string, var> exprs;            // the expressions (string to numeric variable) for which already exist slack variables..
     std::unordered_map<std::string, lit> s_asrts;          // the assertions (string to literal) used for reducing the number of boolean variables..

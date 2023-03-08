@@ -5,8 +5,8 @@
 namespace semitone
 {
     SEMITONE_EXPORT lin::lin() {}
-    SEMITONE_EXPORT lin::lin(const rational &known_term) : known_term(known_term) {}
-    SEMITONE_EXPORT lin::lin(const var v, const rational &c) { vars.emplace(v, c); }
+    SEMITONE_EXPORT lin::lin(const utils::rational &known_term) : known_term(known_term) {}
+    SEMITONE_EXPORT lin::lin(const var v, const utils::rational &c) { vars.emplace(v, c); }
 
     SEMITONE_EXPORT lin lin::operator+(const lin &right) const noexcept
     {
@@ -19,7 +19,7 @@ namespace semitone
             else
             {
                 trm_it->second += term.second;
-                if (trm_it->second == rational::ZERO)
+                if (trm_it->second == utils::rational::ZERO)
                     res.vars.erase(trm_it);
             }
         }
@@ -27,14 +27,14 @@ namespace semitone
         return res;
     }
 
-    SEMITONE_EXPORT lin lin::operator+(const rational &right) const noexcept
+    SEMITONE_EXPORT lin lin::operator+(const utils::rational &right) const noexcept
     {
         lin res = *this;
         res.known_term += right;
         return res;
     }
 
-    SEMITONE_EXPORT lin operator+(const rational &lhs, const lin &rhs) noexcept
+    SEMITONE_EXPORT lin operator+(const utils::rational &lhs, const lin &rhs) noexcept
     {
         lin res = rhs;
         res.known_term += lhs;
@@ -50,28 +50,28 @@ namespace semitone
             else
             {
                 trm_it->second -= term.second;
-                if (trm_it->second == rational::ZERO)
+                if (trm_it->second == utils::rational::ZERO)
                     res.vars.erase(trm_it);
             }
         res.known_term -= right.known_term;
         return res;
     }
 
-    SEMITONE_EXPORT lin lin::operator-(const rational &right) const noexcept
+    SEMITONE_EXPORT lin lin::operator-(const utils::rational &right) const noexcept
     {
         lin res = *this;
         res.known_term -= right;
         return res;
     }
 
-    SEMITONE_EXPORT lin operator-(const rational &lhs, const lin &rhs) noexcept
+    SEMITONE_EXPORT lin operator-(const utils::rational &lhs, const lin &rhs) noexcept
     {
         lin res = -rhs;
         res.known_term += lhs;
         return res;
     }
 
-    SEMITONE_EXPORT lin lin::operator*(const rational &right) const noexcept
+    SEMITONE_EXPORT lin lin::operator*(const utils::rational &right) const noexcept
     {
         lin res = *this;
         for ([[maybe_unused]] auto &[v, c] : res.vars)
@@ -80,7 +80,7 @@ namespace semitone
         return res;
     }
 
-    SEMITONE_EXPORT lin operator*(const rational &lhs, const lin &rhs) noexcept
+    SEMITONE_EXPORT lin operator*(const utils::rational &lhs, const lin &rhs) noexcept
     {
         lin res = rhs;
         for ([[maybe_unused]] auto &[v, c] : res.vars)
@@ -89,7 +89,7 @@ namespace semitone
         return res;
     }
 
-    SEMITONE_EXPORT lin lin::operator/(const rational &right) const noexcept
+    SEMITONE_EXPORT lin lin::operator/(const utils::rational &right) const noexcept
     {
         lin res = *this;
         for ([[maybe_unused]] auto &[v, c] : res.vars)
@@ -106,14 +106,14 @@ namespace semitone
             else
             {
                 trm_it->second += term.second;
-                if (trm_it->second == rational::ZERO)
+                if (trm_it->second == utils::rational::ZERO)
                     vars.erase(trm_it);
             }
         known_term += right.known_term;
         return *this;
     }
 
-    SEMITONE_EXPORT lin lin::operator+=(const rational &right) noexcept
+    SEMITONE_EXPORT lin lin::operator+=(const utils::rational &right) noexcept
     {
         known_term += right;
         return *this;
@@ -127,26 +127,26 @@ namespace semitone
             else
             {
                 trm_it->second -= c;
-                if (trm_it->second == rational::ZERO)
+                if (trm_it->second == utils::rational::ZERO)
                     vars.erase(trm_it);
             }
         known_term -= right.known_term;
         return *this;
     }
 
-    SEMITONE_EXPORT lin lin::operator-=(const rational &right) noexcept
+    SEMITONE_EXPORT lin lin::operator-=(const utils::rational &right) noexcept
     {
         known_term -= right;
         return *this;
     }
 
-    SEMITONE_EXPORT lin lin::operator*=(const rational &right) noexcept
+    SEMITONE_EXPORT lin lin::operator*=(const utils::rational &right) noexcept
     {
         assert(!is_infinite(right));
-        if (right == rational::ZERO)
+        if (right == utils::rational::ZERO)
         {
             vars.clear();
-            known_term = rational::ZERO;
+            known_term = utils::rational::ZERO;
         }
         else
             for ([[maybe_unused]] auto &[v, c] : vars)
@@ -154,13 +154,13 @@ namespace semitone
         return *this;
     }
 
-    SEMITONE_EXPORT lin lin::operator/=(const rational &right) noexcept
+    SEMITONE_EXPORT lin lin::operator/=(const utils::rational &right) noexcept
     {
-        assert(right != rational::ZERO);
+        assert(right != utils::rational::ZERO);
         if (is_infinite(right))
         {
             vars.clear();
-            known_term = rational::ZERO;
+            known_term = utils::rational::ZERO;
         }
         else
             for ([[maybe_unused]] auto &[v, c] : vars)
@@ -187,18 +187,18 @@ namespace semitone
         for (auto it = rhs.vars.cbegin(); it != rhs.vars.cend(); ++it)
             if (it == rhs.vars.cbegin())
             {
-                if (it->second == rational::ONE)
+                if (it->second == utils::rational::ONE)
                     s += "x" + std::to_string(it->first);
-                else if (it->second == -rational::ONE)
+                else if (it->second == -utils::rational::ONE)
                     s += "-x" + std::to_string(it->first);
                 else
                     s += to_string(it->second) + "*x" + std::to_string(it->first);
             }
             else
             {
-                if (it->second == rational::ONE)
+                if (it->second == utils::rational::ONE)
                     s += " + x" + std::to_string(it->first);
-                else if (it->second == -rational::ONE)
+                else if (it->second == -utils::rational::ONE)
                     s += " - x" + std::to_string(it->first);
                 else if (is_positive(it->second))
                     s += " + " + to_string(it->second) + "*x" + std::to_string(it->first);

@@ -1,12 +1,13 @@
 #pragma once
 
 #include "lit.h"
+#include "memory.h"
 #include <vector>
-#include <memory>
 
 namespace semitone
 {
   class sat_core;
+  using sat_ptr = utils::c_ptr<sat_core>;
   class sat_stack;
 
   class theory
@@ -20,13 +21,13 @@ namespace semitone
      *
      * @param sat the sat core this theory belongs to.
      */
-    SEMITONE_EXPORT theory(std::shared_ptr<sat_core> sat);
+    SEMITONE_EXPORT theory(sat_ptr sat);
     theory(const theory &orig) = delete;
     SEMITONE_EXPORT virtual ~theory();
 
     inline sat_core &get_sat_core() noexcept { return *sat; }
     inline const sat_core &get_sat_core() const noexcept { return *sat; }
-    inline std::shared_ptr<sat_core> &get_sat_core_ptr() noexcept { return sat; }
+    inline sat_ptr &get_sat_core_ptr() noexcept { return sat; }
 
   protected:
     SEMITONE_EXPORT void bind(const var &v) noexcept;
@@ -65,7 +66,7 @@ namespace semitone
     virtual void pop() = 0;
 
   protected:
-    std::shared_ptr<sat_core> sat;
+    sat_ptr sat;
     std::vector<lit> cnfl;
   };
 } // namespace semitone

@@ -26,7 +26,7 @@ namespace semitone
     friend class row;
 
   public:
-    assertion(lra_theory &th, const op o, const lit b, const var x, const inf_rational &v);
+    assertion(lra_theory &th, const op o, const lit b, const var x, const utils::inf_rational &v);
     assertion(const assertion &orig) = delete;
 
   private:
@@ -40,7 +40,7 @@ namespace semitone
     const op o;           // the kind of operator..
     const lit b;          // the literal associated to the assertion..
     const var x;          // the numeric variable..
-    const inf_rational v; // the constant..
+    const utils::inf_rational v; // the constant..
   };
 
   /**

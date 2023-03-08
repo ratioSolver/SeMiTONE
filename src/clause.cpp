@@ -5,15 +5,21 @@
 
 namespace semitone
 {
-    clause::clause(sat_core &s, std::vector<lit> lits) : constr(s), lits(std::move(lits)) {}
-
-    clause *clause::new_clause(sat_core &s, std::vector<lit> lits)
+    clause::clause(sat_core &s, std::vector<lit> ls) : constr(s), lits(std::move(ls))
     {
+        assert(lits.size() >= 2);
         auto l0 = lits[0], l1 = lits[1];
-        clause *c = new clause(s, std::move(lits));
-        c->watches(!l0).push_back(c);
-        c->watches(!l1).push_back(c);
-        return c;
+        watches(!l0).push_back(this);
+        watches(!l1).push_back(this);
+    }
+    clause::~clause()
+    {
+        auto &l0_w = watches(!lits[0]);
+        l0_w.erase(std::find(l0_w.cbegin(), l0_w.cend(), this));
+        auto &l1_w = watches(!lits[1]);
+        l1_w.erase(std::find(l1_w.cbegin(), l1_w.cend(), this));
+        for (const auto &l : lits)
+            remove_constr_from_reason(variable(l));
     }
 
     bool clause::propagate(const lit &p) noexcept
@@ -23,7 +29,7 @@ namespace semitone
             std::swap(*(lits.begin()), *(std::next(lits.begin())));
 
         // if 0th watch is true, the clause is already satisfied..
-        if (value(lits[0]) == True)
+        if (value(lits[0]) == utils::True)
         {
             watches(p).push_back(this);
             return true;
@@ -31,7 +37,7 @@ namespace semitone
 
         // we look for a new literal to watch..
         for (size_t i = 1; i < lits.size(); ++i)
-            if (value(lits[i]) != False)
+            if (value(lits[i]) != utils::False)
             {
                 std::swap(*(std::next(lits.begin())), *(std::next(lits.begin(), i)));
                 watches(!lits[1]).push_back(this);
@@ -49,25 +55,14 @@ namespace semitone
         for (size_t i = 0; i < lits.size(); ++i)
             switch (value(lits[i]))
             {
-            case True:
+            case utils::True:
                 return true;
-            case Undefined:
+            case utils::Undefined:
                 lits[j++] = lits[i];
                 break;
             }
         lits.resize(j);
         return false;
-    }
-
-    void clause::remove() noexcept
-    {
-        auto &l0_w = watches(!lits[0]);
-        l0_w.erase(std::find(l0_w.cbegin(), l0_w.cend(), this));
-        auto &l1_w = watches(!lits[1]);
-        l1_w.erase(std::find(l1_w.cbegin(), l1_w.cend(), this));
-        for (const auto &l : lits)
-            remove_constr_from_reason(variable(l));
-        delete this;
     }
 
     void clause::get_reason(const lit &p, std::vector<lit> &out_reason) const noexcept
@@ -76,7 +71,7 @@ namespace semitone
         out_reason.reserve(is_undefined(p) ? lits.size() : lits.size() - 1);
         for (size_t i = is_undefined(p) ? 0 : 1; i < lits.size(); ++i)
         {
-            assert(value(lits[i]) == False);
+            assert(value(lits[i]) == utils::False);
             out_reason.push_back(!lits[i]);
         }
     }
@@ -85,20 +80,20 @@ namespace semitone
     {
         json::json j_cl;
 
-        json::array j_lits;
+        json::json j_lits(json::json_type::array);
         for (const auto &l : lits)
         {
             json::json j_lit;
             j_lit["lit"] = to_string(l);
             switch (value(l))
             {
-            case True:
+            case utils::True:
                 j_lit["val"] = "T";
                 break;
-            case False:
+            case utils::False:
                 j_lit["val"] = "F";
                 break;
-            case Undefined:
+            case utils::Undefined:
                 j_lit["val"] = "U";
                 break;
             }

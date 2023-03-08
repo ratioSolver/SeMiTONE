@@ -6,8 +6,8 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT lra_theory::lra_theory(std::shared_ptr<sat_core> sat) : theory(std::move(sat)) {}
-    SEMITONE_EXPORT lra_theory::lra_theory(std::shared_ptr<sat_core> sat, const lra_theory &orig) : theory(std::move(sat)), c_bounds(orig.c_bounds), vals(orig.vals), exprs(orig.exprs), s_asrts(orig.s_asrts), layers(orig.layers), listening(orig.listening)
+    SEMITONE_EXPORT lra_theory::lra_theory(sat_ptr sat) : theory(std::move(sat)) {}
+    SEMITONE_EXPORT lra_theory::lra_theory(sat_ptr sat, const lra_theory &orig) : theory(std::move(sat)), c_bounds(orig.c_bounds), vals(orig.vals), exprs(orig.exprs), s_asrts(orig.s_asrts), layers(orig.layers), listening(orig.listening)
     {
         t_watches.resize(orig.t_watches.size());
         for (const auto &[v, r] : orig.tableau)
@@ -29,9 +29,9 @@ namespace semitone
     {
         // we create a new arithmetic variable..
         const var id = vals.size();
-        c_bounds.push_back({inf_rational(rational::NEGATIVE_INFINITY), TRUE_lit}); // we set the lower bound at -inf..
-        c_bounds.push_back({inf_rational(rational::POSITIVE_INFINITY), TRUE_lit}); // we set the upper bound at +inf..
-        vals.emplace_back(rational::ZERO);                                         // we set the current value at 0..
+        c_bounds.push_back({utils::inf_rational(utils::rational::NEGATIVE_INFINITY), TRUE_lit}); // we set the lower bound at -inf..
+        c_bounds.push_back({utils::inf_rational(utils::rational::POSITIVE_INFINITY), TRUE_lit}); // we set the upper bound at +inf..
+        vals.emplace_back(utils::rational::ZERO);                                         // we set the current value at 0..
         exprs.emplace("x" + std::to_string(id), id);
         a_watches.resize(vals.size());
         t_watches.resize(vals.size());
@@ -67,13 +67,13 @@ namespace semitone
         for (const auto &v : vars)
             if (const auto at_v = tableau.find(v); at_v != tableau.cend())
             {
-                rational c = expr.vars[v];
+                utils::rational c = expr.vars[v];
                 expr.vars.erase(v);
                 expr += at_v->second->l * c;
             }
 
-        const inf_rational c_right = inf_rational(-expr.known_term, -1);
-        expr.known_term = rational::ZERO;
+        const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, -1);
+        expr.known_term = utils::rational::ZERO;
 
         if (ub(expr) < c_right)
             return TRUE_lit; // the constraint is already satisfied..
@@ -110,13 +110,13 @@ namespace semitone
         for (const auto &v : vars)
             if (const auto at_v = tableau.find(v); at_v != tableau.cend())
             {
-                rational c = expr.vars[v];
+                utils::rational c = expr.vars[v];
                 expr.vars.erase(v);
                 expr += at_v->second->l * c;
             }
 
-        const inf_rational c_right = -inf_rational(expr.known_term);
-        expr.known_term = rational::ZERO;
+        const utils::inf_rational c_right = -utils::inf_rational(expr.known_term);
+        expr.known_term = utils::rational::ZERO;
 
         if (ub(expr) <= c_right)
             return TRUE_lit; // the constraint is already satisfied..
@@ -153,13 +153,13 @@ namespace semitone
         for (const auto &v : vars)
             if (const auto at_v = tableau.find(v); at_v != tableau.cend())
             {
-                rational c = expr.vars[v];
+                utils::rational c = expr.vars[v];
                 expr.vars.erase(v);
                 expr += at_v->second->l * c;
             }
 
-        const inf_rational c_right = -inf_rational(expr.known_term);
-        expr.known_term = rational::ZERO;
+        const utils::inf_rational c_right = -utils::inf_rational(expr.known_term);
+        expr.known_term = utils::rational::ZERO;
 
         if (lb(expr) >= c_right)
             return TRUE_lit; // the constraint is already satisfied..
@@ -196,13 +196,13 @@ namespace semitone
         for (const auto &v : vars)
             if (const auto at_v = tableau.find(v); at_v != tableau.cend())
             {
-                rational c = expr.vars[v];
+                utils::rational c = expr.vars[v];
                 expr.vars.erase(v);
                 expr += at_v->second->l * c;
             }
 
-        const inf_rational c_right = inf_rational(-expr.known_term, 1);
-        expr.known_term = rational::ZERO;
+        const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, 1);
+        expr.known_term = utils::rational::ZERO;
 
         if (lb(expr) > c_right)
             return TRUE_lit; // the constraint is already satisfied..
@@ -242,12 +242,12 @@ namespace semitone
         const auto &a = v_asrts[variable(p)];
         switch (sat->value(a->b))
         {
-        case True: // the assertion is direct..
+        case utils::True: // the assertion is direct..
             if (!((a->o == op::leq) ? assert_upper(a->x, a->v, p) : assert_lower(a->x, a->v, p)))
                 return false;
             break;
-        case False: // the assertion is negated..
-            if (!((a->o == op::leq) ? assert_lower(a->x, a->v + inf_rational(rational::ZERO, rational::ONE), p) : assert_upper(a->x, a->v - inf_rational(rational::ZERO, rational::ONE), p)))
+        case utils::False: // the assertion is negated..
+            if (!((a->o == op::leq) ? assert_lower(a->x, a->v + utils::inf_rational(utils::rational::ZERO, utils::rational::ONE), p) : assert_upper(a->x, a->v - utils::inf_rational(utils::rational::ZERO, utils::rational::ONE), p)))
                 return false;
             break;
         }
@@ -270,7 +270,7 @@ namespace semitone
             const row *f_row = (*x_i_it).second;
             if (value(x_i) < lb(x_i))
             {
-                const auto &x_j_it = std::find_if(f_row->l.vars.cbegin(), f_row->l.vars.cend(), [f_row, this](const std::pair<var, rational> &v)
+                const auto &x_j_it = std::find_if(f_row->l.vars.cbegin(), f_row->l.vars.cend(), [f_row, this](const std::pair<var, utils::rational> &v)
                                                   { return (is_positive(f_row->l.vars.at(v.first)) && value(v.first) < ub(v.first)) || (is_negative(f_row->l.vars.at(v.first)) && value(v.first) > lb(v.first)); });
                 if (x_j_it != f_row->l.vars.cend()) // var x_j can be used to increase the value of x_i..
                     pivot_and_update(x_i, (*x_j_it).first, lb(x_i));
@@ -287,7 +287,7 @@ namespace semitone
             }
             else if (value(x_i) > ub(x_i))
             {
-                const auto &x_j_it = std::find_if(f_row->l.vars.cbegin(), f_row->l.vars.cend(), [f_row, this](const std::pair<var, rational> &v)
+                const auto &x_j_it = std::find_if(f_row->l.vars.cbegin(), f_row->l.vars.cend(), [f_row, this](const std::pair<var, utils::rational> &v)
                                                   { return (is_negative(f_row->l.vars.at(v.first)) && value(v.first) < ub(v.first)) || (is_positive(f_row->l.vars.at(v.first)) && value(v.first) > lb(v.first)); });
                 if (x_j_it != f_row->l.vars.cend()) // var x_j can be used to decrease the value of x_i..
                     pivot_and_update(x_i, (*x_j_it).first, ub(x_i));
@@ -315,9 +315,9 @@ namespace semitone
         layers.pop_back();
     }
 
-    bool lra_theory::assert_lower(const var &x_i, const inf_rational &val, const lit &p) noexcept
+    bool lra_theory::assert_lower(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept
     {
-        assert(sat->value(p) != Undefined);
+        assert(sat->value(p) != utils::Undefined);
         assert(cnfl.empty());
         if (val <= lb(x_i))
             return true;
@@ -349,9 +349,9 @@ namespace semitone
         }
     }
 
-    bool lra_theory::assert_upper(const var &x_i, const inf_rational &val, const lit &p) noexcept
+    bool lra_theory::assert_upper(const var &x_i, const utils::inf_rational &val, const lit &p) noexcept
     {
-        assert(sat->value(p) != Undefined);
+        assert(sat->value(p) != utils::Undefined);
         assert(cnfl.empty());
         if (val >= ub(x_i))
             return true;
@@ -383,7 +383,7 @@ namespace semitone
         }
     }
 
-    void lra_theory::update(const var &x_i, const inf_rational &v) noexcept
+    void lra_theory::update(const var &x_i, const utils::inf_rational &v) noexcept
     {
         assert(!is_basic(x_i) && "x_i should be a non-basic variable..");
         // the tableau rows containing `x_i` as a non-basic variable..
@@ -401,13 +401,13 @@ namespace semitone
                 l->lra_value_change(x_i);
     }
 
-    void lra_theory::pivot_and_update(const var &x_i, const var &x_j, const inf_rational &v) noexcept
+    void lra_theory::pivot_and_update(const var &x_i, const var &x_j, const utils::inf_rational &v) noexcept
     {
         assert(is_basic(x_i) && "x_i should be a basic variable..");
         assert(!is_basic(x_j) && "x_j should be a non-basic variable..");
         assert(tableau.at(x_i)->l.vars.count(x_j));
 
-        const inf_rational theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
+        const utils::inf_rational theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
         assert(!is_infinite(theta));
 
         // x_i = v
@@ -446,19 +446,19 @@ namespace semitone
             t_watches[v].erase(ex_row);
         delete ex_row;
 
-        const rational cf = expr.vars[x_j];
+        const utils::rational cf = expr.vars[x_j];
         expr.vars.erase(x_j);
         expr /= -cf;
-        expr.vars.emplace(x_i, rational::ONE / cf);
+        expr.vars.emplace(x_i, utils::rational::ONE / cf);
 
         // these are the rows in which x_j appears..
         std::unordered_set<row *> x_j_watches;
         std::swap(x_j_watches, t_watches[x_j]);
         for (const auto &r : x_j_watches)
         { // `r` is a row in which `x_j` appears..
-            rational cc = r->l.vars[x_j];
+            utils::rational cc = r->l.vars[x_j];
             r->l.vars.erase(x_j);
-            for (const auto &[v, c] : std::map<const var, rational>(expr.vars))
+            for (const auto &[v, c] : std::map<const var, utils::rational>(expr.vars))
                 if (const auto trm_it = r->l.vars.find(v); trm_it == r->l.vars.cend())
                 { // we are adding a new term to `r`..
                     r->l.vars.emplace(v, c * cc);
@@ -468,7 +468,7 @@ namespace semitone
                 { // we are updating an existing term of `r`..
                     assert(trm_it->first == v);
                     trm_it->second += c * cc;
-                    if (trm_it->second == rational::ZERO)
+                    if (trm_it->second == utils::rational::ZERO)
                     { // the updated term's coefficient has become equal to zero, hence we can remove the term..
                         r->l.vars.erase(trm_it);
                         t_watches[v].erase(r);
@@ -492,8 +492,8 @@ namespace semitone
     {
         json::json j_th;
 
-        json::array j_vars;
-        j_vars.reserve(rhs.vals.size());
+        json::json j_vars(json::json_type::array);
+        j_vars.get_array().reserve(rhs.vals.size());
         for (size_t i = 0; i < rhs.vals.size(); ++i)
         {
             json::json var;
@@ -507,14 +507,14 @@ namespace semitone
         }
         j_th["vars"] = std::move(j_vars);
 
-        json::array j_asrts;
-        j_asrts.reserve(rhs.v_asrts.size());
+        json::json j_asrts(json::json_type::array);
+        j_vars.get_array().reserve(rhs.v_asrts.size());
         for (const auto &c_asrts : rhs.v_asrts)
             j_asrts.push_back(to_json(*c_asrts.second));
         j_th["asrts"] = std::move(j_asrts);
 
-        json::array j_tabl;
-        j_tabl.reserve(rhs.tableau.size());
+        json::json j_tabl(json::json_type::array);
+        j_vars.get_array().reserve(rhs.tableau.size());
         for (auto it = rhs.tableau.cbegin(); it != rhs.tableau.cend(); ++it)
             j_tabl.push_back(to_json(*it->second));
         j_th["tableau"] = std::move(j_tabl);

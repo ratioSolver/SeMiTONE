@@ -5,13 +5,13 @@
 
 namespace semitone
 {
-    SEMITONE_EXPORT ov_theory::ov_theory(std::shared_ptr<sat_core> sat) : theory(std::move(sat)) {}
+    SEMITONE_EXPORT ov_theory::ov_theory(sat_ptr sat) : theory(std::move(sat)) {}
 
-    SEMITONE_EXPORT var ov_theory::new_var(const std::vector<var_value *> &items, const bool enforce_exct_one) noexcept
+    SEMITONE_EXPORT var ov_theory::new_var(const std::vector<utils::enum_val *> &items, const bool enforce_exct_one) noexcept
     {
         assert(!items.empty());
         const var id = assigns.size();
-        auto c_vals = std::unordered_map<var_value *, lit>();
+        auto c_vals = std::unordered_map<utils::enum_val *, lit>();
         if (items.size() == 1)
             c_vals.emplace(*items.cbegin(), TRUE_lit);
         else
@@ -37,12 +37,12 @@ namespace semitone
         return id;
     }
 
-    SEMITONE_EXPORT var ov_theory::new_var(const std::vector<lit> &lits, const std::vector<var_value *> &vals) noexcept
+    SEMITONE_EXPORT var ov_theory::new_var(const std::vector<lit> &lits, const std::vector<utils::enum_val *> &vals) noexcept
     {
         assert(!lits.empty());
         assert(lits.size() == vals.size());
         const var id = assigns.size();
-        auto c_vals = std::unordered_map<var_value *, lit>();
+        auto c_vals = std::unordered_map<utils::enum_val *, lit>();
         for (size_t i = 0; i < lits.size(); ++i)
         {
             c_vals.emplace(vals[i], lits[i]);
@@ -52,7 +52,7 @@ namespace semitone
         return id;
     }
 
-    SEMITONE_EXPORT lit ov_theory::allows(const var &v, var_value &val) const noexcept
+    SEMITONE_EXPORT lit ov_theory::allows(const var &v, utils::enum_val &val) const noexcept
     {
         if (auto at_right = assigns[v].find(&val); at_right != assigns[v].cend())
             return at_right->second;
@@ -73,7 +73,7 @@ namespace semitone
             return at_expr->second;
         else
         {
-            std::unordered_set<var_value *> intersection;
+            std::unordered_set<utils::enum_val *> intersection;
             for ([[maybe_unused]] const auto &[val, l] : assigns[left])
                 if (assigns[right].count(val))
                     intersection.insert(val);
@@ -114,11 +114,11 @@ namespace semitone
         }
     }
 
-    SEMITONE_EXPORT std::unordered_set<var_value *> ov_theory::value(var v) const noexcept
+    SEMITONE_EXPORT std::unordered_set<utils::enum_val *> ov_theory::value(var v) const noexcept
     {
-        std::unordered_set<var_value *> vals;
+        std::unordered_set<utils::enum_val *> vals;
         for (const auto &[val, l] : assigns[v])
-            if (sat->value(l) != False)
+            if (sat->value(l) != utils::False)
                 vals.insert(val);
         return vals;
     }

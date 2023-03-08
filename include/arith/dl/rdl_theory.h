@@ -21,8 +21,8 @@ namespace semitone
      * @param sat the SAT solver to use.
      * @param size the initial size of the theory.
      */
-    SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16);
-    SEMITONE_EXPORT rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig);
+    SEMITONE_EXPORT rdl_theory(sat_ptr sat, const size_t &size = 16);
+    SEMITONE_EXPORT rdl_theory(sat_ptr sat, const rdl_theory &orig);
     rdl_theory(const rdl_theory &orig) = delete;
     SEMITONE_EXPORT virtual ~rdl_theory();
 
@@ -33,8 +33,8 @@ namespace semitone
      */
     SEMITONE_EXPORT var new_var() noexcept;
 
-    SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const inf_rational &dist) noexcept; // creates and returns a new propositional variable for controlling the constraint `to - from <= dist`..
-    SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const inf_rational &min, const inf_rational &max) noexcept { return sat->new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
+    SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const utils::inf_rational &dist) noexcept; // creates and returns a new propositional variable for controlling the constraint `to - from <= dist`..
+    SEMITONE_EXPORT lit new_distance(const var &from, const var &to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept { return sat->new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
     /**
      * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
@@ -81,47 +81,47 @@ namespace semitone
      * @brief Returns the lower bound of the given variable.
      *
      * @param v the variable to get the lower bound of.
-     * @return inf_rational the lower bound of the variable.
+     * @return utils::inf_rational the lower bound of the variable.
      */
-    inline inf_rational lb(const var &v) const noexcept { return -_dists[v][0]; }
+    inline utils::inf_rational lb(const var &v) const noexcept { return -_dists[v][0]; }
     /**
      * @brief Returns the upper bound of the given variable.
      *
      * @param v the variable to get the upper bound of.
-     * @return inf_rational the upper bound of the variable.
+     * @return utils::inf_rational the upper bound of the variable.
      */
-    inline inf_rational ub(const var &v) const noexcept { return _dists[0][v]; }
+    inline utils::inf_rational ub(const var &v) const noexcept { return _dists[0][v]; }
     /**
      * @brief Returns the bounds of the given variable.
      *
      * @param v the variable to get the bounds of.
-     * @return std::pair<inf_rational, inf_rational> the bounds of the variable.
+     * @return std::pair<utils::inf_rational, utils::inf_rational> the bounds of the variable.
      */
-    inline std::pair<inf_rational, inf_rational> bounds(const var &v) const noexcept { return std::make_pair(-_dists[v][0], _dists[0][v]); }
+    inline std::pair<utils::inf_rational, utils::inf_rational> bounds(const var &v) const noexcept { return std::make_pair(-_dists[v][0], _dists[0][v]); }
     /**
      * @brief Returns the distance between the given variables.
      *
      * @param from the variable to start from.
      * @param to the variable to end at.
-     * @return std::pair<inf_rational, inf_rational> the distance between the variables.
+     * @return std::pair<utils::inf_rational, utils::inf_rational> the distance between the variables.
      */
-    inline std::pair<inf_rational, inf_rational> distance(const var &from, const var &to) const noexcept { return std::make_pair(-_dists[to][from], _dists[from][to]); }
+    inline std::pair<utils::inf_rational, utils::inf_rational> distance(const var &from, const var &to) const noexcept { return std::make_pair(-_dists[to][from], _dists[from][to]); }
 
     /**
      * @brief Returns the bounds of the given linear expression.
      *
      * @param l the linear expression to get the bounds of.
-     * @return std::pair<inf_rational, inf_rational> the bounds of the linear expression.
+     * @return std::pair<utils::inf_rational, utils::inf_rational> the bounds of the linear expression.
      */
-    SEMITONE_EXPORT std::pair<inf_rational, inf_rational> bounds(const lin &l) const;
+    SEMITONE_EXPORT std::pair<utils::inf_rational, utils::inf_rational> bounds(const lin &l) const;
     /**
      * @brief Returns the distance between the given linear expressions.
      *
      * @param from the linear expression to start from.
      * @param to the linear expression to end at.
-     * @return std::pair<inf_rational, inf_rational> the distance between the linear expressions.
+     * @return std::pair<utils::inf_rational, utils::inf_rational> the distance between the linear expressions.
      */
-    SEMITONE_EXPORT std::pair<inf_rational, inf_rational> distance(const lin &from, const lin &to) const;
+    SEMITONE_EXPORT std::pair<utils::inf_rational, utils::inf_rational> distance(const lin &from, const lin &to) const;
 
     /**
      * @brief Returns whether the given linear expressions can be equal.
@@ -145,8 +145,8 @@ namespace semitone
     void push() noexcept override;
     void pop() noexcept override;
 
-    void propagate(const var &from, const var &to, const inf_rational &dist) noexcept;
-    void set_dist(const var &from, const var &to, const inf_rational &dist) noexcept;
+    void propagate(const var &from, const var &to, const utils::inf_rational &dist) noexcept;
+    void set_dist(const var &from, const var &to, const utils::inf_rational &dist) noexcept;
     void set_pred(const var &from, const var &to, const var &pred) noexcept;
 
     void resize(const size_t &size) noexcept;
@@ -163,25 +163,25 @@ namespace semitone
       friend class rdl_theory;
 
     public:
-      rdl_distance(const lit &b, const var &from, const var &to, const inf_rational &dist) : b(b), from(from), to(to), dist(dist) {}
+      rdl_distance(const lit &b, const var &from, const var &to, const utils::inf_rational &dist) : b(b), from(from), to(to), dist(dist) {}
       rdl_distance(const rdl_distance &orig) = delete;
 
     private:
       const lit b; // the propositional literal associated to the distance constraint..
       const var from;
       const var to;
-      const inf_rational dist;
+      const utils::inf_rational dist;
     };
 
     struct layer
     {
-      std::map<std::pair<var, var>, inf_rational> old_dists;     // the updated distances..
+      std::map<std::pair<var, var>, utils::inf_rational> old_dists;     // the updated distances..
       std::map<std::pair<var, var>, var> old_preds;              // the updated predecessors..
       std::map<std::pair<var, var>, rdl_distance *> old_constrs; // the updated constraints..
     };
 
     size_t n_vars = 1;
-    std::vector<std::vector<inf_rational>> _dists;                           // the distance matrix..
+    std::vector<std::vector<utils::inf_rational>> _dists;                           // the distance matrix..
     std::vector<std::vector<var>> _preds;                                    // the predecessor matrix..
     std::map<std::pair<var, var>, rdl_distance *> dist_constr;               // the currently enforced constraints..
     std::unordered_map<var, rdl_distance *> var_dists;                       // the constraints controlled by a propositional variable (for propagation purposes)..
