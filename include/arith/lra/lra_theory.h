@@ -212,11 +212,11 @@ namespace semitone
     struct bound
     {
       utils::inf_rational value; // the value of the bound..
-      lit reason;         // the reason for the value..
+      lit reason;                // the reason for the value..
     };
 
     std::vector<bound> c_bounds;                           // the current bounds..
-    std::vector<utils::inf_rational> vals;                        // the current values..
+    std::vector<utils::inf_rational> vals;                 // the current values..
     std::map<const var, row *> tableau;                    // the sparse matrix..
     std::unordered_map<std::string, var> exprs;            // the expressions (string to numeric variable) for which already exist slack variables..
     std::unordered_map<std::string, lit> s_asrts;          // the assertions (string to literal) used for reducing the number of boolean variables..

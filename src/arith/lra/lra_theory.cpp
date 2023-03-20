@@ -31,7 +31,7 @@ namespace semitone
         const var id = vals.size();
         c_bounds.push_back({utils::inf_rational(utils::rational::NEGATIVE_INFINITY), TRUE_lit}); // we set the lower bound at -inf..
         c_bounds.push_back({utils::inf_rational(utils::rational::POSITIVE_INFINITY), TRUE_lit}); // we set the upper bound at +inf..
-        vals.emplace_back(utils::rational::ZERO);                                         // we set the current value at 0..
+        vals.emplace_back(utils::rational::ZERO);                                                // we set the current value at 0..
         exprs.emplace("x" + std::to_string(id), id);
         a_watches.resize(vals.size());
         t_watches.resize(vals.size());
