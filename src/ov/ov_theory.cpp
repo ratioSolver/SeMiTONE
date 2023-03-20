@@ -123,30 +123,13 @@ namespace semitone
         return vals;
     }
 
-    bool ov_theory::propagate(const lit &p) noexcept
-    { // propagation is performed at SAT level, here we just notify possible listeners..
-        assert(cnfl.empty());
-        for (const auto &v : is_contained_in.at(variable(p)))
-            if (const auto at_v = listening.find(v); at_v != listening.cend())
-                for (const auto &l : at_v->second)
-                    l->ov_value_change(v);
-        return true;
-    }
-
-    bool ov_theory::check() noexcept
+    SEMITONE_EXPORT void ov_theory::listen(const var &v, ov_value_listener *const l) noexcept
     {
-        assert(cnfl.empty());
-        return true;
-    }
-
-    void ov_theory::push() noexcept { layers.push_back(layer()); }
-
-    void ov_theory::pop() noexcept
-    {
-        for (const auto &v : layers.back().vars)
-            if (const auto at_v = listening.find(v); at_v != listening.cend())
-                for (const auto &l : at_v->second)
-                    l->ov_value_change(v);
-        layers.pop_back();
+        auto domain = value(v);
+        if (domain.size() > 1)
+        {
+            for (const auto &val : domain)
+                l->listen_sat(variable(assigns[v].at(val)));
+        }
     }
 } // namespace semitone

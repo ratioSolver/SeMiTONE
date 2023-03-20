@@ -29,26 +29,16 @@ namespace semitone
     SEMITONE_EXPORT std::unordered_set<utils::enum_val *> value(var v) const noexcept; // returns the current domain of the object variable `v`..
 
   private:
-    bool propagate(const lit &p) noexcept override;
-    bool check() noexcept override;
-    void push() noexcept override;
-    void pop() noexcept override;
+    bool propagate(const lit &) noexcept override { return true; }
+    bool check() noexcept override { return true; }
+    void push() noexcept override {}
+    void pop() noexcept override {}
 
-    inline void listen(const var &v, ov_value_listener *const l) noexcept
-    {
-      if (value(v).size() > 1)
-        listening[v].insert(l);
-    }
+    SEMITONE_EXPORT void listen(const var &v, ov_value_listener *const l) noexcept;
 
   private:
-    struct layer
-    {
-      std::unordered_set<var> vars; // the updated variables..
-    };
     std::vector<std::unordered_map<utils::enum_val *, lit>> assigns; // the current assignments (val to literal)..
     std::unordered_map<std::string, lit> exprs;                      // the already existing expressions (string to literal)..
     std::unordered_map<var, std::set<var>> is_contained_in;          // the propositional variable contained in the object variables (bool variable to object variables)..
-    std::vector<layer> layers;                                       // we store the updated variables..
-    std::unordered_map<var, std::set<ov_value_listener *>> listening;
   };
 } // namespace semitone
