@@ -2,7 +2,7 @@
 
 #include "lit.h"
 #include "bool.h"
-#include "json.h"
+#include "json.hpp"
 #include <vector>
 
 namespace semitone

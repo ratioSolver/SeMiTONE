@@ -3,7 +3,7 @@
 #include "semitone_export.h"
 #include "defs.h"
 #include "rational.h"
-#include "json.h"
+#include "json.hpp"
 #include <map>
 
 namespace semitone
