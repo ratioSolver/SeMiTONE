@@ -7,9 +7,12 @@
 
 namespace semitone
 {
+  class theory;
+
   class sat_core
   {
     friend class constr;
+    friend class theory;
 
   public:
     /**
@@ -86,5 +89,7 @@ namespace semitone
     std::vector<lit> trail;        // the list of assignment in chronological order..
     std::vector<size_t> trail_lim; // separator indices for different decision levels in `trail`..
     std::vector<lit> decisions;    // the list of decisions in chronological order..
+
+    std::vector<std::unique_ptr<theory>> theories; // all the theories..
   };
 } // namespace semitone

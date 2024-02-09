@@ -6,7 +6,7 @@ enable_testing()
 
 add_subdirectory(extern/json)
 
-add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp)
+add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp)
 target_compile_features(SeMiTONE PUBLIC cxx_std_17)
 target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_link_libraries(SeMiTONE PUBLIC json)

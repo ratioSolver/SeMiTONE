@@ -1,5 +1,6 @@
 #include <cassert>
 #include "sat_core.hpp"
+#include "theory.hpp"
 
 namespace semitone
 {
