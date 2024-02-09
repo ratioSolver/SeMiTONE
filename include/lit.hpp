@@ -15,19 +15,19 @@ namespace semitone
 
     /**
      * @brief Get the variable of the literal.
-     * 
+     *
      * @param p The literal.
      * @return var The variable of the literal.
      */
     inline friend VARIABLE_TYPE variable(const lit &p) noexcept { return p.x >> 1; }
     /**
      * @brief Get the sign of the literal.
-     * 
+     *
      * @param p The literal.
      * @return bool The sign of the literal.
      */
     inline friend bool sign(const lit &p) noexcept { return p.x & 1; }
-    
+
     inline friend size_t index(const lit &p) noexcept { return p.x; }
     inline friend bool is_undefined(const lit &p) noexcept { return p.x == std::numeric_limits<VARIABLE_TYPE>::max(); }
 
@@ -46,4 +46,8 @@ namespace semitone
   private:
     VARIABLE_TYPE x;
   };
+
+  constexpr VARIABLE_TYPE FALSE_var = 0;
+  constexpr lit FALSE_lit(FALSE_var);
+  constexpr lit TRUE_lit = !FALSE_lit;
 } // namespace semitone
