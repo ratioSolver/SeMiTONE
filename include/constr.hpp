@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
 #include "lit.hpp"
 #include "bool.hpp"
+#include "json.hpp"
 
 namespace semitone
 {
@@ -34,6 +34,20 @@ namespace semitone
 
   protected:
     /**
+     * Enqueue a literal in the assignment.
+     *
+     * @param p The literal to enqueue.
+     * @return `true` if the assignment is consistent, `false` otherwise.
+     */
+    bool enqueue(const lit &p) noexcept;
+    /**
+     * Get the watches of a literal. The watches are the constraints that are watching the literal.
+     *
+     * @param p The literal.
+     * @return The watches of the literal.
+     */
+    std::vector<std::reference_wrapper<constr>> &watches(const lit &p) noexcept;
+    /**
      * Compute the value of a variable.
      *
      * @param x The variable.
@@ -49,6 +63,10 @@ namespace semitone
     utils::lbool value(const lit &p) const noexcept;
 
     void remove_constr_from_reason(const VARIABLE_TYPE &x) noexcept;
+
+  private:
+    virtual json::json to_json() const noexcept { return json::json(); }
+    inline friend json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
 
   protected:
     sat_core &sat;
