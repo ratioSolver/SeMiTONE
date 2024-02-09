@@ -1,10 +1,10 @@
 #pragma once
 
-#include "constr.hpp"
+#include "lit.hpp"
 
 namespace semitone
 {
-  class sat_core
+  class constr
   {
   };
 } // namespace semitone
