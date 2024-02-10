@@ -36,6 +36,14 @@ namespace semitone
     VARIABLE_TYPE new_var() noexcept;
 
     /**
+     * @brief Create a new clause given the `lits` literals returning `false` if some trivial inconsistency is detected.
+     *
+     * @param lits the literals of the clause.
+     * @return bool `true` if the clause was added, `false` otherwise.
+     */
+    bool new_clause(std::vector<lit> &&lits) noexcept;
+
+    /**
      * @brief Return the value of a variable.
      *
      * @param x The variable.
@@ -82,6 +90,18 @@ namespace semitone
      */
     bool simplify_db() noexcept;
 
+    /**
+     * @brief Check whether the current set of assumptions is satisfiable.
+     *
+     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
+     */
+    bool propagate() noexcept;
+
+    /**
+     * @brief Pop the last decision from the trail.
+     */
+    void pop() noexcept;
+
   private:
     /**
      * @brief Enqueue a literal in the assignment.
@@ -91,6 +111,27 @@ namespace semitone
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
     bool enqueue(const lit &p, const std::optional<std::reference_wrapper<constr>> &c = std::nullopt) noexcept;
+
+    /**
+     * @brief Pop the last literal from the trail.
+     */
+    void pop_one() noexcept;
+
+    /**
+     * @brief Analyze the conflict `cnfl` and return the learnt clause in `out_learnt` and the backtracking level in `out_btlevel`.
+     *
+     * @param cnfl the conflict to analyze.
+     * @param out_learnt the learnt clause.
+     * @param out_btlevel the backtracking level.
+     */
+    void analyze(constr &cnfl, std::vector<lit> &out_learnt, size_t &out_btlevel) noexcept;
+
+    /**
+     * @brief Record the learnt clause `lits`.
+     *
+     * @param lits the learnt clause.
+     */
+    void record(std::vector<lit> lits) noexcept;
 
   private:
     std::vector<std::unique_ptr<constr>> constrs;                      // the collection of problem constraints..

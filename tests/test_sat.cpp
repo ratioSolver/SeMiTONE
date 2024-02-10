@@ -23,6 +23,14 @@ void test_basic_core_0()
     VARIABLE_TYPE b0 = core.new_var();
     VARIABLE_TYPE b1 = core.new_var();
     VARIABLE_TYPE b2 = core.new_var();
+
+    bool nc = core.new_clause({lit(b0, false), !lit(b1), lit(b2)});
+    assert(nc);
+    bool ch = core.propagate();
+    assert(ch);
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
 }
 
 void test_core_copy()

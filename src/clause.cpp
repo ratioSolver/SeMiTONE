@@ -75,6 +75,19 @@ namespace semitone
         return false;
     }
 
+    std::vector<lit> clause::get_reason(const lit &p) const noexcept
+    {
+        assert(is_undefined(p) || p == lits[0]);
+        std::vector<lit> r;
+        r.reserve(is_undefined(p) ? lits.size() : lits.size() - 1);
+        for (size_t i = is_undefined(p) ? 0 : 1; i < lits.size(); ++i)
+        {
+            assert(value(lits[i]) == utils::False);
+            r.push_back(!lits[i]);
+        }
+        return r;
+    }
+
     json::json clause::to_json() const noexcept
     {
         json::json j_lits(json::json_type::array);

@@ -32,6 +32,8 @@ namespace semitone
     bool propagate(const lit &p) noexcept override;
     bool simplify() noexcept override;
 
+    std::vector<lit> get_reason(const lit &p) const noexcept override;
+
     json::json to_json() const noexcept override;
 
   private:

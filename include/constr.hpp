@@ -48,6 +48,16 @@ namespace semitone
      */
     virtual bool simplify() noexcept = 0;
 
+    /**
+     * @brief Get the reason for a literal.
+     *
+     * The reason is the set of literals that implied the literal.
+     *
+     * @param p The literal.
+     * @return The reason for the literal.
+     */
+    virtual std::vector<lit> get_reason(const lit &p) const noexcept = 0;
+
   protected:
     /**
      * @brief Enqueue a literal in the assignment.
