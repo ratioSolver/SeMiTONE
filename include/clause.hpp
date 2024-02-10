@@ -17,7 +17,6 @@ namespace semitone
      * @param lits the literals of the clause.
      */
     clause(sat_core &s, std::vector<lit> &&ls);
-    ~clause();
 
     /**
      * @brief Get the literals of the clause.

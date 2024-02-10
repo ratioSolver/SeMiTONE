@@ -11,17 +11,6 @@ namespace semitone
         watches(!lits[0]).emplace_back(*this);
         watches(!lits[1]).emplace_back(*this);
     }
-    clause::~clause()
-    {
-        auto &ws0 = watches(!lits[0]);
-        ws0.erase(std::find_if(ws0.begin(), ws0.end(), [this](const std::reference_wrapper<constr> &c)
-                               { return &c.get() == this; }));
-        auto &ws1 = watches(!lits[1]);
-        ws1.erase(std::find_if(ws1.begin(), ws1.end(), [this](const std::reference_wrapper<constr> &c)
-                               { return &c.get() == this; }));
-        for (const auto &l : lits)
-            remove_constr_from_reason(variable(l));
-    }
 
     std::unique_ptr<constr> clause::copy(sat_core &s) noexcept
     {
