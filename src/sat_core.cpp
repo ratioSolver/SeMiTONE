@@ -1,6 +1,6 @@
+#include <unordered_map>
 #include <cassert>
 #include "sat_core.hpp"
-#include "theory.hpp"
 
 namespace semitone
 {
@@ -10,6 +10,25 @@ namespace semitone
         assert(c_false == FALSE_var);
         assigns[FALSE_var] = utils::False;
         level[FALSE_var] = 0;
+    }
+    sat_core::sat_core(const sat_core &orig) : assigns(orig.assigns), level(orig.level), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions), prop_queue(orig.prop_queue)
+    {
+        assert(orig.prop_queue.empty());
+        constrs.reserve(orig.constrs.size());
+        watches.resize(orig.watches.size());
+        std::unordered_map<constr *, constr *> old2new;
+        for (const auto &c : orig.constrs)
+        {
+            constrs.push_back(c->copy(*this));
+            old2new[c.get()] = constrs.back().get();
+        }
+
+        reason.reserve(orig.reason.size());
+        for (const auto &r : orig.reason)
+            if (r)
+                reason.push_back(*old2new.at(&r->get()));
+            else
+                reason.push_back(std::nullopt);
     }
 
     VARIABLE_TYPE sat_core::new_var() noexcept
@@ -24,7 +43,7 @@ namespace semitone
         return x;
     }
 
-    bool sat_core::enqueue(const lit &p, std::optional<std::reference_wrapper<constr>> c) noexcept
+    bool sat_core::enqueue(const lit &p, const std::optional<std::reference_wrapper<constr>> &c) noexcept
     {
         if (auto val = value(p); val != utils::Undefined)
             return val;

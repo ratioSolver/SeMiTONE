@@ -27,6 +27,8 @@ namespace semitone
     const std::vector<lit> &get_lits() const { return lits; }
 
   private:
+    std::unique_ptr<constr> copy(sat_core &s) noexcept override;
+
     bool propagate(const lit &p) noexcept override;
     bool simplify() noexcept override;
 

@@ -4,6 +4,7 @@
 #include <optional>
 #include <queue>
 #include "constr.hpp"
+#include "theory.hpp"
 
 namespace semitone
 {
@@ -20,6 +21,12 @@ namespace semitone
      *
      */
     sat_core();
+    /**
+     * @brief Construct a new sat core object.
+     *
+     * @param orig the sat core to copy.
+     */
+    sat_core(const sat_core &orig);
 
     /**
      * @brief Create a new propositional variable
@@ -34,14 +41,14 @@ namespace semitone
      * @param x The variable.
      * @return The value of the variable.
      */
-    inline utils::lbool value(const VARIABLE_TYPE &x) const noexcept { return assigns.at(x); }
+    utils::lbool value(const VARIABLE_TYPE &x) const noexcept { return assigns.at(x); }
     /**
      * @brief Return the value of a literal.
      *
      * @param p The literal.
      * @return The value of the literal.
      */
-    inline utils::lbool value(const lit &p) const noexcept
+    utils::lbool value(const lit &p) const noexcept
     {
       switch (value(variable(p)))
       {
@@ -76,7 +83,7 @@ namespace semitone
      * @param c The constraint that implied the literal.
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
-    bool enqueue(const lit &p, std::optional<std::reference_wrapper<constr>> c = std::nullopt) noexcept;
+    bool enqueue(const lit &p, const std::optional<std::reference_wrapper<constr>> &c = std::nullopt) noexcept;
 
   private:
     std::vector<std::unique_ptr<constr>> constrs;                      // the collection of problem constraints..

@@ -23,6 +23,14 @@ namespace semitone
             remove_constr_from_reason(variable(l));
     }
 
+    std::unique_ptr<constr> clause::copy(sat_core &s) noexcept
+    {
+        std::vector<lit> lits;
+        lits.reserve(this->lits.size());
+        lits.insert(lits.begin(), this->lits.begin(), this->lits.end());
+        return std::make_unique<clause>(s, std::move(lits));
+    }
+
     bool clause::propagate(const lit &p) noexcept
     {
         // make sure false literal is lits[1]..
