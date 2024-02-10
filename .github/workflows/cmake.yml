@@ -22,8 +22,17 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install dependencies
+        if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
+        run: sudo apt-get install -y lcov
+
+      - name: Configure CMake (Debug)
+        if: matrix.build_type == 'Debug'
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Debug -DENABLE_COVERAGE=ON
+
       - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DVERBOSE_LOG=${{env.VERBOSE_LOG}}
+        if: matrix.build_type == 'Release'
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
 
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
@@ -31,3 +40,10 @@ jobs:
       - name: Test
         working-directory: ${{github.workspace}}/build
         run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure -T Test -T Coverage
+
+      - name: Make coverage report
+        if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
+        run: |
+          lcov --capture --directory ${{github.workspace}}/build --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' --output-file coverage.info
+          lcov --list coverage.info
