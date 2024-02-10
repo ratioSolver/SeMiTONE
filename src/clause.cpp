@@ -74,4 +74,24 @@ namespace semitone
         lits.resize(j);
         return false;
     }
+
+    json::json clause::to_json() const noexcept
+    {
+        json::json j_lits(json::json_type::array);
+        for (const auto &l : lits)
+        {
+            json::json j_lit{{"lit", to_string(l)}};
+            switch (value(l))
+            {
+            case utils::True:
+                j_lit["value"] = "true";
+                break;
+            case utils::False:
+                j_lit["value"] = "false";
+                break;
+            }
+            j_lits.push_back(std::move(j_lit));
+        }
+        return j_lits;
+    }
 } // namespace semitone
