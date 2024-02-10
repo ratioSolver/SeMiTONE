@@ -58,4 +58,20 @@ namespace semitone
         watches(p).emplace_back(*this);
         return enqueue(lits[0]);
     }
+
+    bool clause::simplify() noexcept
+    {
+        size_t j = 0;
+        for (size_t i = 0; i < lits.size(); ++i)
+            switch (value(lits[i]))
+            {
+            case utils::True:
+                return true;
+            case utils::Undefined:
+                lits[j++] = lits[i];
+                break;
+            }
+        lits.resize(j);
+        return false;
+    }
 } // namespace semitone

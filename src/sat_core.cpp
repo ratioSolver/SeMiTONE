@@ -55,4 +55,21 @@ namespace semitone
         prop_queue.push(p);
         return true;
     }
+
+    bool sat_core::simplify_db() noexcept
+    {
+        assert(root_level());
+        // if (!propagate())
+        //     return false;
+        size_t i = 0, j = constrs.size();
+        while (i < j)
+        {
+            if (constrs[i]->simplify())
+                constrs[i].swap(constrs[--j]);
+            else
+                ++i;
+        }
+        constrs.resize(j);
+        return true;
+    }
 } // namespace semitone

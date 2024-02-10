@@ -75,6 +75,13 @@ namespace semitone
      */
     bool root_level() const noexcept { return trail_lim.empty(); }
 
+    /**
+     * @brief Simplify the current set of assumptions.
+     *
+     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
+     */
+    bool simplify_db() noexcept;
+
   private:
     /**
      * @brief Enqueue a literal in the assignment.
