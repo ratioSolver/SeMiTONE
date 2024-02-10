@@ -15,7 +15,7 @@ namespace semitone
         assigns[FALSE_var] = utils::False;
         level[FALSE_var] = 0;
     }
-    sat_core::sat_core(const sat_core &orig) : assigns(orig.assigns), level(orig.level), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions), prop_queue(orig.prop_queue)
+    sat_core::sat_core(const sat_core &orig) : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
     {
         assert(orig.prop_queue.empty());
         constrs.reserve(orig.constrs.size());
