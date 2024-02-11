@@ -22,6 +22,7 @@ namespace semitone
 
     bool clause::propagate(const lit &p) noexcept
     {
+        assert(value(p) == utils::True);
         // make sure false literal is lits[1]..
         if (variable(lits[0]) == variable(p))
             std::swap(*(lits.begin()), *(std::next(lits.begin())));
@@ -67,13 +68,12 @@ namespace semitone
     std::vector<lit> clause::get_reason(const lit &p) const noexcept
     {
         assert(is_undefined(p) || p == lits[0]);
+        assert(std::all_of(lits.cbegin(), lits.cend(), [this](const lit &l)
+                           { return value(l) == utils::False; }));
         std::vector<lit> r;
         r.reserve(is_undefined(p) ? lits.size() : lits.size() - 1);
         for (size_t i = is_undefined(p) ? 0 : 1; i < lits.size(); ++i)
-        {
-            assert(value(lits[i]) == utils::False);
             r.push_back(!lits[i]);
-        }
         return r;
     }
 

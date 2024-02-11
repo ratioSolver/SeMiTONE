@@ -4,6 +4,7 @@
 #include <cassert>
 #include "sat_core.hpp"
 #include "clause.hpp"
+#include "eq.hpp"
 #include "logging.hpp"
 
 namespace semitone
@@ -75,6 +76,33 @@ namespace semitone
         default:
             constrs.push_back(std::make_unique<clause>(*this, std::move(lits)));
             return true;
+        }
+    }
+
+    lit sat_core::new_eq(const lit &left, const lit &right) noexcept
+    {
+        assert(root_level());
+        // we try to avoid creating a new variable..
+        if (left == right)
+            return TRUE_lit; // the variables are the same variable..
+        switch (value(left))
+        {
+        case utils::True:
+            return right;
+        case utils::False:
+            return !right;
+        default:
+            switch (value(right))
+            {
+            case utils::True:
+                return left;
+            case utils::False:
+                return !left;
+            default: // we need to create a new variable..
+                const auto ctr = lit(new_var());
+                constrs.push_back(std::make_unique<eq>(*this, left, right, ctr));
+                return ctr;
+            }
         }
     }
 

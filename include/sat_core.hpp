@@ -44,6 +44,15 @@ namespace semitone
     bool new_clause(std::vector<lit> &&lits) noexcept;
 
     /**
+     * @brief Create a new equality constraint.
+     *
+     * @param left the left-hand side of the equality.
+     * @param right the right-hand side of the equality.
+     * @return lit the reified equality.
+     */
+    lit new_eq(const lit &left, const lit &right) noexcept;
+
+    /**
      * @brief Return the value of a variable.
      *
      * @param x The variable.
