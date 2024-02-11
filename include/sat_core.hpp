@@ -93,6 +93,14 @@ namespace semitone
     bool root_level() const noexcept { return trail_lim.empty(); }
 
     /**
+     * @brief Assume the literal `p` and propagate the current set of assumptions returning `false` if a conflict is detected.
+     *
+     * @param p the literal to assume.
+     * @return bool `true` if the assumption is consistent, `false` otherwise.
+     */
+    bool assume(const lit &p) noexcept;
+
+    /**
      * @brief Simplify the current set of assumptions.
      *
      * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.

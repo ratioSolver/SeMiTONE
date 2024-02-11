@@ -10,8 +10,12 @@ namespace semitone
         assert(value(l) == utils::Undefined);
         assert(value(r) == utils::Undefined);
         assert(value(ctr) == utils::Undefined);
+        watches(l).emplace_back(*this);
         watches(!l).emplace_back(*this);
+        watches(r).emplace_back(*this);
         watches(!r).emplace_back(*this);
+        watches(ctr).emplace_back(*this);
+        watches(!ctr).emplace_back(*this);
     }
 
     std::unique_ptr<constr> eq::copy(sat_core &s) noexcept { return std::make_unique<eq>(s, left, right, ctr); }
@@ -19,27 +23,23 @@ namespace semitone
     bool eq::propagate(const lit &p) noexcept
     {
         assert(value(p) == utils::True);
+        watches(p).emplace_back(*this);
         if (p == left)
         {
             switch (value(ctr))
             {
             case utils::True:
-                watches(p).emplace_back(*this);
                 return value(variable(p)) == utils::True ? enqueue(right) : enqueue(!right);
             case utils::False:
-                watches(!right).emplace_back(*this);
                 return value(variable(p)) == utils::True ? enqueue(!right) : enqueue(right);
             default:
                 switch (value(right))
                 {
                 case utils::True:
-                    watches(p).emplace_back(*this);
                     return value(variable(p)) == utils::True ? enqueue(ctr) : enqueue(!ctr);
                 case utils::False:
-                    watches(!ctr).emplace_back(*this);
                     return value(variable(p)) == utils::True ? enqueue(!ctr) : enqueue(ctr);
                 default:
-                    watches(!ctr).emplace_back(*this);
                     return true;
                 }
             }
@@ -49,22 +49,17 @@ namespace semitone
             switch (value(ctr))
             {
             case utils::True:
-                watches(p).emplace_back(*this);
                 return value(variable(p)) == utils::True ? enqueue(left) : enqueue(!left);
             case utils::False:
-                watches(!left).emplace_back(*this);
                 return value(variable(p)) == utils::True ? enqueue(!left) : enqueue(left);
             default:
                 switch (value(left))
                 {
                 case utils::True:
-                    watches(p).emplace_back(*this);
                     return value(variable(p)) == utils::True ? enqueue(ctr) : enqueue(!ctr);
                 case utils::False:
-                    watches(!ctr).emplace_back(*this);
                     return value(variable(p)) == utils::True ? enqueue(!ctr) : enqueue(ctr);
                 default:
-                    watches(!ctr).emplace_back(*this);
                     return true;
                 }
             }
@@ -73,23 +68,17 @@ namespace semitone
         switch (value(left))
         {
         case utils::True:
-            watches(p).emplace_back(*this);
             return value(variable(p)) == utils::True ? enqueue(right) : enqueue(!right);
         case utils::False:
-            watches(!right).emplace_back(*this);
             return value(variable(p)) == utils::True ? enqueue(!right) : enqueue(right);
         default:
             switch (value(right))
             {
             case utils::True:
-                watches(p).emplace_back(*this);
                 return value(variable(p)) == utils::True ? enqueue(left) : enqueue(!left);
             case utils::False:
-                watches(!left).emplace_back(*this);
                 return value(variable(p)) == utils::True ? enqueue(!left) : enqueue(left);
             default:
-                watches(!left).emplace_back(*this);
-                watches(!right).emplace_back(*this);
                 return true;
             }
         }

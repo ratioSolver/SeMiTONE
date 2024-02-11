@@ -106,11 +106,23 @@ namespace semitone
         }
     }
 
+    bool sat_core::assume(const lit &p) noexcept
+    {
+        assert(value(p) == utils::Undefined);
+        assert(prop_queue.empty());
+        LOG_DEBUG("+[" << to_string(p) << "]");
+        trail_lim.push_back(trail.size());
+        decisions.push_back(p);
+        for (const auto &th : theories)
+            th->push();
+        return enqueue(p) && propagate();
+    }
+
     bool sat_core::simplify_db() noexcept
     {
         assert(root_level());
-        // if (!propagate())
-        //     return false;
+        if (!propagate())
+            return false;
         size_t i = 0, j = constrs.size();
         while (i < j)
         {
