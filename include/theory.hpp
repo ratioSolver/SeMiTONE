@@ -21,24 +21,27 @@ namespace semitone
      * @param p the literal that has been assigned.
      * @return true if propagation succeeds or false if an inconsistency is found.
      */
-    virtual bool propagate(const lit &p) = 0;
+    virtual bool propagate(const lit &p) noexcept = 0;
 
     /**
      * @brief Checks whether the theory is consistent with the given propositional assignments. Returns true if the theory is consistent or false if an inconsistency is found. In case of inconsistency, the confl vector must be filled with the conflicting constraint.
      *
      * @return true if the theory is consistent or false if an inconsistency is found.
      */
-    virtual bool check() = 0;
+    virtual bool check() noexcept = 0;
 
     /**
      * @brief Notifies the theory that some information for subsequent backtracking might need to be stored.
      */
-    virtual void push() = 0;
+    virtual void push() noexcept = 0;
 
     /**
      * @brief Notifies the theory that a backtracking step is required.
      */
-    virtual void pop() = 0;
+    virtual void pop() noexcept = 0;
+
+  protected:
+    void bind(VARIABLE_TYPE v) noexcept;
 
   protected:
     std::shared_ptr<sat_core> sat;
