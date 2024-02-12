@@ -69,6 +69,94 @@ void test_eq()
     assert(core.value(eq) == utils::True);
 }
 
+void test_conj()
+{
+    sat_core core;
+    VARIABLE_TYPE b0 = core.new_var();
+    VARIABLE_TYPE b1 = core.new_var();
+    VARIABLE_TYPE b2 = core.new_var();
+
+    lit conj = core.new_conj({lit(b0), lit(b1), lit(b2, false)});
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(conj) == utils::Undefined);
+
+    bool assm = core.assume(conj);
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::True);
+    assert(core.value(b2) == utils::False);
+    assert(core.value(conj) == utils::True);
+
+    core.pop();
+
+    assm = core.assume(!conj);
+    assert(assm);
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(conj) == utils::False);
+
+    assm = core.assume(lit(b0));
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(conj) == utils::False);
+
+    assm = core.assume(lit(b1));
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::True);
+    assert(core.value(b2) == utils::True);
+    assert(core.value(conj) == utils::False);
+}
+
+void test_disj()
+{
+    sat_core core;
+    VARIABLE_TYPE b0 = core.new_var();
+    VARIABLE_TYPE b1 = core.new_var();
+    VARIABLE_TYPE b2 = core.new_var();
+
+    lit disj = core.new_disj({lit(b0), lit(b1), lit(b2, false)});
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(disj) == utils::Undefined);
+
+    bool assm = core.assume(!disj);
+    assert(assm);
+    assert(core.value(b0) == utils::False);
+    assert(core.value(b1) == utils::False);
+    assert(core.value(b2) == utils::True);
+    assert(core.value(disj) == utils::False);
+
+    core.pop();
+
+    assm = core.assume(disj);
+    assert(assm);
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(disj) == utils::True);
+
+    assm = core.assume(lit(b0, false));
+    assert(assm);
+    assert(core.value(b0) == utils::False);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(disj) == utils::True);
+
+    assm = core.assume(lit(b1, false));
+    assert(assm);
+    assert(core.value(b0) == utils::False);
+    assert(core.value(b1) == utils::False);
+    assert(core.value(b2) == utils::False);
+    assert(core.value(disj) == utils::True);
+}
+
 void test_core_copy()
 {
     sat_core core;
@@ -89,6 +177,8 @@ int main(int, char **)
     test_basic_core_0();
 
     test_eq();
+    test_conj();
+    test_disj();
 
     test_core_copy();
 }

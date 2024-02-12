@@ -26,7 +26,7 @@ namespace semitone
     {
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
-        if (p == ctr)
+        if (variable(p) == variable(ctr))
             switch (value(variable(ctr)))
             {
             case utils::True:
@@ -55,30 +55,23 @@ namespace semitone
         else
         {
             assert(std::any_of(lits.begin(), lits.end(), [&p](const auto &l)
-                               { return l == p; }));
-            switch (value(variable(ctr)))
+                               { return variable(l) == variable(p); }));
+            if (value(ctr) == utils::False)
             {
-            case utils::True:
-                if (value(variable(ctr)) == utils::False)
-                {
-                    lit u_p;
-                    bool found = false;
-                    for (const auto &l : lits)
-                        if (value(l) == utils::Undefined)
+                lit u_p;
+                bool found = false;
+                for (const auto &l : lits)
+                    if (value(l) == utils::Undefined)
+                    {
+                        if (!found)
                         {
-                            if (!found)
-                            {
-                                u_p = l;
-                                found = true;
-                            }
-                            else // nothing to propagate..
-                                return true;
+                            u_p = l;
+                            found = true;
                         }
-                    return enqueue(!u_p);
-                }
-                return true;
-            case utils::False:
-                return enqueue(ctr);
+                        else // nothing to propagate..
+                            return true;
+                    }
+                return !found || enqueue(!u_p);
             }
         }
         return true;
@@ -99,6 +92,12 @@ namespace semitone
         assert(std::any_of(lits.begin(), lits.end(), [&](const auto &l)
                            { return value(l) == utils::False; }) ||
                value(ctr) == utils::True);
+        if (is_undefined(p))
+        {
+            std::vector<lit> reason = lits;
+            reason.push_back(ctr);
+            return reason;
+        }
         if (p == ctr)
             if (value(variable(p)) == utils::False)
                 return {*std::find_if(lits.begin(), lits.end(), [&](const auto &l)

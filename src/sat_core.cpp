@@ -6,6 +6,7 @@
 #include "clause.hpp"
 #include "sat_eq.hpp"
 #include "sat_conj.hpp"
+#include "sat_disj.hpp"
 #include "logging.hpp"
 
 namespace semitone
@@ -162,7 +163,7 @@ namespace semitone
         else
         { // we need to create a new variable..
             const auto ctr = lit(new_var());
-            constrs.push_back(std::make_unique<sat_conj>(*this, std::move(ls), ctr));
+            constrs.push_back(std::make_unique<sat_disj>(*this, std::move(ls), ctr));
             return ctr;
         }
     }
