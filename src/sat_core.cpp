@@ -4,7 +4,7 @@
 #include <cassert>
 #include "sat_core.hpp"
 #include "clause.hpp"
-#include "eq.hpp"
+#include "sat_eq.hpp"
 #include "logging.hpp"
 
 namespace semitone
@@ -100,7 +100,7 @@ namespace semitone
                 return !left;
             default: // we need to create a new variable..
                 const auto ctr = lit(new_var());
-                constrs.push_back(std::make_unique<eq>(*this, left, right, ctr));
+                constrs.push_back(std::make_unique<sat_eq>(*this, left, right, ctr));
                 return ctr;
             }
         }

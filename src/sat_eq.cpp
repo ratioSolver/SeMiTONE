@@ -1,10 +1,10 @@
 #include <cassert>
-#include "eq.hpp"
+#include "sat_eq.hpp"
 #include "sat_core.hpp"
 
 namespace semitone
 {
-    eq::eq(sat_core &s, const lit &l, const lit &r, const lit &ctr) : constr(s), left(l), right(r), ctr(ctr)
+    sat_eq::sat_eq(sat_core &s, const lit &l, const lit &r, const lit &ctr) : constr(s), left(l), right(r), ctr(ctr)
     {
         assert(s.root_level());
         assert(value(l) == utils::Undefined);
@@ -18,9 +18,9 @@ namespace semitone
         watches(!ctr).emplace_back(*this);
     }
 
-    std::unique_ptr<constr> eq::copy(sat_core &s) noexcept { return std::make_unique<eq>(s, left, right, ctr); }
+    std::unique_ptr<constr> sat_eq::copy(sat_core &s) noexcept { return std::make_unique<sat_eq>(s, left, right, ctr); }
 
-    bool eq::propagate(const lit &p) noexcept
+    bool sat_eq::propagate(const lit &p) noexcept
     {
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
@@ -85,9 +85,9 @@ namespace semitone
         return true;
     }
 
-    bool eq::simplify() noexcept { return value(left) != utils::Undefined && value(right) != utils::Undefined && value(ctr) != utils::Undefined; }
+    bool sat_eq::simplify() noexcept { return value(left) != utils::Undefined && value(right) != utils::Undefined && value(ctr) != utils::Undefined; }
 
-    std::vector<lit> eq::get_reason(const lit &p) const noexcept
+    std::vector<lit> sat_eq::get_reason(const lit &p) const noexcept
     {
         assert(value(left) == utils::False);
         assert(value(right) == utils::False);
@@ -119,7 +119,7 @@ namespace semitone
         return r;
     }
 
-    json::json eq::to_json() const noexcept
+    json::json sat_eq::to_json() const noexcept
     {
         json::json j_eq;
         json::json j_left{{"lit", to_string(left)}};

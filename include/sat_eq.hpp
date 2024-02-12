@@ -4,10 +4,10 @@
 
 namespace semitone
 {
-  class eq final : public constr
+  class sat_eq final : public constr
   {
   public:
-    eq(sat_core &s, const lit &l, const lit &r, const lit &e);
+    sat_eq(sat_core &s, const lit &l, const lit &r, const lit &e);
 
   private:
     std::unique_ptr<constr> copy(sat_core &s) noexcept override;
