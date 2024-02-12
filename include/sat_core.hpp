@@ -61,6 +61,14 @@ namespace semitone
     lit new_conj(std::vector<lit> &&ls) noexcept;
 
     /**
+     * @brief Create a new reified disjunction of the literals in `ls`.
+     *
+     * @param ls the literals of the disjunction.
+     * @return lit the reified disjunction.
+     */
+    lit new_disj(std::vector<lit> &&ls) noexcept;
+
+    /**
      * @brief Return the value of a variable.
      *
      * @param x The variable.

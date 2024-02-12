@@ -1,11 +1,11 @@
 #include <cassert>
 #include <algorithm>
-#include "sat_conj.hpp"
+#include "sat_disj.hpp"
 #include "sat_core.hpp"
 
 namespace semitone
 {
-    sat_conj::sat_conj(sat_core &s, std::vector<lit> &&ls, const lit &ctr) : constr(s), lits(ls), ctr(ctr)
+    sat_disj::sat_disj(sat_core &s, std::vector<lit> &&ls, const lit &ctr) : constr(s), lits(ls), ctr(ctr)
     {
         assert(s.root_level());
         assert(std::all_of(ls.begin(), ls.end(), [&](const auto &l)
@@ -13,16 +13,16 @@ namespace semitone
         assert(value(ctr) == utils::Undefined);
         for (const auto &l : ls)
         {
-            watches(l).push_back(*this);  // any literal that becomes `true` makes the only unassigned literal `false`, if the control variable is `false`
-            watches(!l).push_back(*this); // any literal that becomes `false` makes the conjunction `false`
+            watches(l).push_back(*this);  // any literal that becomes `true` makes the disjunction `true`
+            watches(!l).push_back(*this); // any literal that becomes `false` makes the only unassigned literal `true`, if the control variable is `true`
         }
-        watches(ctr).push_back(*this);  // making the control variable `true` makes all the literals `true`
-        watches(!ctr).push_back(*this); // making the control variable `false` makes the only unassigned literal `false`, if all the other literals are `true`
+        watches(ctr).push_back(*this);  // making the control variable `true` makes the only unassigned literal `true`, if all the other literals are `false`
+        watches(!ctr).push_back(*this); // making the control variable `false` makes all the literals `false`
     }
 
-    std::unique_ptr<constr> sat_conj::copy(sat_core &s) noexcept { return std::make_unique<sat_conj>(s, std::vector<lit>(lits), ctr); }
+    std::unique_ptr<constr> sat_disj::copy(sat_core &s) noexcept { return std::make_unique<sat_disj>(s, std::vector<lit>(lits), ctr); }
 
-    bool sat_conj::propagate(const lit &p) noexcept
+    bool sat_disj::propagate(const lit &p) noexcept
     {
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
@@ -30,11 +30,6 @@ namespace semitone
             switch (value(variable(ctr)))
             {
             case utils::True:
-                for (const auto &l : lits)
-                    if (!enqueue(l))
-                        return false;
-                return true;
-            case utils::False:
             {
                 lit u_p;
                 bool found = false;
@@ -49,8 +44,13 @@ namespace semitone
                         else // nothing to propagate..
                             return true;
                     }
-                return enqueue(u_p);
+                return enqueue(!u_p);
             }
+            case utils::False:
+                for (const auto &l : lits)
+                    if (enqueue(l))
+                        return false;
+                return true;
             }
         else
         {
@@ -59,7 +59,9 @@ namespace semitone
             switch (value(variable(ctr)))
             {
             case utils::True:
-                if (value(variable(ctr)) == utils::False)
+                return enqueue(ctr);
+            case utils::False:
+                if (value(variable(ctr)) == utils::True)
                 {
                     lit u_p;
                     bool found = false;
@@ -74,49 +76,47 @@ namespace semitone
                             else // nothing to propagate..
                                 return true;
                         }
-                    return enqueue(!u_p);
+                    return enqueue(u_p);
                 }
                 return true;
-            case utils::False:
-                return enqueue(ctr);
             }
         }
         return true;
     }
-    bool sat_conj::simplify() noexcept
+    bool sat_disj::simplify() noexcept
     {
         return std::all_of(lits.begin(), lits.end(), [&](const auto &l)
-                           { return value(l) == utils::True; }) ||
+                           { return value(l) == utils::False; }) ||
                std::any_of(lits.begin(), lits.end(), [&](const auto &l)
-                           { return value(l) == utils::False; });
+                           { return value(l) == utils::True; });
     }
 
-    std::vector<lit> sat_conj::get_reason(const lit &p) const noexcept
+    std::vector<lit> sat_disj::get_reason(const lit &p) const noexcept
     {
         assert(std::all_of(lits.begin(), lits.end(), [&](const auto &l)
-                           { return value(l) == utils::True; }) ||
-               value(ctr) == utils::False);
-        assert(std::any_of(lits.begin(), lits.end(), [&](const auto &l)
                            { return value(l) == utils::False; }) ||
                value(ctr) == utils::True);
+        assert(std::any_of(lits.begin(), lits.end(), [&](const auto &l)
+                           { return value(l) == utils::True; }) ||
+               value(ctr) == utils::False);
         if (p == ctr)
-            if (value(variable(p)) == utils::False)
+            if (value(variable(p)) == utils::True)
                 return {*std::find_if(lits.begin(), lits.end(), [&](const auto &l)
-                                      { return value(l) == utils::False; })};
+                                      { return value(l) == utils::True; })};
             else
                 return lits;
-        else if (value(variable(p)) == utils::True)
+        else if (value(variable(p)) == utils::False)
             return {ctr};
         else
         {
             assert(std::count_if(lits.begin(), lits.end(), [&](const auto &l)
-                                 { return value(l) == utils::False; }) == 1);
+                                 { return value(l) == utils::True; }) == 1);
             assert(static_cast<size_t>(std::count_if(lits.begin(), lits.end(), [&](const auto &l)
-                                                     { return value(l) == utils::True; })) == lits.size() - 1);
+                                                     { return value(l) == utils::False; })) == lits.size() - 1);
             std::vector<lit> reason;
             reason.reserve(lits.size());
             for (const auto &l : lits)
-                if (value(l) == utils::True)
+                if (value(l) == utils::False)
                     reason.push_back(l);
                 else
                     reason.push_back(ctr);
@@ -124,7 +124,7 @@ namespace semitone
         }
     }
 
-    json::json sat_conj::to_json() const noexcept
+    json::json sat_disj::to_json() const noexcept
     {
         json::json j_conj;
         json::json j_lits(json::json_type::array);

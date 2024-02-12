@@ -137,6 +137,36 @@ namespace semitone
         }
     }
 
+    lit sat_core::new_disj(std::vector<lit> &&ls) noexcept
+    {
+        assert(root_level());
+        // we try to avoid creating a new variable..
+        std::sort(ls.begin(), ls.end(), [](const auto &l0, const auto &l1)
+                  { return variable(l0) < variable(l1); });
+        lit p;
+        size_t j = 0;
+        for (auto it = ls.cbegin(); it != ls.cend(); ++it)
+            if (value(*it) == utils::True || *it == !p)
+                return TRUE_lit; // the disjunction is already satisfied..
+            else if (value(*it) != utils::True && *it != p)
+            { // we need to include this literal in the conjunction..
+                p = *it;
+                ls[j++] = p;
+            }
+        ls.resize(j);
+
+        if (ls.empty()) // an empty disjunction is assumed to be unsatisfable..
+            return FALSE_lit;
+        else if (ls.size() == 1)
+            return ls[0];
+        else
+        { // we need to create a new variable..
+            const auto ctr = lit(new_var());
+            constrs.push_back(std::make_unique<sat_conj>(*this, std::move(ls), ctr));
+            return ctr;
+        }
+    }
+
     bool sat_core::assume(const lit &p) noexcept
     {
         assert(value(p) == utils::Undefined);
