@@ -3,7 +3,6 @@
 #include <memory>
 #include <optional>
 #include <queue>
-#include <set>
 #include <unordered_map>
 #include "constr.hpp"
 #include "theory.hpp"
@@ -169,7 +168,7 @@ namespace semitone
     void record(std::vector<lit> lits) noexcept;
 
   private:
-    void bind(VARIABLE_TYPE v, theory &th) noexcept { binds[v].insert(th); }
+    void bind(VARIABLE_TYPE v, theory &th) noexcept { binds[v].push_back(th); }
 
   private:
     std::vector<std::unique_ptr<constr>> constrs;                      // the collection of problem constraints..
@@ -184,6 +183,6 @@ namespace semitone
     std::vector<lit> decisions;    // the list of decisions in chronological order..
 
     std::vector<std::unique_ptr<theory>> theories; // all the theories..
-    std::unordered_map<VARIABLE_TYPE, std::set<std::reference_wrapper<theory>>> binds;
+    std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<theory>>> binds;
   };
 } // namespace semitone
