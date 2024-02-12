@@ -89,34 +89,19 @@ namespace semitone
 
     std::vector<lit> sat_eq::get_reason(const lit &p) const noexcept
     {
-        assert(value(left) == utils::False);
-        assert(value(right) == utils::False);
-        assert(value(ctr) == utils::False);
-        std::vector<lit> r;
-        r.reserve(is_undefined(p) ? 3 : 2);
+        assert(value(left) == value(right) || value(ctr) == utils::False);
+        assert(value(left) != value(right) || value(ctr) == utils::True);
         if (is_undefined(p))
-        {
-            r.push_back(!left);
-            r.push_back(!right);
-            r.push_back(!ctr);
-        }
+            return {!left, !right, !ctr};
         else if (p == left)
-        {
-            r.push_back(!right);
-            r.push_back(!ctr);
-        }
+            return {!right, !ctr};
         else if (p == right)
-        {
-            r.push_back(!left);
-            r.push_back(!ctr);
-        }
+            return {!left, !ctr};
         else
         {
             assert(p == ctr);
-            r.push_back(!left);
-            r.push_back(!right);
+            return {!left, !right};
         }
-        return r;
     }
 
     json::json sat_eq::to_json() const noexcept

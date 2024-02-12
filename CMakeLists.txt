@@ -7,7 +7,7 @@ enable_testing()
 
 add_subdirectory(extern/json)
 
-add_library(${PROJECT_NAME} src/sat_core.cpp src/constr.cpp src/clause.cpp src/sat_eq.cpp src/theory.cpp)
+add_library(${PROJECT_NAME} src/sat_core.cpp src/constr.cpp src/clause.cpp src/sat_eq.cpp src/sat_conj.cpp src/theory.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_link_libraries(${PROJECT_NAME} PUBLIC json)

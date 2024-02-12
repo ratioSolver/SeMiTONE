@@ -5,6 +5,7 @@
 #include "sat_core.hpp"
 #include "clause.hpp"
 #include "sat_eq.hpp"
+#include "sat_conj.hpp"
 #include "logging.hpp"
 
 namespace semitone
@@ -103,6 +104,36 @@ namespace semitone
                 constrs.push_back(std::make_unique<sat_eq>(*this, left, right, ctr));
                 return ctr;
             }
+        }
+    }
+
+    lit sat_core::new_conj(std::vector<lit> &&ls) noexcept
+    {
+        assert(root_level());
+        // we try to avoid creating a new variable..
+        std::sort(ls.begin(), ls.end(), [](const auto &l0, const auto &l1)
+                  { return variable(l0) < variable(l1); });
+        lit p;
+        size_t j = 0;
+        for (auto it = ls.cbegin(); it != ls.cend(); ++it)
+            if (value(*it) == utils::False || *it == !p)
+                return FALSE_lit; // the conjunction cannot be satisfied..
+            else if (value(*it) != utils::True && *it != p)
+            { // we need to include this literal in the conjunction..
+                p = *it;
+                ls[j++] = p;
+            }
+        ls.resize(j);
+
+        if (ls.empty()) // an empty conjunction is assumed to be satisfied..
+            return TRUE_lit;
+        else if (ls.size() == 1)
+            return ls[0];
+        else
+        { // we need to create a new variable..
+            const auto ctr = lit(new_var());
+            constrs.push_back(std::make_unique<sat_conj>(*this, std::move(ls), ctr));
+            return ctr;
         }
     }
 

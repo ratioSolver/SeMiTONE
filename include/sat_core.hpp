@@ -53,6 +53,14 @@ namespace semitone
     lit new_eq(const lit &left, const lit &right) noexcept;
 
     /**
+     * @brief Create a new reified conjunction of the literals in `ls`.
+     *
+     * @param ls the literals of the conjunction.
+     * @return lit the reified conjunction.
+     */
+    lit new_conj(std::vector<lit> &&ls) noexcept;
+
+    /**
      * @brief Return the value of a variable.
      *
      * @param x The variable.
