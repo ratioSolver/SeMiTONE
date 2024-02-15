@@ -111,20 +111,32 @@ namespace semitone
                value(ctr) == utils::True);
         if (is_undefined(p))
         {
-            std::vector<lit> reason = lits;
-            reason.push_back(ctr);
+            std::vector<lit> reason;
+            reason.reserve(lits.size() + 1);
+            for (const auto &l : lits)
+                if (value(l) != utils::Undefined)
+                    reason.push_back(l);
+            if (value(ctr) != utils::Undefined)
+                reason.push_back(ctr);
             return reason;
         }
-        if (p == ctr)
-            if (value(variable(p)) == utils::False)
+        if (variable(p) == variable(ctr))
+        {
+            if (value(ctr) == utils::True)
+            { // the control variable is `true` because all the literals are `true`
+                assert(std::all_of(lits.begin(), lits.end(), [&](const auto &l)
+                                   { return value(l) == utils::True; }));
+                return lits;
+            }
+            else // the control variable is `false` because at least one literal is `false`
                 return {*std::find_if(lits.begin(), lits.end(), [&](const auto &l)
                                       { return value(l) == utils::False; })};
-            else
-                return lits;
-        else if (value(variable(p)) == utils::True)
-            return {ctr};
+        }
+        else if (value(*std::find_if(lits.begin(), lits.end(), [&](const auto &l) // the literal is `true`
+                                     { return variable(l) == variable(p); })) == utils::True)
+            return {ctr}; // the literal is `true` because the conjunction is `true`
         else
-        {
+        { // the literal is `false`
             assert(std::count_if(lits.begin(), lits.end(), [&](const auto &l)
                                  { return value(l) == utils::False; }) == 1);
             assert(static_cast<size_t>(std::count_if(lits.begin(), lits.end(), [&](const auto &l)

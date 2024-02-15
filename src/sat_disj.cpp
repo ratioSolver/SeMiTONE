@@ -111,20 +111,30 @@ namespace semitone
                value(ctr) == utils::False);
         if (is_undefined(p))
         {
-            std::vector<lit> reason = lits;
-            reason.push_back(ctr);
+            std::vector<lit> reason;
+            reason.reserve(lits.size() + 1);
+            for (const auto &l : lits)
+                if (value(l) != utils::Undefined)
+                    reason.push_back(l);
+            if (value(ctr) != utils::Undefined)
+                reason.push_back(ctr);
             return reason;
         }
-        if (p == ctr)
-            if (value(variable(p)) == utils::True)
+        if (variable(p) == variable(ctr))
+        {
+            if (value(ctr) == utils::True) // the control variable is `true` because at least one literal is `true`
                 return {*std::find_if(lits.begin(), lits.end(), [&](const auto &l)
                                       { return value(l) == utils::True; })};
             else
+            { // the control variable is `false` because all the literals are `false`
+                assert(std::all_of(lits.begin(), lits.end(), [&](const auto &l)
+                                   { return value(l) == utils::False; }));
                 return lits;
-        else if (value(variable(p)) == utils::False)
-            return {ctr};
-        else
-        {
+            }
+        }
+        else if (value(*std::find_if(lits.begin(), lits.end(), [&](const auto &l)
+                                     { return variable(l) == variable(p); })) == utils::True)
+        { // the literal is `true`
             assert(std::count_if(lits.begin(), lits.end(), [&](const auto &l)
                                  { return value(l) == utils::True; }) == 1);
             assert(static_cast<size_t>(std::count_if(lits.begin(), lits.end(), [&](const auto &l)
@@ -138,6 +148,8 @@ namespace semitone
                     reason.push_back(ctr);
             return reason;
         }
+        else // the literal is `false` because the disjunction is `false`
+            return {ctr};
     }
 
     json::json sat_disj::to_json() const noexcept
