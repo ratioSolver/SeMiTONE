@@ -9,4 +9,6 @@ namespace semitone
 
     utils::lbool constr::value(const VARIABLE_TYPE &x) const noexcept { return sat.value(x); }
     utils::lbool constr::value(const lit &p) const noexcept { return sat.value(p); }
+
+    bool constr::must_propagate(const lit &p) const noexcept { return !sat.reason[variable(p)].has_value() || &sat.reason[variable(p)].value().get() != this; }
 } // namespace semitone
