@@ -90,7 +90,16 @@ namespace semitone
      */
     utils::lbool value(const lit &p) const noexcept;
 
-    void remove_constr_from_reason(const VARIABLE_TYPE &x) noexcept;
+    /**
+     * @brief Return whether the constraint must propagate after the given literal is assigned.
+     *
+     * This method is used to check if the constraint must propagate after the given literal is assigned. This is used to avoid unnecessary propagations.
+     * The default implementation returns `true` if the literal is not assigned by the constraint.
+     *
+     * @param p The literal.
+     * @return `true` if the constraint must propagate after the given literal is assigned, `false` otherwise.
+     */
+    bool must_propagate(const lit &p) const noexcept;
 
   private:
     virtual json::json to_json() const noexcept { return json::json(); }

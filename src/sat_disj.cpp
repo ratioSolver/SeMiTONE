@@ -26,6 +26,8 @@ namespace semitone
     {
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
+        if (!must_propagate(p))
+            return true; // the literal is already propagated by this constraint
         if (variable(p) == variable(ctr))
         { // the control variable is assigned
             if (value(ctr) == utils::True)
