@@ -37,6 +37,13 @@ namespace semitone
     VARIABLE_TYPE new_var() noexcept;
 
     /**
+     * @brief Add a new constraint to the problem.
+     *
+     * @param c the constraint to add.
+     */
+    void add_constr(std::unique_ptr<constr> c) noexcept { constrs.push_back(std::move(c)); }
+
+    /**
      * @brief Create a new clause given the `lits` literals returning `false` if some trivial inconsistency is detected.
      *
      * @param lits the literals of the clause.

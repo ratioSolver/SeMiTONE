@@ -7,7 +7,7 @@ enable_testing()
 
 add_subdirectory(extern/json)
 
-add_library(${PROJECT_NAME} src/sat_core.cpp src/constr.cpp src/clause.cpp src/sat_eq.cpp src/sat_conj.cpp src/sat_disj.cpp src/theory.cpp src/ov/ov_theory.cpp)
+add_library(${PROJECT_NAME} src/sat_core.cpp src/constr.cpp src/clause.cpp src/sat_eq.cpp src/sat_conj.cpp src/sat_disj.cpp src/theory.cpp src/ov/ov_theory.cpp src/ov/ov_eq.cpp)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ov>)
 target_link_libraries(${PROJECT_NAME} PUBLIC json)

@@ -93,22 +93,11 @@ namespace semitone
             }
         }
     }
-    bool sat_conj::simplify() noexcept
-    {
-        return std::all_of(lits.begin(), lits.end(), [&](const auto &l)
-                           { return value(l) == utils::True; }) ||
-               std::any_of(lits.begin(), lits.end(), [&](const auto &l)
-                           { return value(l) == utils::False; });
-    }
+
+    bool sat_conj::simplify() noexcept { return value(ctr) != utils::Undefined; }
 
     std::vector<lit> sat_conj::get_reason(const lit &p) const noexcept
     {
-        assert(std::all_of(lits.begin(), lits.end(), [&](const auto &l)
-                           { return value(l) == utils::True; }) ||
-               value(ctr) == utils::False);
-        assert(std::any_of(lits.begin(), lits.end(), [&](const auto &l)
-                           { return value(l) == utils::False; }) ||
-               value(ctr) == utils::True);
         if (is_undefined(p))
         {
             std::vector<lit> reason;

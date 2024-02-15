@@ -40,7 +40,7 @@ namespace semitone
 
     VARIABLE_TYPE sat_core::new_var() noexcept
     {
-        const VARIABLE_TYPE x = assigns.size();
+        const auto x = assigns.size();
         assigns.push_back(utils::Undefined);
         watches.emplace_back();
         watches.emplace_back();
@@ -149,7 +149,7 @@ namespace semitone
         for (auto it = ls.cbegin(); it != ls.cend(); ++it)
             if (value(*it) == utils::True || *it == !p)
                 return TRUE_lit; // the disjunction is already satisfied..
-            else if (value(*it) != utils::True && *it != p)
+            else if (value(*it) != utils::False && *it != p)
             { // we need to include this literal in the conjunction..
                 p = *it;
                 ls[j++] = p;

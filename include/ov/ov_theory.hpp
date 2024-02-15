@@ -1,14 +1,18 @@
 #pragma once
 
 #include <vector>
-#include <unordered_set>
+#include <unordered_map>
 #include "theory.hpp"
 #include "enum.hpp"
 
 namespace semitone
 {
+  class ov_eq;
+
   class ov_theory final : public theory
   {
+    friend class ov_eq;
+
   public:
     ov_theory(std::shared_ptr<sat_core> sat);
 
@@ -16,14 +20,19 @@ namespace semitone
      * @brief Create a new variable with the given domain.
      *
      * @param domain the initial domain of the variable.
+     * @param enforce_exct_one if true, the variable must take exactly one value from the domain.
+     * @return VARIABLE_TYPE the new variable.
      */
     VARIABLE_TYPE new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one = true) noexcept;
     /**
      * @brief Create a new variable with the given domain.
      *
      * The presence of the values into the domain is controlled by the given literals.
+     *
+     * @param domain the initial domain of the variable and the literals that control the presence of the values.
+     * @return VARIABLE_TYPE the new variable.
      */
-    VARIABLE_TYPE new_var(std::vector<std::pair<lit, std::reference_wrapper<utils::enum_val>>> &&domain) noexcept;
+    VARIABLE_TYPE new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, lit>> &&domain) noexcept;
 
     /**
      * @brief Create a new equality constraint.
@@ -39,15 +48,16 @@ namespace semitone
      *
      * @return The current domain of the `var` variable.
      */
-    std::unordered_set<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) noexcept;
+    std::vector<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) noexcept;
 
   private:
-    bool propagate(const lit &p) noexcept override;
+    bool propagate(const lit &) noexcept override { return true; }
+    bool check() noexcept override { return true; }
+    void push() noexcept override {}
+    void pop() noexcept override {}
 
-    bool check() noexcept override;
-
-    void push() noexcept override;
-
-    void pop() noexcept override;
+  private:
+    std::vector<std::vector<std::pair<std::reference_wrapper<utils::enum_val>, lit>>> domains;
+    std::vector<bool> exact_one;
   };
 } // namespace semitone
