@@ -27,54 +27,69 @@ namespace semitone
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
         if (variable(p) == variable(ctr))
-            switch (value(variable(ctr)))
-            {
-            case utils::True:
-            {
+        { // the control variable is assigned
+            if (value(ctr) == utils::True)
+            { // the disjunction is `true`
                 lit u_p;
                 bool found = false;
                 for (const auto &l : lits)
-                    if (value(l) == utils::Undefined)
+                    switch (value(l))
                     {
+                    case utils::True: // the disjunction is already `true`, nothing to propagate..
+                        return true;
+                    case utils::Undefined:
                         if (!found)
                         {
                             u_p = l;
                             found = true;
                         }
-                        else // nothing to propagate..
+                        else // more than one literal is unassigned, nothing to propagate..
                             return true;
                     }
-                return enqueue(!u_p);
+                assert(found);
+                return enqueue(u_p);
             }
-            case utils::False:
+            else
+            { // the disjunction is `false`
+                assert(value(ctr) == utils::False);
                 for (const auto &l : lits)
                     if (!enqueue(!l))
                         return false;
                 return true;
             }
+        }
         else
-        {
+        { // a literal is assigned
             assert(std::any_of(lits.begin(), lits.end(), [&p](const auto &l)
-                               { return variable(l) == variable(p); }));
-            if (value(ctr) == utils::True)
-            {
-                lit u_p;
-                bool found = false;
-                for (const auto &l : lits)
-                    if (value(l) == utils::Undefined)
+                               { return variable(l) == variable(p); })); // the literal must be in the disjunction
+            lit u_p;
+            bool found = false;
+            for (const auto &l : lits)
+                switch (value(l))
+                {
+                case utils::True: // the disjunction must be `true`..
+                    return enqueue(ctr);
+                case utils::Undefined:
+                    if (!found)
                     {
-                        if (!found)
-                        {
-                            u_p = l;
-                            found = true;
-                        }
-                        else // nothing to propagate..
-                            return true;
+                        u_p = l;
+                        found = true;
                     }
-                return !found || enqueue(u_p);
+                    else // more than one literal is unassigned, nothing to propagate..
+                        return true;
+                }
+            if (value(ctr) == utils::True)
+            { // the disjunction is `true` and there is only one unassigned literal
+                assert(found);
+                return enqueue(u_p); // we have to make the only unassigned literal `true`
+            }
+            else
+            { // all the literals are `false`
+                assert(std::all_of(lits.begin(), lits.end(), [&](const auto &l)
+                                   { return value(l) == utils::False; }));
+                return enqueue(!ctr); // we have to make the disjunction `false`
             }
         }
-        return true;
     }
     bool sat_disj::simplify() noexcept
     {
