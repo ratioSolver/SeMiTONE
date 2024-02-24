@@ -11,6 +11,8 @@ namespace semitone
 
     /**
      * @brief Create a new linear real arithmetic variable.
+     *
+     * @return VARIABLE_TYPE the new variable.
      */
     VARIABLE_TYPE new_var() noexcept;
   };
