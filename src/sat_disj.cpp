@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    sat_disj::sat_disj(sat_core &s, std::vector<lit> &&ls, const lit &ctr) : constr(s), lits(ls), ctr(ctr)
+    sat_disj::sat_disj(sat_core &s, std::vector<utils::lit> &&ls, const utils::lit &ctr) : constr(s), lits(ls), ctr(ctr)
     {
         assert(s.root_level());
         assert(std::all_of(ls.begin(), ls.end(), [&](const auto &l)
@@ -20,9 +20,9 @@ namespace semitone
         watches(!ctr).push_back(*this); // making the control variable `false` makes all the literals `false`
     }
 
-    std::unique_ptr<constr> sat_disj::copy(sat_core &s) noexcept { return std::make_unique<sat_disj>(s, std::vector<lit>(lits), ctr); }
+    std::unique_ptr<constr> sat_disj::copy(sat_core &s) noexcept { return std::make_unique<sat_disj>(s, std::vector<utils::lit>(lits), ctr); }
 
-    bool sat_disj::propagate(const lit &p) noexcept
+    bool sat_disj::propagate(const utils::lit &p) noexcept
     {
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
@@ -32,7 +32,7 @@ namespace semitone
         { // the control variable is assigned
             if (value(ctr) == utils::True)
             { // the disjunction is `true`
-                lit u_p;
+                utils::lit u_p;
                 bool found = false;
                 for (const auto &l : lits)
                     switch (value(l))
@@ -64,7 +64,7 @@ namespace semitone
         { // a literal is assigned
             assert(std::any_of(lits.begin(), lits.end(), [&p](const auto &l)
                                { return variable(l) == variable(p); })); // the literal must be in the disjunction
-            lit u_p;
+            utils::lit u_p;
             bool found = false;
             for (const auto &l : lits)
                 switch (value(l))
@@ -96,11 +96,11 @@ namespace semitone
 
     bool sat_disj::simplify() noexcept { return value(ctr) != utils::Undefined; }
 
-    std::vector<lit> sat_disj::get_reason(const lit &p) const noexcept
+    std::vector<utils::lit> sat_disj::get_reason(const utils::lit &p) const noexcept
     {
         if (is_undefined(p))
         {
-            std::vector<lit> reason;
+            std::vector<utils::lit> reason;
             reason.reserve(lits.size() + 1);
             for (const auto &l : lits)
                 if (value(l) != utils::Undefined)
@@ -128,7 +128,7 @@ namespace semitone
                                  { return value(l) == utils::True; }) == 1);
             assert(static_cast<size_t>(std::count_if(lits.begin(), lits.end(), [&](const auto &l)
                                                      { return value(l) == utils::False; })) == lits.size() - 1);
-            std::vector<lit> reason;
+            std::vector<utils::lit> reason;
             reason.reserve(lits.size());
             for (const auto &l : lits)
                 if (value(l) == utils::False)

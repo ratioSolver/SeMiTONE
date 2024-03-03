@@ -40,7 +40,7 @@ namespace semitone
      * @param p The literal to propagate.
      * @return `true` if the constraint network is consistent, `false` otherwise.
      */
-    virtual bool propagate(const lit &p) noexcept = 0;
+    virtual bool propagate(const utils::lit &p) noexcept = 0;
     /**
      * @brief Check if the constraint is redundant under the current assignment.
      *
@@ -56,7 +56,7 @@ namespace semitone
      * @param p The literal.
      * @return The reason for the literal.
      */
-    virtual std::vector<lit> get_reason(const lit &p) const noexcept = 0;
+    virtual std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept = 0;
 
   protected:
     /**
@@ -65,7 +65,7 @@ namespace semitone
      * @param p The literal to enqueue.
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
-    bool enqueue(const lit &p) noexcept;
+    bool enqueue(const utils::lit &p) noexcept;
     /**
      * @brief Get the watches of a literal.
      *
@@ -74,7 +74,7 @@ namespace semitone
      * @param p The literal.
      * @return The watches of the literal.
      */
-    std::vector<std::reference_wrapper<constr>> &watches(const lit &p) noexcept;
+    std::vector<std::reference_wrapper<constr>> &watches(const utils::lit &p) noexcept;
     /**
      * @brief Compute the value of a variable.
      *
@@ -88,7 +88,7 @@ namespace semitone
      * @param p The literal.
      * @return The value of the literal.
      */
-    utils::lbool value(const lit &p) const noexcept;
+    utils::lbool value(const utils::lit &p) const noexcept;
 
     /**
      * @brief Return whether the constraint must propagate after the given literal is assigned.
@@ -99,7 +99,7 @@ namespace semitone
      * @param p The literal.
      * @return `true` if the constraint must propagate after the given literal is assigned, `false` otherwise.
      */
-    bool must_propagate(const lit &p) const noexcept;
+    bool must_propagate(const utils::lit &p) const noexcept;
 
   private:
     virtual json::json to_json() const noexcept { return json::json(); }

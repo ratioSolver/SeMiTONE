@@ -14,7 +14,7 @@ namespace semitone
         domains.emplace_back();
         exact_one.push_back(enforce_exct_one);
         if (domain.size() == 1 && enforce_exct_one)
-            domains[x].emplace_back(domain[0].get(), TRUE_lit);
+            domains[x].emplace_back(domain[0].get(), utils::TRUE_lit);
         else
             for (const auto &v : domain)
             {
@@ -25,7 +25,7 @@ namespace semitone
         return x;
     }
 
-    VARIABLE_TYPE ov_theory::new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, lit>> &&domain) noexcept
+    VARIABLE_TYPE ov_theory::new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>> &&domain) noexcept
     {
         assert(!domain.empty());
         const auto x = domains.size();
@@ -39,11 +39,11 @@ namespace semitone
         return x;
     }
 
-    lit ov_theory::new_eq(const VARIABLE_TYPE left, const VARIABLE_TYPE right) noexcept
+    utils::lit ov_theory::new_eq(const VARIABLE_TYPE left, const VARIABLE_TYPE right) noexcept
     {
         if (left == right)
-            return TRUE_lit;
-        const auto ctr = lit(sat->new_var());
+            return utils::TRUE_lit;
+        const auto ctr = utils::lit(sat->new_var());
         sat->add_constr(std::make_unique<ov_eq>(*this, left, right, ctr));
         return ctr;
     }

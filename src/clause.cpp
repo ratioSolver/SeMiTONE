@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    clause::clause(sat_core &s, std::vector<lit> &&ls) : constr(s), lits(std::move(ls))
+    clause::clause(sat_core &s, std::vector<utils::lit> &&ls) : constr(s), lits(std::move(ls))
     {
         assert(lits.size() >= 2);
         watches(!lits[0]).emplace_back(*this);
@@ -14,13 +14,13 @@ namespace semitone
 
     std::unique_ptr<constr> clause::copy(sat_core &s) noexcept
     {
-        std::vector<lit> lits;
+        std::vector<utils::lit> lits;
         lits.reserve(this->lits.size());
         lits.insert(lits.begin(), this->lits.begin(), this->lits.end());
         return std::make_unique<clause>(s, std::move(lits));
     }
 
-    bool clause::propagate(const lit &p) noexcept
+    bool clause::propagate(const utils::lit &p) noexcept
     {
         assert(value(p) == utils::True);
         // make sure false literal is lits[1]..
@@ -65,12 +65,12 @@ namespace semitone
         return false;
     }
 
-    std::vector<lit> clause::get_reason(const lit &p) const noexcept
+    std::vector<utils::lit> clause::get_reason(const utils::lit &p) const noexcept
     {
         assert(is_undefined(p) || p == lits[0]);
-        assert(std::all_of(lits.cbegin(), lits.cend(), [this](const lit &l)
+        assert(std::all_of(lits.cbegin(), lits.cend(), [this](const auto &l)
                            { return value(l) == utils::False; }));
-        std::vector<lit> r;
+        std::vector<utils::lit> r;
         r.reserve(is_undefined(p) ? lits.size() : lits.size() - 1);
         for (size_t i = is_undefined(p) ? 0 : 1; i < lits.size(); ++i)
             r.push_back(!lits[i]);

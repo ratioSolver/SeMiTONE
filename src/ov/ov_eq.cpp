@@ -8,7 +8,7 @@
 
 namespace semitone
 {
-    ov_eq::ov_eq(ov_theory &ov, const VARIABLE_TYPE left, const VARIABLE_TYPE right, const lit &ctr) : constr(ov.get_sat()), ov(ov), left(left), right(right), ctr(ctr)
+    ov_eq::ov_eq(ov_theory &ov, const VARIABLE_TYPE left, const VARIABLE_TYPE right, const utils::lit &ctr) : constr(ov.get_sat()), ov(ov), left(left), right(right), ctr(ctr)
     {
         assert(ov.get_sat().root_level());
         assert(value(ctr) == utils::Undefined);
@@ -32,7 +32,7 @@ namespace semitone
 
     std::unique_ptr<constr> ov_eq::copy(sat_core &) noexcept { return std::make_unique<ov_eq>(ov, left, right, ctr); }
 
-    bool ov_eq::propagate(const lit &p) noexcept
+    bool ov_eq::propagate(const utils::lit &p) noexcept
     {
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
@@ -156,11 +156,11 @@ namespace semitone
 
     bool ov_eq::simplify() noexcept { return value(ctr) != utils::Undefined; }
 
-    std::vector<lit> ov_eq::get_reason(const lit &p) const noexcept
+    std::vector<utils::lit> ov_eq::get_reason(const utils::lit &p) const noexcept
     {
         if (is_undefined(p))
         {
-            std::vector<lit> reason;
+            std::vector<utils::lit> reason;
             reason.reserve(left_domain.size() + right_domain.size() + 1);
             for (const auto &[v, l] : left_domain_set)
                 if (value(l) != utils::Undefined)

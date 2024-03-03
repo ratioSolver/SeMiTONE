@@ -4,7 +4,7 @@
 
 namespace semitone
 {
-    sat_eq::sat_eq(sat_core &s, const lit &l, const lit &r, const lit &ctr) : constr(s), left(l), right(r), ctr(ctr)
+    sat_eq::sat_eq(sat_core &s, const utils::lit &l, const utils::lit &r, const utils::lit &ctr) : constr(s), left(l), right(r), ctr(ctr)
     {
         assert(s.root_level());
         assert(value(l) == utils::Undefined);
@@ -20,7 +20,7 @@ namespace semitone
 
     std::unique_ptr<constr> sat_eq::copy(sat_core &s) noexcept { return std::make_unique<sat_eq>(s, left, right, ctr); }
 
-    bool sat_eq::propagate(const lit &p) noexcept
+    bool sat_eq::propagate(const utils::lit &p) noexcept
     {
         assert(value(p) == utils::True);
         watches(p).emplace_back(*this);
@@ -87,7 +87,7 @@ namespace semitone
 
     bool sat_eq::simplify() noexcept { return value(left) != utils::Undefined && value(right) != utils::Undefined && value(ctr) != utils::Undefined; }
 
-    std::vector<lit> sat_eq::get_reason(const lit &p) const noexcept
+    std::vector<utils::lit> sat_eq::get_reason(const utils::lit &p) const noexcept
     {
         assert(value(left) == value(right) || value(ctr) == utils::False);
         assert(value(left) != value(right) || value(ctr) == utils::True);

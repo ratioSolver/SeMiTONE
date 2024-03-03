@@ -23,7 +23,7 @@ namespace semitone
      * @param enforce_exct_one if true, the variable must take exactly one value from the domain.
      * @return VARIABLE_TYPE the new variable.
      */
-    VARIABLE_TYPE new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one = true) noexcept;
+    [[nodiscard]] VARIABLE_TYPE new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one = true) noexcept;
     /**
      * @brief Create a new variable with the given domain.
      *
@@ -32,7 +32,7 @@ namespace semitone
      * @param domain the initial domain of the variable and the literals that control the presence of the values.
      * @return VARIABLE_TYPE the new variable.
      */
-    VARIABLE_TYPE new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, lit>> &&domain) noexcept;
+    [[nodiscard]] VARIABLE_TYPE new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>> &&domain) noexcept;
 
     /**
      * @brief Create a new equality constraint.
@@ -41,23 +41,23 @@ namespace semitone
      * @param right the right-hand side of the equality.
      * @return lit the reified equality.
      */
-    lit new_eq(const VARIABLE_TYPE left, const VARIABLE_TYPE right) noexcept;
+    [[nodiscard]] utils::lit new_eq(const VARIABLE_TYPE left, const VARIABLE_TYPE right) noexcept;
 
     /**
      * @brief Return the current domain of the `var` variable.
      *
      * @return The current domain of the `var` variable.
      */
-    std::vector<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) noexcept;
+    [[nodiscard]] std::vector<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) noexcept;
 
   private:
-    bool propagate(const lit &) noexcept override { return true; }
+    bool propagate(const utils::lit &) noexcept override { return true; }
     bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
 
   private:
-    std::vector<std::vector<std::pair<std::reference_wrapper<utils::enum_val>, lit>>> domains;
+    std::vector<std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>>> domains;
     std::vector<bool> exact_one;
   };
 } // namespace semitone

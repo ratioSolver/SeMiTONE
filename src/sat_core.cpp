@@ -14,9 +14,9 @@ namespace semitone
     sat_core::sat_core()
     {
         [[maybe_unused]] VARIABLE_TYPE c_false = new_var(); // the false constant..
-        assert(c_false == FALSE_var);
-        assigns[FALSE_var] = utils::False;
-        level[FALSE_var] = 0;
+        assert(c_false == utils::FALSE_var);
+        assigns[utils::FALSE_var] = utils::False;
+        level[utils::FALSE_var] = 0;
     }
     sat_core::sat_core(const sat_core &orig) : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
     {
@@ -50,12 +50,12 @@ namespace semitone
         return x;
     }
 
-    bool sat_core::new_clause(std::vector<lit> &&lits) noexcept
+    bool sat_core::new_clause(std::vector<utils::lit> &&lits) noexcept
     {
         assert(root_level());
         // we check if the clause is already satisfied and filter out false/duplicate literals..
         std::sort(lits.begin(), lits.end());
-        lit p;
+        utils::lit p;
         size_t j = 0;
         for (auto it = lits.cbegin(); it != lits.cend(); ++it)
         {
@@ -81,12 +81,12 @@ namespace semitone
         }
     }
 
-    lit sat_core::new_eq(const lit &left, const lit &right) noexcept
+    utils::lit sat_core::new_eq(const utils::lit &left, const utils::lit &right) noexcept
     {
         assert(root_level());
         // we try to avoid creating a new variable..
         if (left == right)
-            return TRUE_lit; // the variables are the same variable..
+            return utils::TRUE_lit; // the variables are the same variable..
         switch (value(left))
         {
         case utils::True:
@@ -101,24 +101,24 @@ namespace semitone
             case utils::False:
                 return !left;
             default: // we need to create a new variable..
-                const auto ctr = lit(new_var());
+                const auto ctr = utils::lit(new_var());
                 constrs.push_back(std::make_unique<sat_eq>(*this, left, right, ctr));
                 return ctr;
             }
         }
     }
 
-    lit sat_core::new_conj(std::vector<lit> &&ls) noexcept
+    utils::lit sat_core::new_conj(std::vector<utils::lit> &&ls) noexcept
     {
         assert(root_level());
         // we try to avoid creating a new variable..
         std::sort(ls.begin(), ls.end(), [](const auto &l0, const auto &l1)
                   { return variable(l0) < variable(l1); });
-        lit p;
+        utils::lit p;
         size_t j = 0;
         for (auto it = ls.cbegin(); it != ls.cend(); ++it)
             if (value(*it) == utils::False || *it == !p)
-                return FALSE_lit; // the conjunction cannot be satisfied..
+                return utils::FALSE_lit; // the conjunction cannot be satisfied..
             else if (value(*it) != utils::True && *it != p)
             { // we need to include this literal in the conjunction..
                 p = *it;
@@ -127,28 +127,28 @@ namespace semitone
         ls.resize(j);
 
         if (ls.empty()) // an empty conjunction is assumed to be satisfied..
-            return TRUE_lit;
+            return utils::TRUE_lit;
         else if (ls.size() == 1)
             return ls[0];
         else
         { // we need to create a new variable..
-            const auto ctr = lit(new_var());
+            const auto ctr = utils::lit(new_var());
             constrs.push_back(std::make_unique<sat_conj>(*this, std::move(ls), ctr));
             return ctr;
         }
     }
 
-    lit sat_core::new_disj(std::vector<lit> &&ls) noexcept
+    utils::lit sat_core::new_disj(std::vector<utils::lit> &&ls) noexcept
     {
         assert(root_level());
         // we try to avoid creating a new variable..
         std::sort(ls.begin(), ls.end(), [](const auto &l0, const auto &l1)
                   { return variable(l0) < variable(l1); });
-        lit p;
+        utils::lit p;
         size_t j = 0;
         for (auto it = ls.cbegin(); it != ls.cend(); ++it)
             if (value(*it) == utils::True || *it == !p)
-                return TRUE_lit; // the disjunction is already satisfied..
+                return utils::TRUE_lit; // the disjunction is already satisfied..
             else if (value(*it) != utils::False && *it != p)
             { // we need to include this literal in the conjunction..
                 p = *it;
@@ -157,18 +157,18 @@ namespace semitone
         ls.resize(j);
 
         if (ls.empty()) // an empty disjunction is assumed to be unsatisfable..
-            return FALSE_lit;
+            return utils::FALSE_lit;
         else if (ls.size() == 1)
             return ls[0];
         else
         { // we need to create a new variable..
-            const auto ctr = lit(new_var());
+            const auto ctr = utils::lit(new_var());
             constrs.push_back(std::make_unique<sat_disj>(*this, std::move(ls), ctr));
             return ctr;
         }
     }
 
-    bool sat_core::assume(const lit &p) noexcept
+    bool sat_core::assume(const utils::lit &p) noexcept
     {
         assert(value(p) == utils::Undefined);
         assert(prop_queue.empty());
@@ -199,7 +199,7 @@ namespace semitone
 
     bool sat_core::propagate() noexcept
     {
-        lit p;
+        utils::lit p;
     main_loop:
         while (!prop_queue.empty())
         { // we first propagate sat constraints..
@@ -218,7 +218,7 @@ namespace semitone
                     if (root_level())
                         return false; // the problem is unsatisfiable..
 
-                    std::vector<lit> no_good;
+                    std::vector<utils::lit> no_good;
                     size_t bt_level;
                     // we analyze the conflict..
                     analyze(ws[i].get(), no_good, bt_level);
@@ -245,7 +245,7 @@ namespace semitone
             th->pop();
     }
 
-    bool sat_core::enqueue(const lit &p, const std::optional<std::reference_wrapper<constr>> &c) noexcept
+    bool sat_core::enqueue(const utils::lit &p, const std::optional<std::reference_wrapper<constr>> &c) noexcept
     {
         if (auto val = value(p); val != utils::Undefined)
             return val;
@@ -267,12 +267,12 @@ namespace semitone
         trail.pop_back();
     }
 
-    void sat_core::analyze(constr &cnfl, std::vector<lit> &out_learnt, size_t &out_btlevel) noexcept
+    void sat_core::analyze(constr &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
     {
         std::set<VARIABLE_TYPE> seen;
         int counter = 0; // this is the number of variables of the current decision level that have already been seen..
-        lit p;
-        std::vector<lit> p_reason = cnfl.get_reason(p);
+        utils::lit p;
+        std::vector<utils::lit> p_reason = cnfl.get_reason(p);
         out_learnt.push_back(p); // we make room for the next to be enqueued literal..
         out_btlevel = 0;
         do
@@ -307,7 +307,7 @@ namespace semitone
         out_learnt[0] = !p;                                         // the asserting literal..
     }
 
-    void sat_core::record(std::vector<lit> lits) noexcept
+    void sat_core::record(std::vector<utils::lit> lits) noexcept
     {
         assert(value(lits[0]) == utils::Undefined); // the asserting literal must be unassigned..
         assert(std::all_of(std::next(lits.cbegin()), lits.cend(), [this](auto &p)

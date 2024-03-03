@@ -17,7 +17,13 @@ namespace semitone
      *
      * @return VARIABLE_TYPE the new variable.
      */
-    VARIABLE_TYPE new_var() noexcept;
+    [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
+
+  private:
+    bool propagate(const utils::lit &) noexcept override { return true; }
+    bool check() noexcept override { return true; }
+    void push() noexcept override {}
+    void pop() noexcept override {}
 
   private:
     /**
@@ -26,7 +32,7 @@ namespace semitone
     struct bound
     {
       utils::inf_rational value; // the value of the bound..
-      lit reason;                // the reason for the value..
+      utils::lit reason;         // the reason for the value..
     };
 
     std::vector<bound> c_bounds;           // the current bounds..

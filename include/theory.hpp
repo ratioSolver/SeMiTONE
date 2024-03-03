@@ -22,7 +22,7 @@ namespace semitone
      * @param p the literal that has been assigned.
      * @return true if propagation succeeds or false if an inconsistency is found.
      */
-    virtual bool propagate(const lit &p) noexcept = 0;
+    virtual bool propagate(const utils::lit &p) noexcept = 0;
 
     /**
      * @brief Checks whether the theory is consistent with the given propositional assignments. Returns true if the theory is consistent or false if an inconsistency is found. In case of inconsistency, the confl vector must be filled with the conflicting constraint.
