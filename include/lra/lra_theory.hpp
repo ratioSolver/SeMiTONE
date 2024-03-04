@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vector>
+#include <set>
 #include "theory.hpp"
 #include "inf_rational.hpp"
-#include "tableau.hpp"
+#include "lra_assertion.hpp"
+#include "lra_eq.hpp"
 
 namespace semitone
 {
@@ -76,8 +78,11 @@ namespace semitone
       utils::lit reason;         // the reason for the value..
     };
 
-    std::vector<bound> c_bounds;           // the current bounds..
-    std::vector<utils::inf_rational> vals; // the current values..
-    utils::tableau tableau;                // the tableau..
+    std::vector<bound> c_bounds;                                               // the current bounds..
+    std::vector<utils::inf_rational> vals;                                     // the current values..
+    std::map<const VARIABLE_TYPE, std::unique_ptr<lra_assertion>> v_asrts;     // the assertions (literal to assertions) used for enforcing (negating) assertions..
+    std::map<const VARIABLE_TYPE, std::unique_ptr<lra_eq>> tableau;            // the tableau..
+    std::vector<std::vector<std::reference_wrapper<lra_assertion>>> a_watches; // for each variable `v`, a list of assertions watching `v`..
+    std::vector<std::set<VARIABLE_TYPE>> t_watches;                            // for each variable `v`, a list of tableau rows watching `v`..
   };
 } // namespace semitone
