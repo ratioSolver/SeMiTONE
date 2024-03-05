@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "theory.hpp"
+#include "lin.hpp"
 
 namespace semitone
 {
@@ -16,6 +17,52 @@ namespace semitone
      * @return VARIABLE_TYPE the new variable.
      */
     [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
+
+    /**
+     * @brief Returns the lower bound of the given variable.
+     *
+     * @param v the variable to get the lower bound of.
+     * @return VARIABLE_TYPE the lower bound of the variable.
+     */
+    inline VARIABLE_TYPE lb(VARIABLE_TYPE v) const noexcept { return -dists[v][0]; }
+    /**
+     * @brief Returns the upper bound of the given variable.
+     *
+     * @param v the variable to get the upper bound of.
+     * @return VARIABLE_TYPE the upper bound of the variable.
+     */
+    inline VARIABLE_TYPE ub(VARIABLE_TYPE v) const noexcept { return dists[0][v]; }
+    /**
+     * @brief Returns the bounds of the given variable.
+     *
+     * @param v the variable to get the bounds of.
+     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the bounds of the variable.
+     */
+    inline std::pair<VARIABLE_TYPE, VARIABLE_TYPE> bounds(VARIABLE_TYPE v) const noexcept { return std::make_pair(-dists[v][0], dists[0][v]); }
+    /**
+     * @brief Returns the distance between the given variables.
+     *
+     * @param from the variable to get the distance from.
+     * @param to the variable to get the distance to.
+     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the distance between the variables.
+     */
+    inline std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(VARIABLE_TYPE from, VARIABLE_TYPE to) const noexcept { return std::make_pair(-dists[to][from], dists[from][to]); }
+
+    /**
+     * @brief Returns the bounds of the given linear expression.
+     *
+     * @param l the linear expression to get the bounds of.
+     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the bounds of the linear expression.
+     */
+    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> bounds(const utils::lin &l) const;
+    /**
+     * @brief Returns the distance between the given linear expressions.
+     *
+     * @param from the linear expression to get the distance from.
+     * @param to the linear expression to get the distance to.
+     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the distance between the linear expressions.
+     */
+    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(const utils::lin &from, const utils::lin &to) const;
 
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }

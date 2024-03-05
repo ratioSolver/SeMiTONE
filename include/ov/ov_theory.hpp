@@ -48,7 +48,7 @@ namespace semitone
      *
      * @return The current domain of the `var` variable.
      */
-    [[nodiscard]] std::vector<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) noexcept;
+    [[nodiscard]] std::vector<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) const noexcept;
 
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }

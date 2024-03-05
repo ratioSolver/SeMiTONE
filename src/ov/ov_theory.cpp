@@ -48,7 +48,7 @@ namespace semitone
         return ctr;
     }
 
-    std::vector<std::reference_wrapper<utils::enum_val>> ov_theory::domain(const VARIABLE_TYPE var) noexcept
+    std::vector<std::reference_wrapper<utils::enum_val>> ov_theory::domain(const VARIABLE_TYPE var) const noexcept
     {
         std::vector<std::reference_wrapper<utils::enum_val>> d;
         for (const auto &v : domains[var])
