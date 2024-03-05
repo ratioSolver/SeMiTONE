@@ -28,7 +28,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return lit the literal corresponding to the constraint.
      */
-    utils::lit new_lt(const utils::lit &left, const utils::lit &right) noexcept;
+    utils::lit new_lt(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new lower or equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -36,7 +36,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return lit the literal corresponding to the constraint.
      */
-    utils::lit new_leq(const utils::lit &left, const utils::lit &right) noexcept;
+    utils::lit new_leq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -44,7 +44,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return lit the literal corresponding to the constraint.
      */
-    utils::lit new_eq(const utils::lit &left, const utils::lit &right) noexcept;
+    utils::lit new_eq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new greater or equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -52,7 +52,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return lit the literal corresponding to the constraint.
      */
-    utils::lit new_geq(const utils::lit &left, const utils::lit &right) noexcept;
+    utils::lit new_geq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new greater then constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -60,7 +60,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return lit the literal corresponding to the constraint.
      */
-    utils::lit new_gt(const utils::lit &left, const utils::lit &right) noexcept;
+    utils::lit new_gt(const utils::lin &left, const utils::lin &right) noexcept;
 
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }
