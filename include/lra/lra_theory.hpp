@@ -22,6 +22,14 @@ namespace semitone
     [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
 
     /**
+     * @brief Create a new linear real arithmetic variable and make it equal to the given linear expression.
+     *
+     * @param l the linear expression to make the new variable equal to.
+     * @return VARIABLE_TYPE the new variable.
+     */
+    [[nodiscard]] VARIABLE_TYPE new_var(const utils::lin &&l) noexcept;
+
+    /**
      * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
      *
      * @param left the left hand side of the constraint.
@@ -149,6 +157,8 @@ namespace semitone
     bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
+
+    void new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept;
 
   private:
     /**
