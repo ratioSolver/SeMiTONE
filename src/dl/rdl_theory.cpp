@@ -1,3 +1,5 @@
+#include <cassert>
+#include <stdexcept>
 #include "rdl_theory.hpp"
 #include "integer.hpp"
 
@@ -34,6 +36,28 @@ namespace semitone
         {
             dists[i][i] = utils::inf_rational(utils::rational::zero);
             preds[i][i] = i;
+        }
+    }
+
+    std::pair<utils::inf_rational, utils::inf_rational> rdl_theory::bounds(const utils::lin &l) const
+    {
+        switch (l.vars.size())
+        {
+        case 0:
+            return {utils::inf_rational(l.known_term), utils::inf_rational(l.known_term)};
+        case 1:
+        {
+            auto v = l.vars.cbegin();
+            return {l.known_term + v->second * lb(v->first), l.known_term + v->second * ub(v->first)};
+        }
+        case 2:
+        {
+            auto v = l.vars.cbegin();
+            auto w = std::next(v);
+            return {l.known_term + v->second * lb(v->first) + w->second * lb(w->first), l.known_term + v->second * ub(v->first) + w->second * ub(w->first)};
+        }
+        default:
+            throw std::runtime_error("rdl_theory::bounds not implemented");
         }
     }
 } // namespace semitone

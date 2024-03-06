@@ -1,5 +1,8 @@
+#include <cassert>
+#include <stdexcept>
 #include "idl_theory.hpp"
 #include "integer.hpp"
+#include "logging.hpp"
 
 namespace semitone
 {
@@ -34,6 +37,28 @@ namespace semitone
         {
             dists[i][i] = 0;
             preds[i][i] = i;
+        }
+    }
+
+    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> idl_theory::bounds(const utils::lin &l) const
+    {
+        switch (l.vars.size())
+        {
+        case 0:
+            assert(is_integer(l.known_term));
+            return {l.known_term.numerator(), l.known_term.numerator()};
+        case 1:
+        {
+            auto v = l.vars.cbegin();
+            assert(is_integer(v->second) && is_integer(l.known_term));
+            return {l.known_term.numerator() + v->second.numerator() * lb(v->first), l.known_term.numerator() + v->second.numerator() * ub(v->first)};
+        }
+        case 2:
+        {
+            LOG_ERR("idl_theory::bounds not implemented");
+        }
+        default:
+            throw std::invalid_argument("idl_theory::bounds: invalid linear expression");
         }
     }
 } // namespace semitone

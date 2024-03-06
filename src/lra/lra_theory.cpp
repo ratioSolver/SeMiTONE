@@ -1,4 +1,5 @@
 #include "lra_theory.hpp"
+#include "logging.hpp"
 
 namespace semitone
 {
@@ -13,9 +14,29 @@ namespace semitone
         return var;
     }
 
-    utils::lit lra_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept {}
-    utils::lit lra_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept {}
-    utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept {}
-    utils::lit lra_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept {}
-    utils::lit lra_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept {}
+    utils::lit lra_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
+    {
+        LOG_ERR("lra_theory::new_lt not implemented");
+        return utils::TRUE_lit;
+    }
+    utils::lit lra_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
+    {
+        LOG_ERR("lra_theory::new_leq not implemented");
+        return utils::TRUE_lit;
+    }
+    utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept
+    {
+        LOG_ERR("lra_theory::new_eq not implemented");
+        return utils::TRUE_lit;
+    }
+    utils::lit lra_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept
+    {
+        LOG_ERR("lra_theory::new_geq not implemented");
+        return utils::TRUE_lit;
+    }
+    utils::lit lra_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
+    {
+        LOG_ERR("lra_theory::new_gt not implemented");
+        return utils::TRUE_lit;
+    }
 } // namespace semitone

@@ -62,7 +62,7 @@ namespace semitone
      * @param to the linear expression to get the distance to.
      * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the distance between the linear expressions.
      */
-    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(const utils::lin &from, const utils::lin &to) const;
+    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(const utils::lin &from, const utils::lin &to) const { return bounds(from - to); }
 
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }

@@ -63,7 +63,7 @@ namespace semitone
      * @param to the linear expression to end at.
      * @return std::pair<utils::inf_rational, utils::inf_rational> the distance between the linear expressions.
      */
-    std::pair<utils::inf_rational, utils::inf_rational> distance(const utils::lin &from, const utils::lin &to) const;
+    std::pair<utils::inf_rational, utils::inf_rational> distance(const utils::lin &from, const utils::lin &to) const { return bounds(from - to); }
 
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }
