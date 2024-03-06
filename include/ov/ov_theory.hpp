@@ -50,6 +50,24 @@ namespace semitone
      */
     [[nodiscard]] std::vector<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) const noexcept;
 
+    /**
+     * @brief Assign the given value to the variable.
+     *
+     * @param var the variable to assign.
+     * @param val the value to assign.
+     * @return true if the assignment is successful, false otherwise.
+     */
+    bool assign(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
+
+    /**
+     * @brief Forbid the given value to the variable.
+     *
+     * @param var the variable to forbid.
+     * @param val the value to forbid.
+     * @return true if the forbidding is successful, false otherwise.
+     */
+    bool forbid(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
+
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }
     bool check() noexcept override { return true; }

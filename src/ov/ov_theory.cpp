@@ -56,4 +56,20 @@ namespace semitone
                 d.push_back(v.first.get());
         return d;
     }
+
+    bool ov_theory::assign(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept
+    {
+        for (const auto &v : domains[var])
+            if (&v.first.get() == &val)
+                return sat->assume(v.second);
+        return false;
+    }
+
+    bool ov_theory::forbid(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept
+    {
+        for (const auto &v : domains[var])
+            if (&v.first.get() == &val)
+                return sat->assume(!v.second);
+        return false;
+    }
 } // namespace semitone
