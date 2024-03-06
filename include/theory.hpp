@@ -10,8 +10,8 @@ namespace semitone
   class theory
   {
   public:
-    theory(std::shared_ptr<sat_core> sat) : sat(sat) {}
-    virtual ~theory() = default;
+    theory(std::shared_ptr<sat_core> sat);
+    virtual ~theory();
 
     sat_core &get_sat() const { return *sat; }
     std::shared_ptr<sat_core> get_sat_ptr() const { return sat; }
@@ -43,6 +43,7 @@ namespace semitone
 
   protected:
     void bind(VARIABLE_TYPE v) noexcept;
+    void record(std::vector<utils::lit> &&clause) noexcept;
 
   protected:
     std::shared_ptr<sat_core> sat;

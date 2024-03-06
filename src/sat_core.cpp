@@ -176,7 +176,7 @@ namespace semitone
         trail_lim.push_back(trail.size());
         decisions.push_back(p);
         for (const auto &th : theories)
-            th->push();
+            th.get().push();
         return enqueue(p) && propagate();
     }
 
@@ -242,7 +242,7 @@ namespace semitone
         decisions.pop_back();
 
         for (const auto &th : theories)
-            th->pop();
+            th.get().pop();
     }
 
     bool sat_core::enqueue(const utils::lit &p, const std::optional<std::reference_wrapper<constr>> &c) noexcept
