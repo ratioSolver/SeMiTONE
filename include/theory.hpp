@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 #include "lit.hpp"
 
 namespace semitone
@@ -42,10 +43,17 @@ namespace semitone
     virtual void pop() noexcept = 0;
 
   protected:
+    /**
+     * @brief Binds the theory to a propositional variable.
+     */
     void bind(VARIABLE_TYPE v) noexcept;
+    /**
+     * @brief Records a new clause which might be inferred by the theory.
+     */
     void record(std::vector<utils::lit> &&clause) noexcept;
 
   protected:
     std::shared_ptr<sat_core> sat;
+    std::vector<utils::lit> cnfl; // conflict clause to be analyzed by the SAT solver after a conflict is detected by propagate or check
   };
 } // namespace semitone
