@@ -49,13 +49,25 @@ namespace semitone
             return {l.known_term.numerator(), l.known_term.numerator()};
         case 1:
         {
-            auto v = l.vars.cbegin();
+            const auto v = l.vars.cbegin();
             assert(is_integer(v->second) && is_integer(l.known_term));
             return {l.known_term.numerator() + v->second.numerator() * lb(v->first), l.known_term.numerator() + v->second.numerator() * ub(v->first)};
         }
         case 2:
         {
-            LOG_ERR("idl_theory::bounds not implemented");
+            const auto v0 = l.vars.cbegin();
+            const auto v1 = std::next(v0);
+            assert(((v0->second == 1 && v1->second == -1) || (v0->second == -1 && v1->second == 1)) && is_integer(l.known_term));
+            if (v0->second == 1)
+            {
+                const auto d = distance(v1->first, v0->first);
+                return {l.known_term.numerator() + d.first, l.known_term.numerator() + d.second};
+            }
+            else
+            {
+                const auto d = distance(v0->first, v1->first);
+                return {-l.known_term.numerator() + d.first, -l.known_term.numerator() + d.second};
+            }
         }
         default:
             throw std::invalid_argument("idl_theory::bounds: invalid linear expression");

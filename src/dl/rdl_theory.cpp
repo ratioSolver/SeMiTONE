@@ -1,7 +1,7 @@
 #include <cassert>
 #include <stdexcept>
 #include "rdl_theory.hpp"
-#include "integer.hpp"
+#include "logging.hpp"
 
 namespace semitone
 {
@@ -52,12 +52,21 @@ namespace semitone
         }
         case 2:
         {
-            auto v = l.vars.cbegin();
-            auto w = std::next(v);
-            return {l.known_term + v->second * lb(v->first) + w->second * lb(w->first), l.known_term + v->second * ub(v->first) + w->second * ub(w->first)};
+            const auto v0 = l.vars.cbegin();
+            const auto v1 = std::next(v0);
+            if (v0->second == 1)
+            {
+                const auto d = distance(v1->first, v0->first);
+                return {l.known_term.numerator() + d.first, l.known_term.numerator() + d.second};
+            }
+            else
+            {
+                const auto d = distance(v0->first, v1->first);
+                return {-l.known_term.numerator() + d.first, -l.known_term.numerator() + d.second};
+            }
         }
         default:
-            throw std::runtime_error("rdl_theory::bounds not implemented");
+            throw std::invalid_argument("rdl_theory::bounds: invalid linear expression");
         }
     }
 } // namespace semitone
