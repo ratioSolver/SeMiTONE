@@ -12,4 +12,10 @@ namespace semitone
         vals.push_back(utils::inf_rational(utils::rational::zero));
         return var;
     }
+
+    utils::lit lra_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept {}
+    utils::lit lra_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept {}
+    utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept {}
+    utils::lit lra_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept {}
+    utils::lit lra_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept {}
 } // namespace semitone
