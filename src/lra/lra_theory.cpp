@@ -61,6 +61,6 @@ namespace semitone
         assert(tableau.find(x_i) == tableau.cend());
         for (const auto &x : xpr.vars)
             t_watches[x.first].insert(x_i);
-        tableau.emplace(x_i, std::make_unique<lra_eq>(x_i, std::move(xpr)));
+        tableau.emplace(x_i, std::make_unique<lra_eq>(*this, x_i, std::move(xpr)));
     }
 } // namespace semitone

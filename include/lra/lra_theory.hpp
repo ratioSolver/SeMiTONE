@@ -11,7 +11,8 @@ namespace semitone
 {
   class lra_theory final : public theory
   {
-    friend class lra_assertion;
+    friend class lra_leq;
+    friend class lra_geq;
 
   public:
     lra_theory(std::shared_ptr<sat_core> sat);

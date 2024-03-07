@@ -7,25 +7,36 @@ namespace semitone
 {
   class lra_theory;
 
-  enum op
-  {
-    leq,
-    geq
-  };
-
   class lra_assertion
   {
   public:
-    lra_assertion(lra_theory &th, const op o, const utils::lit b, const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept;
+    lra_assertion(lra_theory &th, const utils::lit b, const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept : th(th), b(b), x(x), v(v) {}
 
-    bool propagate_lb(const VARIABLE_TYPE x_i) noexcept;
-    bool propagate_ub(const VARIABLE_TYPE x_i) noexcept;
+    virtual bool propagate_lb(const utils::inf_rational &lb) noexcept = 0;
+    virtual bool propagate_ub(const utils::inf_rational &ub) noexcept = 0;
 
-  private:
+  protected:
     lra_theory &th;              // the linear real arithmetic theory..
-    const op o;                  // the kind of operator..
     const utils::lit b;          // the literal associated to the assertion..
     const VARIABLE_TYPE x;       // the numeric variable..
     const utils::inf_rational v; // the constant..
+  };
+
+  class lra_leq : public lra_assertion
+  {
+  public:
+    lra_leq(lra_theory &th, const utils::lit b, const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept : lra_assertion(th, b, x, v) {}
+
+    bool propagate_lb(const utils::inf_rational &lb) noexcept override;
+    bool propagate_ub(const utils::inf_rational &ub) noexcept override;
+  };
+
+  class lra_geq : public lra_assertion
+  {
+  public:
+    lra_geq(lra_theory &th, const utils::lit b, const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept : lra_assertion(th, b, x, v) {}
+
+    bool propagate_lb(const utils::inf_rational &lb) noexcept override;
+    bool propagate_ub(const utils::inf_rational &ub) noexcept override;
   };
 } // namespace semitone
