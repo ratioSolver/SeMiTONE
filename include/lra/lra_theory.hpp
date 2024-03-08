@@ -13,6 +13,7 @@ namespace semitone
   {
     friend class lra_leq;
     friend class lra_geq;
+    friend class lra_eq;
 
   public:
     lra_theory(std::shared_ptr<sat_core> sat);

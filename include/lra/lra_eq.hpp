@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lin.hpp"
+#include "inf_rational.hpp"
 
 namespace semitone
 {
@@ -13,6 +14,10 @@ namespace semitone
 
     bool propagate_lb(const VARIABLE_TYPE x_i) noexcept;
     bool propagate_ub(const VARIABLE_TYPE x_i) noexcept;
+
+  private:
+    utils::inf_rational lb() const noexcept;
+    utils::inf_rational ub() const noexcept;
 
   private:
     lra_theory &th;        // the linear real arithmetic theory..
