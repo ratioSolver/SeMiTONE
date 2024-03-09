@@ -16,24 +16,24 @@ namespace semitone
      * @param s the sat core.
      * @param lits the literals of the clause.
      */
-    clause(sat_core &s, std::vector<utils::lit> &&ls);
+    clause(sat_core &s, std::vector<utils::lit> &&ls) noexcept;
 
     /**
      * @brief Get the literals of the clause.
      *
      * @return const std::vector<lit>& the literals of the clause.
      */
-    const std::vector<utils::lit> &get_lits() const { return lits; }
+    [[nodiscard]] const std::vector<utils::lit> &get_lits() const { return lits; }
 
   private:
-    std::unique_ptr<constr> copy(sat_core &s) noexcept override;
+    [[nodiscard]] std::unique_ptr<constr> copy(sat_core &s) noexcept override;
 
-    bool propagate(const utils::lit &p) noexcept override;
-    bool simplify() noexcept override;
+    [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
+    [[nodiscard]] bool simplify() noexcept override;
 
-    std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept override;
+    [[nodiscard]] std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept override;
 
-    json::json to_json() const noexcept override;
+    [[nodiscard]] json::json to_json() const noexcept override;
 
   private:
     std::vector<utils::lit> lits;

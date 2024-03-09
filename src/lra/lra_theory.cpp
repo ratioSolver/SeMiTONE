@@ -7,7 +7,7 @@
 
 namespace semitone
 {
-    lra_theory::lra_theory(std::shared_ptr<sat_core> sat) : theory(sat) {}
+    lra_theory::lra_theory(std::shared_ptr<sat_core> sat) noexcept : theory(sat) {}
 
     VARIABLE_TYPE lra_theory::new_var() noexcept
     {

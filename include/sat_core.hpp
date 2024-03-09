@@ -21,13 +21,13 @@ namespace semitone
      * @brief Construct a new sat core object.
      *
      */
-    sat_core();
+    sat_core() noexcept;
     /**
      * @brief Construct a new sat core object.
      *
      * @param orig the sat core to copy.
      */
-    sat_core(const sat_core &orig);
+    sat_core(const sat_core &orig) noexcept;
 
     /**
      * @brief Create a new propositional variable
@@ -151,7 +151,7 @@ namespace semitone
      * @param c The constraint that implied the literal.
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
-    bool enqueue(const utils::lit &p, const std::optional<std::reference_wrapper<constr>> &c = std::nullopt) noexcept;
+    [[nodiscard]] bool enqueue(const utils::lit &p, const std::optional<std::reference_wrapper<constr>> &c = std::nullopt) noexcept;
 
     /**
      * @brief Pop the last literal from the trail.

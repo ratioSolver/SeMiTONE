@@ -11,14 +11,14 @@
 
 namespace semitone
 {
-    sat_core::sat_core()
+    sat_core::sat_core() noexcept
     {
         [[maybe_unused]] VARIABLE_TYPE c_false = new_var(); // the false constant..
         assert(c_false == utils::FALSE_var);
         assigns[utils::FALSE_var] = utils::False;
         level[utils::FALSE_var] = 0;
     }
-    sat_core::sat_core(const sat_core &orig) : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
+    sat_core::sat_core(const sat_core &orig) noexcept : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
     {
         assert(orig.prop_queue.empty());
         constrs.reserve(orig.constrs.size());

@@ -11,17 +11,17 @@ namespace semitone
   class ov_eq final : public constr
   {
   public:
-    ov_eq(ov_theory &ov, const VARIABLE_TYPE left, const VARIABLE_TYPE right, const utils::lit &ctr);
+    ov_eq(ov_theory &ov, const VARIABLE_TYPE left, const VARIABLE_TYPE right, const utils::lit &ctr) noexcept;
 
   private:
-    std::unique_ptr<constr> copy(sat_core &s) noexcept override;
+    [[nodiscard]] std::unique_ptr<constr> copy(sat_core &s) noexcept override;
 
-    bool propagate(const utils::lit &p) noexcept override;
-    bool simplify() noexcept override;
+    [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
+    [[nodiscard]] bool simplify() noexcept override;
 
-    std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept override;
+    [[nodiscard]] std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept override;
 
-    json::json to_json() const noexcept override;
+    [[nodiscard]] json::json to_json() const noexcept override;
 
   private:
     ov_theory &ov;

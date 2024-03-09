@@ -4,7 +4,7 @@
 
 namespace semitone
 {
-    theory::theory(std::shared_ptr<sat_core> sat) : sat(sat) { sat->theories.push_back(*this); }
+    theory::theory(std::shared_ptr<sat_core> sat) noexcept : sat(sat) { sat->theories.push_back(*this); }
     theory::~theory()
     {
         sat->theories.erase(std::find_if(sat->theories.begin(), sat->theories.end(), [this](const theory &t)

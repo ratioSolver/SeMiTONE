@@ -14,7 +14,7 @@ namespace semitone
     friend class ov_eq;
 
   public:
-    ov_theory(std::shared_ptr<sat_core> sat);
+    ov_theory(std::shared_ptr<sat_core> sat) noexcept;
 
     /**
      * @brief Create a new variable with the given domain.
@@ -57,7 +57,7 @@ namespace semitone
      * @param val the value to assign.
      * @return true if the assignment is successful, false otherwise.
      */
-    bool assign(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
+    [[nodiscard]] bool assign(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
 
     /**
      * @brief Forbid the given value to the variable.
@@ -66,11 +66,11 @@ namespace semitone
      * @param val the value to forbid.
      * @return true if the forbidding is successful, false otherwise.
      */
-    bool forbid(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
+    [[nodiscard]] bool forbid(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
 
   private:
-    bool propagate(const utils::lit &) noexcept override { return true; }
-    bool check() noexcept override { return true; }
+    [[nodiscard]] bool propagate(const utils::lit &) noexcept override { return true; }
+    [[nodiscard]] bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
 

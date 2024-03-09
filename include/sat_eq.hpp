@@ -7,17 +7,17 @@ namespace semitone
   class sat_eq final : public constr
   {
   public:
-    sat_eq(sat_core &s, const utils::lit &l, const utils::lit &r, const utils::lit &e);
+    sat_eq(sat_core &s, const utils::lit &l, const utils::lit &r, const utils::lit &e) noexcept;
 
   private:
-    std::unique_ptr<constr> copy(sat_core &s) noexcept override;
+    [[nodiscard]] std::unique_ptr<constr> copy(sat_core &s) noexcept override;
 
-    bool propagate(const utils::lit &p) noexcept override;
-    bool simplify() noexcept override;
+    [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
+    [[nodiscard]] bool simplify() noexcept override;
 
-    std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept override;
+    [[nodiscard]] std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept override;
 
-    json::json to_json() const noexcept override;
+    [[nodiscard]] json::json to_json() const noexcept override;
 
   private:
     utils::lit left;  // The left-hand side of the equality.

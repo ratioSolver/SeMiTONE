@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size) : theory(sat), dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INTEGER_TYPE>::max()))
+    rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size) noexcept : theory(sat), dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INTEGER_TYPE>::max()))
     {
         for (size_t i = 0; i < size; ++i)
         {

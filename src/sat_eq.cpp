@@ -4,7 +4,7 @@
 
 namespace semitone
 {
-    sat_eq::sat_eq(sat_core &s, const utils::lit &l, const utils::lit &r, const utils::lit &ctr) : constr(s), left(l), right(r), ctr(ctr)
+    sat_eq::sat_eq(sat_core &s, const utils::lit &l, const utils::lit &r, const utils::lit &ctr) noexcept : constr(s), left(l), right(r), ctr(ctr)
     {
         assert(s.root_level());
         assert(value(l) == utils::Undefined);

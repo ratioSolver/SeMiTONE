@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    sat_conj::sat_conj(sat_core &s, std::vector<utils::lit> &&ls, const utils::lit &ctr) : constr(s), lits(ls), ctr(ctr)
+    sat_conj::sat_conj(sat_core &s, std::vector<utils::lit> &&ls, const utils::lit &ctr) noexcept : constr(s), lits(ls), ctr(ctr)
     {
         assert(s.root_level());
         assert(std::all_of(ls.begin(), ls.end(), [&](const auto &l)

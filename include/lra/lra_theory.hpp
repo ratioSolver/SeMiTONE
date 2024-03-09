@@ -16,7 +16,7 @@ namespace semitone
     friend class lra_eq;
 
   public:
-    lra_theory(std::shared_ptr<sat_core> sat);
+    lra_theory(std::shared_ptr<sat_core> sat) noexcept;
 
     /**
      * @brief Create a new linear real arithmetic variable.
@@ -154,11 +154,11 @@ namespace semitone
     }
 
   private:
-    inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
-    inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
+    [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
+    [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
-    bool propagate(const utils::lit &) noexcept override { return true; }
-    bool check() noexcept override { return true; }
+    [[nodiscard]] bool propagate(const utils::lit &) noexcept override { return true; }
+    [[nodiscard]] bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
 

@@ -12,12 +12,12 @@ namespace semitone
   public:
     lra_eq(lra_theory &th, const VARIABLE_TYPE x, const utils::lin &&l) noexcept;
 
-    bool propagate_lb(const VARIABLE_TYPE x_i) noexcept;
-    bool propagate_ub(const VARIABLE_TYPE x_i) noexcept;
+    [[nodiscard]] bool propagate_lb(const VARIABLE_TYPE x_i) noexcept;
+    [[nodiscard]] bool propagate_ub(const VARIABLE_TYPE x_i) noexcept;
 
   private:
-    utils::inf_rational lb() const noexcept;
-    utils::inf_rational ub() const noexcept;
+    [[nodiscard]] utils::inf_rational lb() const noexcept;
+    [[nodiscard]] utils::inf_rational ub() const noexcept;
 
   private:
     lra_theory &th;        // the linear real arithmetic theory..

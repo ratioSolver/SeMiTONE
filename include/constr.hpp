@@ -17,7 +17,7 @@ namespace semitone
     friend class sat_core;
 
   public:
-    constr(sat_core &s) : sat(s) {}
+    constr(sat_core &s) noexcept : sat(s) {}
     constr(const constr &) = delete;
     virtual ~constr() = default;
 
@@ -32,7 +32,7 @@ namespace semitone
      * @param s The new solver.
      * @return The new constraint.
      */
-    virtual std::unique_ptr<constr> copy(sat_core &s) noexcept = 0;
+    [[nodiscard]] virtual std::unique_ptr<constr> copy(sat_core &s) noexcept = 0;
 
     /**
      * @brief Propagate a literal through the constraint.
@@ -40,13 +40,13 @@ namespace semitone
      * @param p The literal to propagate.
      * @return `true` if the constraint network is consistent, `false` otherwise.
      */
-    virtual bool propagate(const utils::lit &p) noexcept = 0;
+    [[nodiscard]] virtual bool propagate(const utils::lit &p) noexcept = 0;
     /**
      * @brief Check if the constraint is redundant under the current assignment.
      *
      * @return `true` if the constraint is redundant, and can be removed from the network, `false` otherwise.
      */
-    virtual bool simplify() noexcept = 0;
+    [[nodiscard]] virtual bool simplify() noexcept = 0;
 
     /**
      * @brief Get the reason for a literal.
@@ -56,7 +56,7 @@ namespace semitone
      * @param p The literal.
      * @return The reason for the literal.
      */
-    virtual std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept = 0;
+    [[nodiscard]] virtual std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept = 0;
 
   protected:
     /**
@@ -65,7 +65,7 @@ namespace semitone
      * @param p The literal to enqueue.
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
-    bool enqueue(const utils::lit &p) noexcept;
+    [[nodiscard]] bool enqueue(const utils::lit &p) noexcept;
     /**
      * @brief Get the watches of a literal.
      *
@@ -74,21 +74,21 @@ namespace semitone
      * @param p The literal.
      * @return The watches of the literal.
      */
-    std::vector<std::reference_wrapper<constr>> &watches(const utils::lit &p) noexcept;
+    [[nodiscard]] std::vector<std::reference_wrapper<constr>> &watches(const utils::lit &p) noexcept;
     /**
      * @brief Compute the value of a variable.
      *
      * @param x The variable.
      * @return The value of the variable.
      */
-    utils::lbool value(const VARIABLE_TYPE &x) const noexcept;
+    [[nodiscard]] utils::lbool value(const VARIABLE_TYPE &x) const noexcept;
     /**
      * @brief Compute the value of a literal.
      *
      * @param p The literal.
      * @return The value of the literal.
      */
-    utils::lbool value(const utils::lit &p) const noexcept;
+    [[nodiscard]] utils::lbool value(const utils::lit &p) const noexcept;
 
     /**
      * @brief Return whether the constraint must propagate after the given literal is assigned.
@@ -99,11 +99,11 @@ namespace semitone
      * @param p The literal.
      * @return `true` if the constraint must propagate after the given literal is assigned, `false` otherwise.
      */
-    bool must_propagate(const utils::lit &p) const noexcept;
+    [[nodiscard]] bool must_propagate(const utils::lit &p) const noexcept;
 
   private:
-    virtual json::json to_json() const noexcept { return json::json(); }
-    inline friend json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
+    [[nodiscard]] virtual json::json to_json() const noexcept { return json::json(); }
+    [[nodiscard]] inline friend json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
 
   protected:
     sat_core &sat;

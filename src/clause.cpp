@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-    clause::clause(sat_core &s, std::vector<utils::lit> &&ls) : constr(s), lits(std::move(ls))
+    clause::clause(sat_core &s, std::vector<utils::lit> &&ls) noexcept : constr(s), lits(std::move(ls))
     {
         assert(lits.size() >= 2);
         watches(!lits[0]).emplace_back(*this);

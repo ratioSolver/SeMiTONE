@@ -8,7 +8,7 @@
 
 namespace semitone
 {
-    ov_eq::ov_eq(ov_theory &ov, const VARIABLE_TYPE left, const VARIABLE_TYPE right, const utils::lit &ctr) : constr(ov.get_sat()), ov(ov), left(left), right(right), ctr(ctr)
+    ov_eq::ov_eq(ov_theory &ov, const VARIABLE_TYPE left, const VARIABLE_TYPE right, const utils::lit &ctr) noexcept : constr(ov.get_sat()), ov(ov), left(left), right(right), ctr(ctr)
     {
         assert(ov.get_sat().root_level());
         assert(value(ctr) == utils::Undefined);
