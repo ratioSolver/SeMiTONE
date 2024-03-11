@@ -192,10 +192,10 @@ void test_nonroot_constraints()
 
     assert(sat->value(x_leq_y) == utils::True);
 
-    prop = lra.assert_lower(x, utils::inf_rational(utils::rational::one), utils::TRUE_lit);
+    prop = lra.set_lb(x, utils::inf_rational(utils::rational::one), utils::TRUE_lit);
     assert(prop);
 
-    prop = lra.assert_lower(x, utils::inf_rational(utils::rational(2)), utils::TRUE_lit);
+    prop = lra.set_lb(x, utils::inf_rational(utils::rational(2)), utils::TRUE_lit);
     assert(!prop);
 }
 

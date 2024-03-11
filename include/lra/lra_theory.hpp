@@ -190,14 +190,32 @@ namespace semitone
     bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
 
     /**
-     * @brief Asserts that the value of variable `x_i` is `val` and returns whether the assertion was successful.
+     * @brief Sets the lower bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
      *
-     * @param x_i the variable to assert the value of.
-     * @param val the value to assert.
-     * @param p the literal that caused the assertion.
-     * @return bool whether the assertion was successful.
+     * @param x_i the variable to set the lower bound of.
+     * @param val the lower bound to set.
+     * @param p the literal that caused the change.
+     * @return bool whether the propagation was successful.
      */
-    bool assert_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && assert_upper(x_i, val, p); }
+    bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    /**
+     * @brief Sets the upper bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
+     *
+     * @param x_i the variable to set the upper bound of.
+     * @param val the upper bound to set.
+     * @param p the literal that caused the change.
+     * @return bool whether the propagation was successful.
+     */
+    bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    /**
+     * @brief Sets the value of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
+     *
+     * @param x_i the variable to set the value of.
+     * @param val the value to set.
+     * @param p the literal that caused the change.
+     * @return bool whether the propagation was successful.
+     */
+    bool set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
 
   private:
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..

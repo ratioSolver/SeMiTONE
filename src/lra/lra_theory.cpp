@@ -283,6 +283,10 @@ namespace semitone
         }
     }
 
+    bool lra_theory::set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && sat->propagate(); }
+    bool lra_theory::set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_upper(x_i, val, p) && sat->propagate(); }
+    bool lra_theory::set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && assert_upper(x_i, val, p) && sat->propagate(); }
+
     void lra_theory::update(const VARIABLE_TYPE x_i, const utils::inf_rational &val) noexcept
     {
         assert(!is_basic(x_i)); // the variable must not be basic..
