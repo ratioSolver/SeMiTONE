@@ -232,7 +232,7 @@ namespace semitone
     void push() noexcept override;
     void pop() noexcept override;
 
-    [[nodiscard]] friend json::json to_json(const lra_theory &rhs) noexcept;
+    friend json::json to_json(const lra_theory &rhs) noexcept;
 
   private:
     /**

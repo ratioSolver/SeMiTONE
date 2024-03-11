@@ -98,7 +98,7 @@ namespace semitone
         return ub;
     }
 
-    json::json to_json(const lra_eq &rhs) noexcept
+    [[nodiscard]] json::json to_json(const lra_eq &rhs) noexcept
     {
         json::json j_row;
         j_row["var"] = "x" + std::to_string(rhs.x);

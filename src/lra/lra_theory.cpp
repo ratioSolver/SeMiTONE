@@ -454,7 +454,7 @@ namespace semitone
         layers.pop_back();
     }
 
-    json::json to_json(const lra_theory &rhs) noexcept
+    [[nodiscard]] json::json to_json(const lra_theory &rhs) noexcept
     {
         json::json j_th;
 

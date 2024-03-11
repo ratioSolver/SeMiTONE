@@ -104,7 +104,7 @@ namespace semitone
         return true;
     }
 
-    json::json to_json(const lra_assertion &rhs) noexcept
+    [[nodiscard]] json::json to_json(const lra_assertion &rhs) noexcept
     {
         json::json j_asrt;
         j_asrt["lit"] = to_string(rhs.b);
