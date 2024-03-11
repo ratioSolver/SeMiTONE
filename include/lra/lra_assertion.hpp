@@ -3,6 +3,7 @@
 #include <vector>
 #include "lit.hpp"
 #include "inf_rational.hpp"
+#include "json.hpp"
 
 namespace semitone
 {
@@ -26,6 +27,8 @@ namespace semitone
 
     [[nodiscard]] virtual bool propagate_lb(const utils::inf_rational &lb) noexcept = 0;
     [[nodiscard]] virtual bool propagate_ub(const utils::inf_rational &ub) noexcept = 0;
+
+    [[nodiscard]] friend json::json to_json(const lra_assertion &rhs) noexcept;
 
   protected:
     lra_theory &th;              // the linear real arithmetic theory..

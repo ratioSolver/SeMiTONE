@@ -10,6 +10,8 @@ namespace semitone
 
   class theory
   {
+    friend class sat_core;
+
   public:
     theory(std::shared_ptr<sat_core> sat) noexcept;
     virtual ~theory();
@@ -51,6 +53,12 @@ namespace semitone
      * @brief Records a new clause which might be inferred by the theory.
      */
     void record(std::vector<utils::lit> &&clause) noexcept;
+
+  private:
+    /**
+     * @brief Analyzes the current conflict and backjumps to the proper decision level.
+     */
+    void analyze_and_backjump() noexcept;
 
   protected:
     std::shared_ptr<sat_core> sat;

@@ -229,7 +229,46 @@ namespace semitone
 
                     goto main_loop;
                 }
+
+            // we then perform theory propagation..
+            if (const auto bnds_it = binds.find(variable(p)); bnds_it != binds.cend())
+            {
+                for (const auto &th : bnds_it->second)
+                    if (!th.get().propagate(p))
+                    { // the theory is conflicting..
+                        while (!prop_queue.empty())
+                            prop_queue.pop();
+
+                        if (root_level())
+                        { // the problem is unsatisfiable..
+                            th.get().cnfl.clear();
+                            return false;
+                        }
+
+                        // we analyze the theory's conflict, create a no-good from the analysis and backjump..
+                        th.get().analyze_and_backjump();
+                        goto main_loop;
+                    }
+                if (root_level()) // since this variable will no more be assigned, we can perform some cleanings..
+                    binds.erase(bnds_it);
+            }
         }
+
+        // finally, we check theories..
+        for (const auto &th : theories)
+            if (!th.get().check())
+            { // the theory is conflicting..
+                if (root_level())
+                { // the problem is unsatisfiable..
+                    th.get().cnfl.clear();
+                    return false;
+                }
+
+                // we analyze the theory's conflict, create a no-good from the analysis and backjump..
+                th.get().analyze_and_backjump();
+                goto main_loop;
+            }
+
         return true;
     }
 

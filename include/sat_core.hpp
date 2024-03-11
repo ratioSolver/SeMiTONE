@@ -189,7 +189,7 @@ namespace semitone
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
     std::vector<utils::lit> decisions; // the list of decisions in chronological order..
 
-    std::vector<std::reference_wrapper<theory>> theories; // all the theories..
-    std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<theory>>> binds;
+    std::vector<std::reference_wrapper<theory>> theories;                                 // all the theories..
+    std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<theory>>> binds; // for each variable, the theories that depend on it..
   };
 } // namespace semitone

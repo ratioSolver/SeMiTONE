@@ -4,7 +4,6 @@
 #include "sat_core.hpp"
 #include "lra_assertion.hpp"
 #include "lra_eq.hpp"
-#include "logging.hpp"
 
 namespace semitone
 {
@@ -60,7 +59,13 @@ namespace semitone
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        if (expr.vars.size() == 1)
+        {
+            const auto [v, c] = *expr.vars.cbegin();
+            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, v, c_right / c));
+        }
+        else
+            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
     utils::lit lra_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
@@ -92,7 +97,13 @@ namespace semitone
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        if (expr.vars.size() == 1)
+        {
+            const auto [v, c] = *expr.vars.cbegin();
+            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, v, c_right / c));
+        }
+        else
+            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
     utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept { return sat->new_conj({new_leq(left, right), new_geq(left, right)}); }
@@ -125,7 +136,13 @@ namespace semitone
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        if (expr.vars.size() == 1)
+        {
+            const auto [v, c] = *expr.vars.cbegin();
+            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, v, c_right / c));
+        }
+        else
+            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
     utils::lit lra_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
@@ -157,7 +174,13 @@ namespace semitone
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        if (expr.vars.size() == 1)
+        {
+            const auto [v, c] = *expr.vars.cbegin();
+            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, v, c_right / c));
+        }
+        else
+            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
 
@@ -258,7 +281,7 @@ namespace semitone
         // x_j += theta
         vals[x_j] += theta;
 
-        // the tableau rows containing `x_i` as a non-basic variable..
+        // the tableau rows containing `x_j` as a non-basic variable..
         for (const auto &c : t_watches[x_j])
             if (c != x_i)
             { // x_k += a_kj * theta..
@@ -292,6 +315,7 @@ namespace semitone
         {
             auto &c_l = tableau[x]->get_lin();
             const auto &c = c_l.vars.at(x_j);
+            c_l.vars.erase(x_j);
             for (const auto &term : l.vars)
                 if (const auto trm_it = c_l.vars.find(term.first); trm_it == c_l.vars.cend())
                 {                                                  // `term.first` is not in the linear expression of `x`, so we add it
@@ -316,7 +340,7 @@ namespace semitone
 
     void lra_theory::new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept
     {
-        assert(tableau.find(x_i) == tableau.cend());
+        assert(tableau.find(x_i) == tableau.cend()); // the variable `x_i` must not be in the tableau..
         for (const auto &x : xpr.vars)
             t_watches[x.first].insert(x_i);
         tableau.emplace(x_i, std::make_unique<lra_eq>(*this, x_i, std::move(xpr)));
@@ -394,5 +418,39 @@ namespace semitone
         for (const auto &[i, b] : layers.back())
             c_bounds[i] = b;
         layers.pop_back();
+    }
+
+    json::json to_json(const lra_theory &rhs) noexcept
+    {
+        json::json j_th;
+
+        json::json j_vars(json::json_type::array);
+        j_vars.get_array().reserve(rhs.vals.size());
+        for (size_t i = 0; i < rhs.vals.size(); ++i)
+        {
+            json::json var;
+            var["name"] = std::to_string(i);
+            var["value"] = to_string(rhs.value(i));
+            if (!is_negative_infinite(rhs.lb(i)))
+                var["lb"] = to_string(rhs.lb(i));
+            if (!is_positive_infinite(rhs.ub(i)))
+                var["ub"] = to_string(rhs.ub(i));
+            j_vars.push_back(std::move(var));
+        }
+        j_th["vars"] = std::move(j_vars);
+
+        json::json j_asrts(json::json_type::array);
+        j_vars.get_array().reserve(rhs.v_asrts.size());
+        for (const auto &c_asrts : rhs.v_asrts)
+            j_asrts.push_back(to_json(*c_asrts.second));
+        j_th["asrts"] = std::move(j_asrts);
+
+        json::json j_tabl(json::json_type::array);
+        j_vars.get_array().reserve(rhs.tableau.size());
+        for (auto it = rhs.tableau.cbegin(); it != rhs.tableau.cend(); ++it)
+            j_tabl.push_back(to_json(*it->second));
+        j_th["tableau"] = std::move(j_tabl);
+
+        return j_th;
     }
 } // namespace semitone
