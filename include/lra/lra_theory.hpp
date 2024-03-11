@@ -153,6 +153,20 @@ namespace semitone
       return val;
     }
 
+    /**
+     * @brief Returns whether the two linear expressions overlap. That is, whether the two linear expressions can have a common value.
+     *
+     * @param l0 the first linear expression.
+     * @param l1 the second linear expression.
+     * @return bool whether the two linear expressions overlap.
+     */
+    bool matches(const utils::lin &l0, const utils::lin &l1) const noexcept
+    {
+      const auto [l0_lb, l0_ub] = bounds(l0);
+      const auto [l1_lb, l1_ub] = bounds(l1);
+      return l0_ub >= l1_lb && l0_lb <= l1_ub; // the two intervals overlap..
+    }
+
   private:
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
