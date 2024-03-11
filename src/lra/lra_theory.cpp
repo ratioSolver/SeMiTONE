@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include "lra_theory.hpp"
 #include "sat_core.hpp"
@@ -160,11 +161,238 @@ namespace semitone
         return ctr_lit;
     }
 
+    bool lra_theory::assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept
+    {
+        assert(sat->value(p) != utils::Undefined); // the literal must be assigned..
+        assert(cnfl.empty());
+        if (val <= lb(x_i)) // the assertion is already satisfied..
+            return true;
+        else if (val > ub(x_i)) // the assertion introduces a conflict..
+        {
+            cnfl.push_back(!p);                              // either the assertion is unsatisfable..
+            cnfl.push_back(!c_bounds[ub_index(x_i)].reason); // or the reason for the upper bound is false..
+            return false;
+        }
+        else
+        {
+            if (!layers.empty()) // we store the current bounds for backtracking..
+                layers.back().emplace(lb_index(x_i), bound{lb(x_i), c_bounds[lb_index(x_i)].reason});
+            c_bounds[lb_index(x_i)] = {val, p}; // we update the lower bound of the variable..
+
+            if (vals[x_i] < val && !is_basic(x_i))
+                update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
+
+            // unate propagation..
+            for (const auto &c : a_watches[x_i])
+                if (!c.get().propagate_lb(val))
+                    return false;
+            // bound propagation..
+            for (const auto &c : t_watches[x_i])
+                if (!tableau.at(c)->propagate_lb(x_i))
+                    return false;
+
+            return true;
+        }
+    }
+
+    bool lra_theory::assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept
+    {
+        assert(sat->value(p) != utils::Undefined); // the literal must be assigned..
+        assert(cnfl.empty());
+        if (val >= ub(x_i)) // the assertion is already satisfied..
+            return true;
+        else if (val < lb(x_i)) // the assertion introduces a conflict..
+        {
+            cnfl.push_back(!p);                              // either the assertion is unsatisfable..
+            cnfl.push_back(!c_bounds[lb_index(x_i)].reason); // or the reason for the lower bound is false..
+            return false;
+        }
+        else
+        {
+            if (!layers.empty()) // we store the current bounds for backtracking..
+                layers.back().emplace(ub_index(x_i), bound{ub(x_i), c_bounds[ub_index(x_i)].reason});
+            c_bounds[ub_index(x_i)] = {val, p}; // we update the upper bound of the variable..
+
+            if (vals[x_i] > val && !is_basic(x_i))
+                update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
+
+            // unate propagation..
+            for (const auto &c : a_watches[x_i])
+                if (!c.get().propagate_ub(val))
+                    return false;
+            // bound propagation..
+            for (const auto &c : t_watches[x_i])
+                if (!tableau.at(c)->propagate_ub(x_i))
+                    return false;
+
+            return true;
+        }
+    }
+
+    void lra_theory::update(const VARIABLE_TYPE x_i, const utils::inf_rational &val) noexcept
+    {
+        assert(!is_basic(x_i)); // the variable must not be basic..
+        vals[x_i] = val;
+
+        // the tableau rows containing `x_i` as a non-basic variable..
+        for (const auto &c : t_watches[x_i])
+        { // x_j = x_j + a_ji(v - x_i)..
+            vals[c] += tableau.at(c)->get_lin().vars.at(x_i) * (val - vals[x_i]);
+        }
+        // x_i = v..
+        vals[x_i] = val;
+    }
+
+    void lra_theory::pivot_and_update(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j, const utils::inf_rational &v) noexcept
+    {
+        assert(is_basic(x_i));                              // the variable must be basic..
+        assert(!is_basic(x_j));                             // the variable must not be basic..
+        assert(tableau.at(x_i)->get_lin().vars.count(x_j)); // the variable `x_j` must be in the row of `x_i`..
+
+        const utils::inf_rational theta = (v - vals[x_i]) / tableau.at(x_i)->get_lin().vars.at(x_j);
+        assert(!is_infinite(theta));
+
+        // x_i = v
+        vals[x_i] = v;
+
+        // x_j += theta
+        vals[x_j] += theta;
+
+        // the tableau rows containing `x_i` as a non-basic variable..
+        for (const auto &c : t_watches[x_j])
+            if (c != x_i)
+            { // x_k += a_kj * theta..
+                vals[c] += tableau.at(c)->get_lin().vars.at(x_j) * theta;
+            }
+
+        pivot(x_i, x_j);
+    }
+
+    void lra_theory::pivot(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j) noexcept
+    {
+        assert(is_basic(x_i));                              // the variable must be basic..
+        assert(!is_basic(x_j));                             // the variable must not be basic..
+        assert(tableau.at(x_i)->get_lin().vars.count(x_j)); // the variable `x_j` must be in the row of `x_i`..
+        assert(t_watches[x_i].empty());                     // the variable `x_i` must not be in any other row of the tableau..
+
+        // we remove the leaving variable `x_i` from the watches
+        for (const auto &x : tableau[x_i]->get_lin().vars)
+            t_watches[x.first].erase(x_i);
+
+        // we rewrite `x_i = ...` as `y_j = ...`
+        utils::lin l = std::move(tableau[x_i]->get_lin());
+        utils::rational c = l.vars.at(x_j);
+        l.vars.erase(x_j);
+        l /= -c;
+        l.vars.emplace(x_i, utils::rational::one / c);
+        tableau.erase(x_i);
+
+        // we update the rows that contain `y_j`
+        for (auto &x : t_watches[x_j])
+        {
+            auto &c_l = tableau[x]->get_lin();
+            const auto &c = c_l.vars.at(x_j);
+            for (const auto &term : l.vars)
+                if (const auto trm_it = c_l.vars.find(term.first); trm_it == c_l.vars.cend())
+                {                                                  // `term.first` is not in the linear expression of `x`, so we add it
+                    c_l.vars.emplace(term.first, c * term.second); // we add `c * term.second` to the linear expression of `x`
+                    t_watches[term.first].insert(x);               // we add `x` to the watches of `term.first`
+                }
+                else
+                {
+                    trm_it->second += c * term.second;
+                    if (trm_it->second == 0)
+                    {                                   // if the coefficient of `term.first` is zero, we remove the term from the linear expression
+                        c_l.vars.erase(trm_it);         // we remove `term.first` from the linear expression of `x`
+                        t_watches[term.first].erase(x); // we remove `x` from the watches of `term.first`
+                    }
+                }
+            c_l.known_term += c * l.known_term;
+        }
+
+        // we add the new row `x_j = ...`
+        new_row(x_j, std::move(l));
+    }
+
     void lra_theory::new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept
     {
         assert(tableau.find(x_i) == tableau.cend());
         for (const auto &x : xpr.vars)
             t_watches[x.first].insert(x_i);
         tableau.emplace(x_i, std::make_unique<lra_eq>(*this, x_i, std::move(xpr)));
+    }
+
+    bool lra_theory::propagate(const utils::lit &p) noexcept
+    {
+        assert(cnfl.empty());
+        const auto &a = v_asrts[variable(p)];
+        switch (sat->value(a->get_lit()))
+        {
+        case utils::True: // direct assertion..
+            if (!((a->get_op() == leq) ? assert_upper(a->get_var(), a->get_val(), p) : assert_lower(a->get_var(), a->get_val(), p)))
+                return false;
+            break;
+        case utils::False: // negated assertion..
+            if (!((a->get_op() == leq) ? assert_lower(a->get_var(), a->get_val() + utils::inf_rational::epsilon, p) : assert_upper(a->get_var(), a->get_val() - utils::inf_rational::epsilon, p)))
+                return false;
+            break;
+        }
+        return true;
+    }
+    bool lra_theory::check() noexcept
+    {
+        assert(cnfl.empty());
+        while (true)
+        {
+            // we search for a variable whose value is not within its bounds..
+            const auto &x_i_it = std::find_if(tableau.cbegin(), tableau.cend(), [this](const auto &v)
+                                              { return value(v.first) < lb(v.first) || value(v.first) > ub(v.first); });
+            if (x_i_it == tableau.cend())
+                return true; // all the variables are within their bounds..
+
+            const auto x_i = x_i_it->first;            // we select the variable `x_i`..
+            const auto &l = x_i_it->second->get_lin(); // we select the linear expression `x_i = ...`..
+            if (value(x_i) < lb(x_i))
+            { // the value of `x_i` is below its lower bound..
+                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<VARIABLE_TYPE, utils::rational> &v)
+                                                  { return (is_positive(l.vars.at(v.first)) && value(v.first) < ub(v.first)) || (is_negative(l.vars.at(v.first)) && value(v.first) > lb(v.first)); });
+                if (x_j_it != l.vars.cend()) // var x_j can be used to increase the value of x_i..
+                    pivot_and_update(x_i, x_j_it->first, lb(x_i));
+                else
+                { // we generate an explanation for the conflict..
+                    for (const auto &[v, c] : l.vars)
+                        if (is_positive(c))
+                            cnfl.push_back(!c_bounds[ub_index(v)].reason);
+                        else if (is_negative(c))
+                            cnfl.push_back(!c_bounds[lb_index(v)].reason);
+                    cnfl.push_back(!c_bounds[lb_index(x_i)].reason);
+                    return false;
+                }
+            }
+            else if (value(x_i) > ub(x_i))
+            { // the value of `x_i` is above its upper bound..
+                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<VARIABLE_TYPE, utils::rational> &v)
+                                                  { return (is_positive(l.vars.at(v.first)) && value(v.first) > lb(v.first)) || (is_negative(l.vars.at(v.first)) && value(v.first) < ub(v.first)); });
+                if (x_j_it != l.vars.cend()) // var x_j can be used to decrease the value of x_i..
+                    pivot_and_update(x_i, x_j_it->first, ub(x_i));
+                else
+                { // we generate an explanation for the conflict..
+                    for (const auto &[v, c] : l.vars)
+                        if (is_positive(c))
+                            cnfl.push_back(!c_bounds[lb_index(v)].reason);
+                        else if (is_negative(c))
+                            cnfl.push_back(!c_bounds[ub_index(v)].reason);
+                    cnfl.push_back(!c_bounds[ub_index(x_i)].reason);
+                    return false;
+                }
+            }
+        }
+    }
+    void lra_theory::push() noexcept { layers.emplace_back(); }
+    void lra_theory::pop() noexcept
+    { // we restore the bounds of the variables to the previous state..
+        for (const auto &[i, b] : layers.back())
+            c_bounds[i] = b;
+        layers.pop_back();
     }
 } // namespace semitone

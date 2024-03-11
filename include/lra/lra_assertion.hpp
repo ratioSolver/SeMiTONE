@@ -19,6 +19,7 @@ namespace semitone
   public:
     lra_assertion(lra_theory &th, const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : th(th), b(b), x(x), o(o), v(v) {}
 
+    [[nodiscard]] const utils::lit &get_lit() const noexcept { return b; }
     [[nodiscard]] VARIABLE_TYPE get_var() const noexcept { return x; }
     [[nodiscard]] op get_op() const noexcept { return o; }
     [[nodiscard]] const utils::inf_rational &get_val() const noexcept { return v; }

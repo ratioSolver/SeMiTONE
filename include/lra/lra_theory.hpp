@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <set>
+#include <unordered_map>
 #include "theory.hpp"
 #include "inf_rational.hpp"
 #include "lra_assertion.hpp"
@@ -167,16 +168,49 @@ namespace semitone
       return l0_ub >= l1_lb && l0_lb <= l1_ub; // the two intervals overlap..
     }
 
+    /**
+     * @brief Asserts that the lower bound of variable `x_i` is `val` and returns whether the assertion was successful.
+     *
+     * @param x_i the variable to assert the lower bound of.
+     * @param val the lower bound to assert.
+     * @param p the literal that caused the assertion.
+     * @return bool whether the assertion was successful.
+     */
+    bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    /**
+     * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
+     *
+     * @param x_i the variable to assert the upper bound of.
+     * @param val the upper bound to assert.
+     * @param p the literal that caused the assertion.
+     * @return bool whether the assertion was successful.
+     */
+    bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+
+    /**
+     * @brief Asserts that the value of variable `x_i` is `val` and returns whether the assertion was successful.
+     *
+     * @param x_i the variable to assert the value of.
+     * @param val the value to assert.
+     * @param p the literal that caused the assertion.
+     * @return bool whether the assertion was successful.
+     */
+    bool assert_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && assert_upper(x_i, val, p); }
+
   private:
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
-    [[nodiscard]] bool propagate(const utils::lit &) noexcept override { return true; }
-    [[nodiscard]] bool check() noexcept override { return true; }
-    void push() noexcept override {}
-    void pop() noexcept override {}
-
+    bool is_basic(const VARIABLE_TYPE v) const noexcept { return tableau.count(v); }
+    void update(const VARIABLE_TYPE x_i, const utils::inf_rational &v) noexcept;
+    void pivot_and_update(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j, const utils::inf_rational &v) noexcept;
+    void pivot(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j) noexcept;
     void new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept;
+
+    [[nodiscard]] bool propagate(const utils::lit &) noexcept override;
+    [[nodiscard]] bool check() noexcept override;
+    void push() noexcept override;
+    void pop() noexcept override;
 
   private:
     /**
@@ -194,5 +228,6 @@ namespace semitone
     std::map<const VARIABLE_TYPE, std::unique_ptr<lra_eq>> tableau;            // the tableau..
     std::vector<std::vector<std::reference_wrapper<lra_assertion>>> a_watches; // for each variable `v`, a list of assertions watching `v`..
     std::vector<std::set<VARIABLE_TYPE>> t_watches;                            // for each variable `v`, a list of tableau rows watching `v`..
+    std::vector<std::unordered_map<size_t, bound>> layers;                     // we store the updated bounds..
   };
 } // namespace semitone
