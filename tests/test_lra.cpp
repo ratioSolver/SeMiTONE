@@ -1,6 +1,5 @@
 #include "sat_core.hpp"
 #include "lra_theory.hpp"
-#include "logging.hpp"
 #include <cassert>
 
 void test_lra()
@@ -26,12 +25,9 @@ void test_lra()
     bool prop = sat->propagate();
     assert(prop);
 
-    LOG_DEBUG(to_json(lra));
-
     // s2 >= -3
-    bool assm = sat->assume(lra.new_geq(utils::lin(s2, utils::rational::one), utils::lin(-utils::rational(3))));
-    LOG_DEBUG(to_json(lra));
-    assert(!assm);
+    auto s2_geq = lra.new_geq(utils::lin(s2, utils::rational::one), utils::lin(-utils::rational(3)));
+    assert(sat->value(s2_geq) == utils::False);
 }
 
 void test_inequalities_0()

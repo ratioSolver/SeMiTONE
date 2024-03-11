@@ -15,6 +15,7 @@ namespace semitone
         c_bounds.emplace_back(bound{utils::inf_rational(utils::rational::negative_infinite), utils::TRUE_lit});
         c_bounds.emplace_back(bound{utils::inf_rational(utils::rational::positive_infinite), utils::TRUE_lit});
         vals.push_back(utils::inf_rational(utils::rational::zero));
+        exprs.emplace("x" + std::to_string(var), var);
         a_watches.emplace_back();
         t_watches.emplace_back();
         return var;
@@ -22,10 +23,15 @@ namespace semitone
     VARIABLE_TYPE lra_theory::new_var(const utils::lin &&l) noexcept
     {
         assert(sat->root_level());
+        const auto s_expr = to_string(l);
+        if (const auto it = exprs.find(s_expr); it != exprs.cend())
+            return it->second;
+
         const auto slack = new_var();
         c_bounds[lb_index(slack)] = {lb(l), utils::TRUE_lit}; // we set the lower bound of the slack variable to the lower bound of the linear expression
         c_bounds[ub_index(slack)] = {ub(l), utils::TRUE_lit}; // we set the upper bound of the slack variable to the upper bound of the linear expression
         vals[slack] = value(l);                               // we set the value of the slack variable to the value of the linear expression
+        exprs.emplace(s_expr, slack);                         // we add the linear expression to the expressions
         new_row(slack, std::move(l));                         // we add the new row `slack = ...` to the tableau
         return slack;
     }
@@ -55,17 +61,23 @@ namespace semitone
         else if (lb(expr) > c_right)
             return utils::FALSE_lit; // the constraint is unsatisfable..
 
+        // we create a slack variable from the current expression (notice that the variable can be reused)..
+        const auto slack = new_var(std::move(expr));
+        if (ub(slack) <= c_right)
+            return utils::TRUE_lit; // the constraint is already satisfied..
+        else if (lb(slack) > c_right)
+            return utils::FALSE_lit; // the constraint is unsatisfable..
+
+        const auto s_asrt = "x" + std::to_string(slack) + " <= " + to_string(c_right);
+        if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+            return asrt_it->second;
+
         // we create a new control variable..
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        if (expr.vars.size() == 1)
-        {
-            const auto [v, c] = *expr.vars.cbegin();
-            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, v, c_right / c));
-        }
-        else
-            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        s_asrts.emplace(s_asrt, ctr_lit);
+        v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
     utils::lit lra_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
@@ -93,17 +105,23 @@ namespace semitone
         else if (lb(expr) > c_right)
             return utils::FALSE_lit; // the constraint is unsatisfable..
 
+        // we create a slack variable from the current expression (notice that the variable can be reused)..
+        const auto slack = new_var(std::move(expr));
+        if (ub(slack) <= c_right)
+            return utils::TRUE_lit; // the constraint is already satisfied..
+        else if (lb(slack) > c_right)
+            return utils::FALSE_lit; // the constraint is unsatisfable..
+
+        const auto s_asrt = "x" + std::to_string(slack) + " <= " + to_string(c_right);
+        if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+            return asrt_it->second;
+
         // we create a new control variable..
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        if (expr.vars.size() == 1)
-        {
-            const auto [v, c] = *expr.vars.cbegin();
-            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, v, c_right / c));
-        }
-        else
-            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        s_asrts.emplace(s_asrt, ctr_lit);
+        v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
     utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept { return sat->new_conj({new_leq(left, right), new_geq(left, right)}); }
@@ -132,17 +150,23 @@ namespace semitone
         else if (ub(expr) < c_right)
             return utils::FALSE_lit; // the constraint is unsatisfable..
 
+        // we create a slack variable from the current expression (notice that the variable can be reused)..
+        const auto slack = new_var(std::move(expr));
+        if (lb(slack) >= c_right)
+            return utils::TRUE_lit; // the constraint is already satisfied..
+        else if (ub(slack) < c_right)
+            return utils::FALSE_lit; // the constraint is unsatisfable..
+
+        const auto s_asrt = "x" + std::to_string(slack) + " >= " + to_string(c_right);
+        if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+            return asrt_it->second;
+
         // we create a new control variable..
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        if (expr.vars.size() == 1)
-        {
-            const auto [v, c] = *expr.vars.cbegin();
-            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, v, c_right / c));
-        }
-        else
-            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        s_asrts.emplace(s_asrt, ctr_lit);
+        v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
     utils::lit lra_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
@@ -170,17 +194,23 @@ namespace semitone
         else if (ub(expr) < c_right)
             return utils::FALSE_lit; // the constraint is unsatisfable..
 
+        // we create a slack variable from the current expression (notice that the variable can be reused)..
+        const auto slack = new_var(std::move(expr));
+        if (lb(slack) >= c_right)
+            return utils::TRUE_lit; // the constraint is already satisfied..
+        else if (ub(slack) < c_right)
+            return utils::FALSE_lit; // the constraint is unsatisfable..
+
+        const auto s_asrt = "x" + std::to_string(slack) + " >= " + to_string(c_right);
+        if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+            return asrt_it->second;
+
         // we create a new control variable..
         const auto ctr = sat->new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
-        if (expr.vars.size() == 1)
-        {
-            const auto [v, c] = *expr.vars.cbegin();
-            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, v, c_right / c));
-        }
-        else
-            v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
+        s_asrts.emplace(s_asrt, ctr_lit);
+        v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
 
@@ -188,6 +218,7 @@ namespace semitone
     {
         assert(sat->value(p) != utils::Undefined); // the literal must be assigned..
         assert(cnfl.empty());
+
         if (val <= lb(x_i)) // the assertion is already satisfied..
             return true;
         else if (val > ub(x_i)) // the assertion introduces a conflict..
@@ -255,7 +286,6 @@ namespace semitone
     void lra_theory::update(const VARIABLE_TYPE x_i, const utils::inf_rational &val) noexcept
     {
         assert(!is_basic(x_i)); // the variable must not be basic..
-        vals[x_i] = val;
 
         // the tableau rows containing `x_i` as a non-basic variable..
         for (const auto &c : t_watches[x_i])
@@ -314,6 +344,7 @@ namespace semitone
         for (auto &x : t_watches[x_j])
         {
             auto &c_l = tableau[x]->get_lin();
+            assert(c_l.known_term == utils::rational::zero);
             const auto &c = c_l.vars.at(x_j);
             c_l.vars.erase(x_j);
             for (const auto &term : l.vars)
@@ -331,7 +362,6 @@ namespace semitone
                         t_watches[term.first].erase(x); // we remove `x` from the watches of `term.first`
                     }
                 }
-            c_l.known_term += c * l.known_term;
         }
 
         // we add the new row `x_j = ...`

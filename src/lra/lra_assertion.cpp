@@ -6,9 +6,10 @@
 
 namespace semitone
 {
+    lra_assertion::lra_assertion(lra_theory &th, const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : th(th), b(b), x(x), o(o), v(v) { th.a_watches[x].push_back(*this); }
+
     bool lra_leq::propagate_lb(const utils::inf_rational &lb) noexcept
     {
-        assert(th.cnfl.empty());
         if (lb > v && th.sat->value(b) != utils::False)
         { // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
             if (th.cnfl.empty())
@@ -33,7 +34,6 @@ namespace semitone
 
     bool lra_leq::propagate_ub(const utils::inf_rational &ub) noexcept
     {
-        assert(th.cnfl.empty());
         if (ub <= v && th.sat->value(b) != utils::True)
         { // either the literal `b` is true or the (precomputed) reason for the upper bound of `x` is false..
             if (th.cnfl.empty())
@@ -58,7 +58,6 @@ namespace semitone
 
     bool lra_geq::propagate_lb(const utils::inf_rational &lb) noexcept
     {
-        assert(th.cnfl.empty());
         if (lb >= v && th.sat->value(b) != utils::True)
         { // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
             if (th.cnfl.empty())
@@ -83,7 +82,6 @@ namespace semitone
 
     bool lra_geq::propagate_ub(const utils::inf_rational &ub) noexcept
     {
-        assert(th.cnfl.empty());
         if (ub < v && th.sat->value(b) != utils::False)
         { // either the literal `b` is false or the (precomputed) reason for the upper bound of `x` is false..
             if (th.cnfl.empty())

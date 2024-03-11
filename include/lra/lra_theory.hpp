@@ -13,6 +13,7 @@ namespace semitone
 {
   class lra_theory final : public theory
   {
+    friend class lra_assertion;
     friend class lra_leq;
     friend class lra_geq;
     friend class lra_eq;
@@ -231,6 +232,8 @@ namespace semitone
     std::map<const VARIABLE_TYPE, std::unique_ptr<lra_eq>> tableau;            // the tableau..
     std::vector<std::vector<std::reference_wrapper<lra_assertion>>> a_watches; // for each variable `v`, a list of assertions watching `v`..
     std::vector<std::set<VARIABLE_TYPE>> t_watches;                            // for each variable `v`, a list of tableau rows watching `v`..
+    std::unordered_map<std::string, VARIABLE_TYPE> exprs;                      // the expressions (string to numeric variable) for which already exist slack variables..
+    std::unordered_map<std::string, utils::lit> s_asrts;                       // the assertions (string to literal) used for reducing the number of boolean variables..
     std::vector<std::unordered_map<size_t, bound>> layers;                     // we store the updated bounds..
   };
 } // namespace semitone
