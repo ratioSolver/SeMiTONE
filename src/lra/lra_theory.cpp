@@ -349,7 +349,7 @@ namespace semitone
         {
             auto &c_l = tableau[x]->get_lin();
             assert(c_l.known_term == utils::rational::zero);
-            const auto c = c_l.vars.at(x_j);
+            c = c_l.vars.at(x_j);
             c_l.vars.erase(x_j);
             for (const auto &term : l.vars)
                 if (const auto trm_it = c_l.vars.find(term.first); trm_it == c_l.vars.cend())
