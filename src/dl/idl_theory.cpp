@@ -23,6 +23,27 @@ namespace semitone
         return var;
     }
 
+    utils::lit idl_theory::new_lt(const utils::lin &left, const utils::lin &right)
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+    utils::lit idl_theory::new_leq(const utils::lin &left, const utils::lin &right)
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+    utils::lit idl_theory::new_eq(const utils::lin &left, const utils::lin &right)
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+    utils::lit idl_theory::new_geq(const utils::lin &left, const utils::lin &right)
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+    utils::lit idl_theory::new_gt(const utils::lin &left, const utils::lin &right)
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+
     void idl_theory::resize(const size_t &size) noexcept
     {
         const size_t c_size = dists.size();
