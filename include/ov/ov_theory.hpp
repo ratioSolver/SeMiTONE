@@ -51,13 +51,22 @@ namespace semitone
     [[nodiscard]] std::vector<std::reference_wrapper<utils::enum_val>> domain(const VARIABLE_TYPE var) const noexcept;
 
     /**
+     * @brief Check if the given value is allowed to the variable.
+     *
+     * @param var the variable to check.
+     * @param val the value to check.
+     * @return lit the literal that represents the presence of the value in the domain.
+     */
+    [[nodiscard]] utils::lit allows(const VARIABLE_TYPE var, utils::enum_val &val) const noexcept { return domains[var].at(&val); }
+
+    /**
      * @brief Assign the given value to the variable.
      *
      * @param var the variable to assign.
      * @param val the value to assign.
      * @return true if the assignment is successful, false otherwise.
      */
-    [[nodiscard]] bool assign(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
+    [[nodiscard]] bool assign(const VARIABLE_TYPE var, utils::enum_val &val) noexcept;
 
     /**
      * @brief Forbid the given value to the variable.
@@ -66,7 +75,7 @@ namespace semitone
      * @param val the value to forbid.
      * @return true if the forbidding is successful, false otherwise.
      */
-    [[nodiscard]] bool forbid(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept;
+    [[nodiscard]] bool forbid(const VARIABLE_TYPE var, utils::enum_val &val) noexcept;
 
   private:
     [[nodiscard]] bool propagate(const utils::lit &) noexcept override { return true; }
@@ -75,7 +84,7 @@ namespace semitone
     void pop() noexcept override {}
 
   private:
-    std::vector<std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>>> domains;
+    std::vector<std::unordered_map<utils::enum_val *, utils::lit>> domains;
     std::vector<bool> exact_one;
   };
 } // namespace semitone

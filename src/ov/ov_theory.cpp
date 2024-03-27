@@ -14,12 +14,12 @@ namespace semitone
         domains.emplace_back();
         exact_one.push_back(enforce_exct_one);
         if (domain.size() == 1 && enforce_exct_one)
-            domains[x].emplace_back(domain[0].get(), utils::TRUE_lit);
+            domains[x].emplace(&domain[0].get(), utils::TRUE_lit);
         else
             for (const auto &v : domain)
             {
                 const auto bv = sat->new_var();
-                domains[x].emplace_back(v.get(), bv);
+                domains[x].emplace(&v.get(), bv);
                 bind(bv);
             }
         return x;
@@ -33,7 +33,7 @@ namespace semitone
         exact_one.push_back(false);
         for (const auto &v : domain)
         {
-            domains[x].emplace_back(v.first.get(), v.second);
+            domains[x].emplace(&v.first.get(), v.second);
             bind(variable(v.second));
         }
         return x;
@@ -53,23 +53,10 @@ namespace semitone
         std::vector<std::reference_wrapper<utils::enum_val>> d;
         for (const auto &v : domains[var])
             if (sat->value(v.second) != utils::False)
-                d.push_back(v.first.get());
+                d.push_back(*v.first);
         return d;
     }
 
-    bool ov_theory::assign(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept
-    {
-        for (const auto &v : domains[var])
-            if (&v.first.get() == &val)
-                return sat->assume(v.second);
-        return false;
-    }
-
-    bool ov_theory::forbid(const VARIABLE_TYPE var, const utils::enum_val &val) noexcept
-    {
-        for (const auto &v : domains[var])
-            if (&v.first.get() == &val)
-                return sat->assume(!v.second);
-        return false;
-    }
+    bool ov_theory::assign(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return sat->assume(domains[var].at(&val)); }
+    bool ov_theory::forbid(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return sat->assume(!domains[var].at(&val)); }
 } // namespace semitone

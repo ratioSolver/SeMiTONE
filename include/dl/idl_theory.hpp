@@ -19,6 +19,47 @@ namespace semitone
     [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
 
     /**
+     * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return utils::lit the literal corresponding to the constraint.
+     */
+    utils::lit new_lt(const utils::lin &left, const utils::lin &right);
+    /**
+     * @brief Creates a new lower then or equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return utils::lit the literal corresponding to the constraint.
+     */
+    utils::lit new_leq(const utils::lin &left, const utils::lin &right);
+    /**
+     * @brief Creates a new equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return utils::lit the literal corresponding to the constraint.
+     */
+    utils::lit new_eq(const utils::lin &left, const utils::lin &right);
+    /**
+     * @brief Creates a new greater then or equal constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return utils::lit the literal corresponding to the constraint.
+     */
+    utils::lit new_geq(const utils::lin &left, const utils::lin &right);
+    /**
+     * @brief Creates a new greater then constraint between the given linear expressions and returns the corresponding literal.
+     *
+     * @param left the left hand side of the constraint.
+     * @param right the right hand side of the constraint.
+     * @return utils::lit the literal corresponding to the constraint.
+     */
+    utils::lit new_gt(const utils::lin &left, const utils::lin &right);
+
+    /**
      * @brief Returns the lower bound of the given variable.
      *
      * @param v the variable to get the lower bound of.

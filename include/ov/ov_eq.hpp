@@ -27,10 +27,8 @@ namespace semitone
     ov_theory &ov;
     const VARIABLE_TYPE left;
     std::unordered_map<VARIABLE_TYPE, std::reference_wrapper<utils::enum_val>> left_domain;
-    std::unordered_map<utils::enum_val *, utils::lit> left_domain_set;
     const VARIABLE_TYPE right;
     std::unordered_map<VARIABLE_TYPE, std::reference_wrapper<utils::enum_val>> right_domain;
-    std::unordered_map<utils::enum_val *, utils::lit> right_domain_set;
     const utils::lit ctr;
   };
 } // namespace semitone

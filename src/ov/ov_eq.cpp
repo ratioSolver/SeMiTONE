@@ -16,15 +16,13 @@ namespace semitone
         watches(!ctr).push_back(*this);
         for (const auto &v : ov.domains[left])
         {
-            left_domain.emplace(variable(v.second), v.first.get());
-            left_domain_set.emplace(&v.first.get(), v.second);
+            left_domain.emplace(variable(v.second), *v.first);
             watches(v.second).push_back(*this);
             watches(!v.second).push_back(*this);
         }
         for (const auto &v : ov.domains[right])
         {
-            right_domain.emplace(variable(v.second), v.first.get());
-            right_domain_set.emplace(&v.first.get(), v.second);
+            right_domain.emplace(variable(v.second), *v.first);
             watches(v.second).push_back(*this);
             watches(!v.second).push_back(*this);
         }
@@ -44,8 +42,8 @@ namespace semitone
             if (value(ctr) == utils::True)
             { // the equality is `true`
                 // we propagate the values that are in the intersection and prune the values that are not in the intersection
-                for (const auto &[v, l] : left_domain_set)
-                    if (auto it = right_domain_set.find(v); it == right_domain_set.end())
+                for (const auto &[v, l] : ov.domains[left])
+                    if (auto it = ov.domains[right].find(v); it == ov.domains[right].end())
                         switch (value(l))
                         {
                         case utils::True:
@@ -59,8 +57,8 @@ namespace semitone
                         }
                     else if (!enqueue(!l))
                         return false;
-                for (const auto &[v, l] : right_domain_set)
-                    if (auto it = left_domain_set.find(v); it == left_domain_set.end())
+                for (const auto &[v, l] : ov.domains[right])
+                    if (auto it = ov.domains[left].find(v); it == ov.domains[left].end())
                         switch (value(l))
                         {
                         case utils::True:
@@ -77,15 +75,15 @@ namespace semitone
             }
             else
             { // the equality is `false`
-                auto left = std::find_if(left_domain.begin(), left_domain.end(), [this](const auto &pair)
+                auto l_it = std::find_if(left_domain.begin(), left_domain.end(), [this](const auto &pair)
                                          { return value(pair.first) == utils::True; });
-                if (left != left_domain.end())                                                                                                // the left variable is assigned
-                    if (auto right = right_domain_set.find(&left->second.get()); right != right_domain_set.end() && !enqueue(!right->second)) // we forbid the same value in the right variable
+                if (l_it != left_domain.end())                                                                                               // the left variable is assigned
+                    if (auto r_it = ov.domains[right].find(&l_it->second.get()); r_it != ov.domains[right].end() && !enqueue(!r_it->second)) // we forbid the same value in the right variable
                         return false;
-                auto right = std::find_if(right_domain.begin(), right_domain.end(), [this](const auto &pair)
-                                          { return value(pair.first) == utils::True; });
-                if (right != right_domain.end())                                                                                          // the right variable is assigned
-                    if (auto left = left_domain_set.find(&right->second.get()); left != left_domain_set.end() && !enqueue(!left->second)) // we forbid the same value in the left variable
+                auto r_it = std::find_if(right_domain.begin(), right_domain.end(), [this](const auto &pair)
+                                         { return value(pair.first) == utils::True; });
+                if (r_it != right_domain.end())                                                                                            // the right variable is assigned
+                    if (auto l_it = ov.domains[left].find(&r_it->second.get()); l_it != ov.domains[left].end() && !enqueue(!l_it->second)) // we forbid the same value in the left variable
                         return false;
             }
         }
@@ -98,9 +96,9 @@ namespace semitone
             {
             case utils::True:
                 if (left_it != left_domain.end())
-                    if (auto it = right_domain_set.find(&left_it->second.get()); it != right_domain_set.end())
+                    if (auto it = ov.domains[right].find(&left_it->second.get()); it != ov.domains[right].end())
                     {
-                        if (value(left_domain_set.at(&left_it->second.get())) == utils::True)
+                        if (value(ov.domains[left].at(&left_it->second.get())) == utils::True)
                         {
                             if (!enqueue(it->second))
                                 return false;
@@ -109,9 +107,9 @@ namespace semitone
                             return false;
                     }
                 if (right_it != right_domain.end())
-                    if (auto it = left_domain_set.find(&right_it->second.get()); it != left_domain_set.end())
+                    if (auto it = ov.domains[left].find(&right_it->second.get()); it != ov.domains[left].end())
                     {
-                        if (value(right_domain_set.at(&right_it->second.get())) == utils::True)
+                        if (value(ov.domains[right].at(&right_it->second.get())) == utils::True)
                         {
                             if (!enqueue(it->second))
                                 return false;
@@ -122,31 +120,31 @@ namespace semitone
                 break;
             case utils::False:
                 if (left_it != left_domain.end())
-                    if (auto it = right_domain_set.find(&left_it->second.get()); it != right_domain_set.end() && value(left_domain_set.at(&left_it->second.get())) == utils::True && !enqueue(!it->second))
+                    if (auto it = ov.domains[right].find(&left_it->second.get()); it != ov.domains[right].end() && value(ov.domains[left].at(&left_it->second.get())) == utils::True && !enqueue(!it->second))
                         return false;
                 if (right_it != right_domain.end())
-                    if (auto it = left_domain_set.find(&right_it->second.get()); it != left_domain_set.end() && value(right_domain_set.at(&right_it->second.get())) == utils::True && !enqueue(!it->second))
+                    if (auto it = ov.domains[left].find(&right_it->second.get()); it != ov.domains[left].end() && value(ov.domains[right].at(&right_it->second.get())) == utils::True && !enqueue(!it->second))
                         return false;
                 break;
             default:
                 if (left_it != left_domain.end())
                 {
-                    if (auto it = right_domain_set.find(&left_it->second.get()); it != right_domain_set.end())
+                    if (auto it = ov.domains[right].find(&left_it->second.get()); it != ov.domains[right].end())
                     {
-                        if (value(left_domain_set.at(&left_it->second.get())) == utils::True && value(it->second) == utils::True && !enqueue(ctr))
+                        if (value(ov.domains[left].at(&left_it->second.get())) == utils::True && value(it->second) == utils::True && !enqueue(ctr))
                             return false;
                     }
-                    else if (value(left_domain_set.at(&left_it->second.get())) == utils::True && !enqueue(!ctr))
+                    else if (value(ov.domains[left].at(&left_it->second.get())) == utils::True && !enqueue(!ctr))
                         return false;
                 }
                 if (right_it != right_domain.end())
                 {
-                    if (auto it = left_domain_set.find(&right_it->second.get()); it != left_domain_set.end())
+                    if (auto it = ov.domains[left].find(&right_it->second.get()); it != ov.domains[left].end())
                     {
-                        if (value(right_domain_set.at(&right_it->second.get())) == utils::True && value(it->second) == utils::True && !enqueue(ctr))
+                        if (value(ov.domains[right].at(&right_it->second.get())) == utils::True && value(it->second) == utils::True && !enqueue(ctr))
                             return false;
                     }
-                    else if (value(right_domain_set.at(&right_it->second.get())) == utils::True && !enqueue(!ctr))
+                    else if (value(ov.domains[right].at(&right_it->second.get())) == utils::True && !enqueue(!ctr))
                         return false;
                 }
             }
@@ -162,10 +160,10 @@ namespace semitone
         {
             std::vector<utils::lit> reason;
             reason.reserve(left_domain.size() + right_domain.size() + 1);
-            for (const auto &[v, l] : left_domain_set)
+            for (const auto &[v, l] : ov.domains[left])
                 if (value(l) != utils::Undefined)
                     reason.push_back(l);
-            for (const auto &[v, l] : right_domain_set)
+            for (const auto &[v, l] : ov.domains[right])
                 if (value(l) != utils::Undefined)
                     reason.push_back(l);
             if (value(ctr) != utils::Undefined)
@@ -185,12 +183,12 @@ namespace semitone
                 if (value(ctr) == utils::True)
                 { // the control variable is `true`
                     assert(&left_it->second.get() == &right_it->second.get());
-                    return {left_domain_set.at(&left_it->second.get()), right_domain_set.at(&right_it->second.get())};
+                    return {ov.domains[left].at(&left_it->second.get()), ov.domains[right].at(&right_it->second.get())};
                 }
                 else
                 { // the control variable is `false`
                     assert(&left_it->second.get() != &right_it->second.get());
-                    return {left_domain_set.at(&left_it->second.get()), !right_domain_set.at(&right_it->second.get())};
+                    return {ov.domains[left].at(&left_it->second.get()), !ov.domains[right].at(&right_it->second.get())};
                 }
             }
             else
@@ -206,7 +204,7 @@ namespace semitone
         json::json j_eq;
         json::json j_left{{"var", std::to_string(left)}};
         json::json j_left_domain(json::json_type::array);
-        for (const auto &[v, l] : left_domain_set)
+        for (const auto &[v, l] : ov.domains[left])
         {
             json::json j_lit{{"lit", to_string(l)}, {"val", std::to_string(reinterpret_cast<uintptr_t>(&v))}};
             switch (value(l))
@@ -224,7 +222,7 @@ namespace semitone
         j_eq["left"] = std::move(j_left);
         json::json j_right{{"var", std::to_string(right)}};
         json::json j_right_domain(json::json_type::array);
-        for (const auto &[v, l] : right_domain_set)
+        for (const auto &[v, l] : ov.domains[right])
         {
             json::json j_lit{{"lit", to_string(l)}, {"val", std::to_string(reinterpret_cast<uintptr_t>(&v))}};
             switch (value(l))
