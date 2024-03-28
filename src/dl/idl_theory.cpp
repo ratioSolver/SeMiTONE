@@ -23,23 +23,23 @@ namespace semitone
         return var;
     }
 
-    utils::lit idl_theory::new_lt(const utils::lin &left, const utils::lin &right)
+    utils::lit idl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
         throw std::runtime_error("Not implemented yet");
     }
-    utils::lit idl_theory::new_leq(const utils::lin &left, const utils::lin &right)
+    utils::lit idl_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
     {
         throw std::runtime_error("Not implemented yet");
     }
-    utils::lit idl_theory::new_eq(const utils::lin &left, const utils::lin &right)
+    utils::lit idl_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept
     {
         throw std::runtime_error("Not implemented yet");
     }
-    utils::lit idl_theory::new_geq(const utils::lin &left, const utils::lin &right)
+    utils::lit idl_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept
     {
         throw std::runtime_error("Not implemented yet");
     }
-    utils::lit idl_theory::new_gt(const utils::lin &left, const utils::lin &right)
+    utils::lit idl_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
     {
         throw std::runtime_error("Not implemented yet");
     }
@@ -61,7 +61,7 @@ namespace semitone
         }
     }
 
-    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> idl_theory::bounds(const utils::lin &l) const
+    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> idl_theory::bounds(const utils::lin &l) const noexcept
     {
         switch (l.vars.size())
         {

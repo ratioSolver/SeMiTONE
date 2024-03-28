@@ -25,7 +25,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_lt(const utils::lin &left, const utils::lin &right);
+    utils::lit new_lt(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new lower then or equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -33,7 +33,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_leq(const utils::lin &left, const utils::lin &right);
+    utils::lit new_leq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -41,7 +41,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_eq(const utils::lin &left, const utils::lin &right);
+    utils::lit new_eq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new greater then or equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -49,7 +49,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_geq(const utils::lin &left, const utils::lin &right);
+    utils::lit new_geq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new greater then constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -57,7 +57,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_gt(const utils::lin &left, const utils::lin &right);
+    utils::lit new_gt(const utils::lin &left, const utils::lin &right) noexcept;
 
     /**
      * @brief Returns the lower bound of the given variable.
@@ -95,7 +95,7 @@ namespace semitone
      * @param l the linear expression to get the bounds of.
      * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the bounds of the linear expression.
      */
-    [[nodiscard]] std::pair<VARIABLE_TYPE, VARIABLE_TYPE> bounds(const utils::lin &l) const;
+    [[nodiscard]] std::pair<VARIABLE_TYPE, VARIABLE_TYPE> bounds(const utils::lin &l) const noexcept;
     /**
      * @brief Returns the distance between the given linear expressions.
      *
@@ -103,7 +103,7 @@ namespace semitone
      * @param to the linear expression to get the distance to.
      * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the distance between the linear expressions.
      */
-    [[nodiscard]] std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(const utils::lin &from, const utils::lin &to) const { return bounds(from - to); }
+    [[nodiscard]] std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }
