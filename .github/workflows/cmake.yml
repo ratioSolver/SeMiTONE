@@ -11,18 +11,16 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         build_type: [Debug, Release]
-        verbose_log: [ON, OFF]
 
     env:
       BUILD_TYPE: ${{ matrix.build_type }}
-      VERBOSE_LOG: ${{ matrix.verbose_log }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install dependencies
+      - name: Install dependencies (Ubuntu)
         if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
         run: sudo apt-get install -y lcov valgrind
 
@@ -37,15 +35,10 @@ jobs:
       - name: Build
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-      - name: Test (Debug)
-        if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
-        working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure -T Test -T Coverage -T memcheck
-
       - name: Test with coverage and memory sanitizer
         if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
         working-directory: ${{github.workspace}}/build
-        run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure -T Test -T Coverage
+        run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure -T Test -T Coverage -T memcheck
 
       - name: Test without coverage and memory sanitizer
         if: matrix.build_type == 'Release' || matrix.os != 'ubuntu-latest'
