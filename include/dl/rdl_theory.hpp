@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "theory.hpp"
+#include "dl_distance.hpp"
 #include "inf_rational.hpp"
 #include "lin.hpp"
 #include "inf_rational.hpp"
@@ -143,7 +144,8 @@ namespace semitone
 
   private:
     size_t n_vars = 1;
-    std::vector<std::vector<utils::inf_rational>> dists; // the distance matrix..
-    std::vector<std::vector<VARIABLE_TYPE>> preds;       // the predecessor matrix..
+    std::vector<std::vector<utils::inf_rational>> dists;                                            // the distance matrix..
+    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                  // the predecessor matrix..
+    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<dl_distance<utils::inf_rational>>> var_dists; // the constraints controlled by a propositional variable (for propagation purposes)..
   };
 } // namespace semitone

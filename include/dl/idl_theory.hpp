@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "theory.hpp"
+#include "dl_distance.hpp"
 #include "lin.hpp"
 
 namespace semitone
@@ -141,7 +142,8 @@ namespace semitone
 
   private:
     size_t n_vars = 1;
-    std::vector<std::vector<INTEGER_TYPE>> dists;  // the distance matrix..
-    std::vector<std::vector<VARIABLE_TYPE>> preds; // the predecessor matrix..
+    std::vector<std::vector<INTEGER_TYPE>> dists;                                            // the distance matrix..
+    std::vector<std::vector<VARIABLE_TYPE>> preds;                                           // the predecessor matrix..
+    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<dl_distance<INTEGER_TYPE>>> var_dists; // the constraints controlled by a propositional variable (for propagation purposes)..
   };
 } // namespace semitone
