@@ -75,6 +75,7 @@ namespace semitone
             return enqueue(lits[0]); // the clause is unit under the current assignment..
         default:
             constrs.push_back(std::make_unique<clause>(*this, std::move(lits)));
+            LOG_DEBUG("+" << constrs.back()->to_json());
             return true;
         }
     }

@@ -85,6 +85,5 @@ namespace semitone
 
   private:
     std::vector<std::unordered_map<utils::enum_val *, utils::lit>> domains;
-    std::vector<bool> exact_one;
   };
 } // namespace semitone

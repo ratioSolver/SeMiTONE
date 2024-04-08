@@ -6,6 +6,10 @@ add_executable(lra_tests test_lra.cpp)
 add_dependencies(lra_tests SeMiTONE json)
 target_link_libraries(lra_tests PRIVATE SeMiTONE json)
 
+add_executable(ov_tests test_ov.cpp)
+add_dependencies(ov_tests SeMiTONE json)
+target_link_libraries(ov_tests PRIVATE SeMiTONE json)
+
 add_executable(rdl_tests test_rdl.cpp)
 add_dependencies(rdl_tests SeMiTONE json)
 target_link_libraries(rdl_tests PRIVATE SeMiTONE json)

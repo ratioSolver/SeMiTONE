@@ -3,7 +3,7 @@
 
 #include <cassert>
 
-void test_rdl()
+void test_ov()
 {
     auto sat = std::make_shared<semitone::sat_core>();
     semitone::rdl_theory rdl(sat);
@@ -14,7 +14,7 @@ void test_rdl()
 
 int main(int argc, char const *argv[])
 {
-    test_rdl();
+    test_ov();
 
     return 0;
 }

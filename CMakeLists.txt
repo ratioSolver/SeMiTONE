@@ -7,7 +7,7 @@ enable_testing()
 
 add_subdirectory(extern/json)
 
-add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp src/ov/ov_theory.cpp src/ov/ov_eq.cpp src/lra/lra_theory.cpp src/lra/lra_assertion.cpp src/lra/lra_eq.cpp src/dl/idl_theory.cpp src/dl/rdl_theory.cpp)
+add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp src/ov/ov_theory.cpp src/lra/lra_theory.cpp src/lra/lra_assertion.cpp src/lra/lra_eq.cpp src/dl/idl_theory.cpp src/dl/rdl_theory.cpp)
 add_dependencies(SeMiTONE json)
 target_compile_features(SeMiTONE PUBLIC cxx_std_17)
 target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ov> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lra> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dl>)
