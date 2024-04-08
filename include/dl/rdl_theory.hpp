@@ -4,6 +4,7 @@
 #include "theory.hpp"
 #include "inf_rational.hpp"
 #include "lin.hpp"
+#include "inf_rational.hpp"
 
 namespace semitone
 {
@@ -13,13 +14,40 @@ namespace semitone
     rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16) noexcept;
 
     /**
+     * @brief Create a new difference logic variable.
+     *
+     * @return VARIABLE_TYPE the new variable.
+     */
+    [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
+
+    /**
+     * @brief Creates a new distance between the given variables and returns the corresponding literal.
+     *
+     * @param from the variable to get the distance from.
+     * @param to the variable to get the distance to.
+     * @param dist the distance between the variables.
+     * @return utils::lit the literal corresponding to the distance.
+     */
+    [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept;
+    /**
+     * @brief Creates a new distance between the given variables and returns the corresponding literal.
+     *
+     * @param from the variable to get the distance from.
+     * @param to the variable to get the distance to.
+     * @param min the minimum distance between the variables.
+     * @param max the maximum distance between the variables.
+     * @return utils::lit the literal corresponding to the distance.
+     */
+    [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept;
+
+    /**
      * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
      *
      * @param left the left hand side of the constraint.
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_lt(const utils::lin &left, const utils::lin &right) noexcept;
+    [[nodiscard]] utils::lit new_lt(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new lower then or equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -27,7 +55,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_leq(const utils::lin &left, const utils::lin &right) noexcept;
+    [[nodiscard]] utils::lit new_leq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -35,7 +63,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_eq(const utils::lin &left, const utils::lin &right) noexcept;
+    [[nodiscard]] utils::lit new_eq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new greater then or equal constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -43,7 +71,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_geq(const utils::lin &left, const utils::lin &right) noexcept;
+    [[nodiscard]] utils::lit new_geq(const utils::lin &left, const utils::lin &right) noexcept;
     /**
      * @brief Creates a new greater then constraint between the given linear expressions and returns the corresponding literal.
      *
@@ -51,14 +79,7 @@ namespace semitone
      * @param right the right hand side of the constraint.
      * @return utils::lit the literal corresponding to the constraint.
      */
-    utils::lit new_gt(const utils::lin &left, const utils::lin &right) noexcept;
-
-    /**
-     * @brief Create a new difference logic variable.
-     *
-     * @return VARIABLE_TYPE the new variable.
-     */
-    [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
+    [[nodiscard]] utils::lit new_gt(const utils::lin &left, const utils::lin &right) noexcept;
 
     /**
      * @brief Returns the lower bound of the given variable.

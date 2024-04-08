@@ -1,16 +1,18 @@
 #include <cassert>
 #include <stdexcept>
+#include "sat_core.hpp"
 #include "idl_theory.hpp"
 #include "integer.hpp"
 #include "logging.hpp"
 
 namespace semitone
 {
-    idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const size_t &size) noexcept : theory(sat), dists(size, std::vector<INTEGER_TYPE>(size, utils::inf())), preds(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INTEGER_TYPE>::max()))
+    idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const size_t &size) noexcept : theory(sat), dists(size, std::vector<INTEGER_TYPE>(size, utils::inf())), preds(size, std::vector<VARIABLE_TYPE>(size))
     {
         for (size_t i = 0; i < size; ++i)
         {
             dists[i][i] = 0;
+            std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<VARIABLE_TYPE>::max());
             preds[i][i] = i;
         }
     }
@@ -22,6 +24,16 @@ namespace semitone
             resize((dists.size() * 3) / 2 + 1);
         return var;
     }
+
+    utils::lit idl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept
+    {
+        if (dists[to][from] < -dist)
+            return utils::FALSE_lit; // the constraint is inconsistent
+        if (dists[from][to] <= dist)
+            return utils::TRUE_lit; // the constraint is trivially satisfied
+        throw std::runtime_error("Not implemented yet");
+    }
+    utils::lit idl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE min, INTEGER_TYPE max) noexcept { return sat->new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
     utils::lit idl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
