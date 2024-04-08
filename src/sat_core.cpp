@@ -1,12 +1,10 @@
 #include <unordered_map>
 #include <set>
 #include <algorithm>
+#include <cmath>
 #include <cassert>
 #include "sat_core.hpp"
 #include "clause.hpp"
-#include "sat_eq.hpp"
-#include "sat_conj.hpp"
-#include "sat_disj.hpp"
 #include "logging.hpp"
 
 namespace semitone
@@ -90,19 +88,20 @@ namespace semitone
         switch (value(left))
         {
         case utils::True:
-            return right;
+            return right; // the equality is already satisfied..
         case utils::False:
-            return !right;
+            return !right; // the equality is already unsatisfied..
         default:
             switch (value(right))
             {
             case utils::True:
-                return left;
+                return left; // the equality is already satisfied..
             case utils::False:
-                return !left;
-            default: // we need to create a new variable..
+                return !left; // the equality is already unsatisfied..
+            default:
                 const auto ctr = utils::lit(new_var());
-                constrs.push_back(std::make_unique<sat_eq>(*this, left, right, ctr));
+                if (!new_clause({ctr, left, right}) || !new_clause({ctr, !left, !right}) || !new_clause({!ctr, !left, right}) || !new_clause({!ctr, left, !right}))
+                    return utils::FALSE_lit; // the equality is unsatisfiable..
                 return ctr;
             }
         }
@@ -129,11 +128,21 @@ namespace semitone
         if (ls.empty()) // an empty conjunction is assumed to be satisfied..
             return utils::TRUE_lit;
         else if (ls.size() == 1)
-            return ls[0];
+            return ls[0]; // the conjunction is unit under the current assignment..
         else
         { // we need to create a new variable..
             const auto ctr = utils::lit(new_var());
-            constrs.push_back(std::make_unique<sat_conj>(*this, std::move(ls), ctr));
+            std::vector<utils::lit> lits;
+            lits.reserve(ls.size() + 1);
+            lits.push_back(ctr);
+            for (const auto &l : ls)
+            {
+                if (!new_clause({!ctr, l}))
+                    return utils::FALSE_lit; // the conjunction is unsatisfiable..
+                lits.push_back(!l);
+            }
+            if (!new_clause(std::move(lits)))
+                return utils::FALSE_lit; // the conjunction is unsatisfiable..
             return ctr;
         }
     }
@@ -159,11 +168,123 @@ namespace semitone
         if (ls.empty()) // an empty disjunction is assumed to be unsatisfable..
             return utils::FALSE_lit;
         else if (ls.size() == 1)
-            return ls[0];
+            return ls[0]; // the disjunction is unit under the current assignment..
         else
         { // we need to create a new variable..
             const auto ctr = utils::lit(new_var());
-            constrs.push_back(std::make_unique<sat_disj>(*this, std::move(ls), ctr));
+            std::vector<utils::lit> lits;
+            lits.reserve(ls.size() + 1);
+            lits.push_back(!ctr);
+            for (const auto &l : ls)
+            {
+                if (!new_clause({ctr, !l}))
+                    return utils::FALSE_lit; // the disjunction is unsatisfiable..
+                lits.push_back(l);
+            }
+            if (!new_clause(std::move(lits)))
+                return utils::FALSE_lit; // the disjunction is unsatisfiable..
+            return ctr;
+        }
+    }
+
+    utils::lit sat_core::new_at_most_one(std::vector<utils::lit> &&ls) noexcept
+    {
+        assert(root_level());
+        // we try to avoid creating a new variable..
+        std::sort(ls.begin(), ls.end(), [](const auto &l0, const auto &l1)
+                  { return variable(l0) < variable(l1); });
+        bool true_found = false;
+        utils::lit p;
+        size_t j = 0;
+        for (auto it = ls.cbegin(); it != ls.cend(); ++it)
+            switch (value(*it))
+            {
+            case utils::True:
+                if (true_found)
+                    return utils::FALSE_lit; // more than one literal is `true`, the at-most-one is `false`
+                true_found = true;
+                [[fallthrough]];
+            case utils::Undefined:
+                p = *it;
+                ls[j++] = p;
+                break;
+            }
+        ls.resize(j);
+
+        if (ls.empty())
+            return utils::TRUE_lit; // the at-most-one is satisfied..
+        else if (ls.size() == 1)
+            return ls[0]; // the at-most-one is unit under the current assignment..
+        else
+        { // we need to create a new variable..
+            const auto ctr = utils::lit(new_var());
+            for (size_t i = 0; i < ls.size(); ++i)
+                for (size_t j = i + 1; j < ls.size(); ++j)
+                    if (!new_clause({!ctr, !ls[i], !ls[j]})) // if two literals are `true`, the at-most-one is `false`..
+                        return utils::FALSE_lit;             // the at-most-one is unsatisfiable..
+            std::vector<utils::lit> lits = ls;
+            lits.push_back(ctr);
+            if (!new_clause(std::move(lits))) // if no literal is `true`, the at-most-one is `true`..
+                return utils::FALSE_lit;      // the at-most-one is unsatisfiable..
+            for (size_t i = 0; i < ls.size(); ++i)
+            {
+                std::vector<utils::lit> c_lits = ls;
+                c_lits.push_back(ctr);
+                c_lits[i] = !c_lits[i];
+                if (!new_clause(std::move(c_lits))) // if all literals except one are `false`, the at-most-one is `true`..
+                    return utils::FALSE_lit;        // the at-most-one is unsatisfiable..
+            }
+            return ctr;
+        }
+    }
+
+    utils::lit sat_core::new_exact_one(std::vector<utils::lit> &&ls) noexcept
+    {
+        assert(root_level());
+        // we try to avoid creating a new variable..
+        std::sort(ls.begin(), ls.end(), [](const auto &l0, const auto &l1)
+                  { return variable(l0) < variable(l1); });
+        bool true_found = false;
+        utils::lit p;
+        size_t j = 0;
+        for (auto it = ls.cbegin(); it != ls.cend(); ++it)
+            switch (value(*it))
+            {
+            case utils::True:
+                if (true_found)
+                    return utils::FALSE_lit; // more than one literal is `true`, the exact-one is `false`
+                true_found = true;
+                [[fallthrough]];
+            case utils::Undefined:
+                p = *it;
+                ls[j++] = p;
+                break;
+            }
+        ls.resize(j);
+
+        if (ls.empty())
+            return utils::FALSE_lit; // the exact-one is `false`
+        else if (ls.size() == 1)
+            return ls[0]; // the exact-one is unit under the current assignment..
+        else
+        { // we need to create a new variable..
+            const auto ctr = utils::lit(new_var());
+            for (size_t i = 0; i < ls.size(); ++i)
+                for (size_t j = i + 1; j < ls.size(); ++j)
+                    if (!new_clause({!ctr, !ls[i], !ls[j]})) // if two literals are `true`, the exact-one is `false`..
+                        return utils::FALSE_lit;             // the exact-one is unsatisfiable..
+            std::vector<utils::lit> lits = ls;
+            lits.push_back(!ctr);
+            if (!new_clause(std::move(lits))) // if no literal is `true`, the exact-one is `false`..
+                return utils::FALSE_lit;      // the exact-one is unsatisfiable..
+            for (size_t i = 0; i < ls.size(); ++i)
+            {
+                std::vector<utils::lit> c_lits = ls;
+                c_lits.push_back(ctr);
+                c_lits[i] = !c_lits[i];
+                if (!new_clause(std::move(c_lits))) // if all literals except one are `false`, the exact-one is `true`..
+                    return utils::FALSE_lit;        // the exact-one is unsatisfiable..
+            }
             return ctr;
         }
     }

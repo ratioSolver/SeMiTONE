@@ -77,6 +77,22 @@ namespace semitone
     [[nodiscard]] utils::lit new_disj(std::vector<utils::lit> &&ls) noexcept;
 
     /**
+     * @brief Create a new reified at-most-one constraint.
+     *
+     * @param ls the literals of the at-most-one.
+     * @return lit the reified at-most-one.
+     */
+    [[nodiscard]] utils::lit new_at_most_one(std::vector<utils::lit> &&ls) noexcept;
+
+    /**
+     * @brief Create a new reified exact-one constraint.
+     *
+     * @param ls the literals of the exact-one.
+     * @return lit the reified exact-one.
+     */
+    [[nodiscard]] utils::lit new_exact_one(std::vector<utils::lit> &&ls) noexcept;
+
+    /**
      * @brief Return the value of a variable.
      *
      * @param x The variable.

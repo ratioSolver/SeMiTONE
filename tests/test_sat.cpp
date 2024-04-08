@@ -143,6 +143,84 @@ void test_disj()
     assert(core.value(disj) == utils::True);
 }
 
+void test_exact_one()
+{
+    sat_core core;
+    VARIABLE_TYPE b0 = core.new_var();
+    VARIABLE_TYPE b1 = core.new_var();
+    VARIABLE_TYPE b2 = core.new_var();
+
+    auto exact_one = core.new_exact_one({utils::lit(b0), utils::lit(b1), utils::lit(b2)});
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(exact_one) == utils::Undefined);
+
+    bool assm = core.assume(exact_one);
+    assert(assm);
+    assert(core.value(b0) == utils::Undefined);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(exact_one) == utils::True);
+
+    assm = core.assume(utils::lit(b0));
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::False);
+    assert(core.value(b2) == utils::False);
+    assert(core.value(exact_one) == utils::True);
+
+    core.pop();
+
+    assm = core.assume(utils::lit(b0, false));
+    assert(assm);
+    assert(core.value(b0) == utils::False);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(exact_one) == utils::True);
+
+    assm = core.assume(utils::lit(b1, false));
+    assert(assm);
+    assert(core.value(b0) == utils::False);
+    assert(core.value(b1) == utils::False);
+    assert(core.value(b2) == utils::True);
+    assert(core.value(exact_one) == utils::True);
+
+    core.pop();
+    core.pop();
+    core.pop();
+
+    assm = core.assume(utils::lit(b0));
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::Undefined);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(exact_one) == utils::Undefined);
+
+    assm = core.assume(utils::lit(b1));
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::True);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(exact_one) == utils::False);
+
+    core.pop();
+
+    assm = core.assume(utils::lit(b1, false));
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::False);
+    assert(core.value(b2) == utils::Undefined);
+    assert(core.value(exact_one) == utils::Undefined);
+
+    assm = core.assume(utils::lit(b2, false));
+    assert(assm);
+    assert(core.value(b0) == utils::True);
+    assert(core.value(b1) == utils::False);
+    assert(core.value(b2) == utils::False);
+    assert(core.value(exact_one) == utils::True);
+}
+
 void test_core_copy()
 {
     sat_core core;
@@ -163,6 +241,7 @@ int main(int, char **)
     test_eq();
     test_conj();
     test_disj();
+    test_exact_one();
 
     test_core_copy();
 }
