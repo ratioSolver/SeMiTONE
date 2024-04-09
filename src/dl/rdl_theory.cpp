@@ -15,6 +15,16 @@ namespace semitone
             preds[i][i] = i;
         }
     }
+    rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig) noexcept : theory(sat), n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
+    {
+        for (const auto &[var, constr] : orig.var_dists)
+            var_dists.emplace(var, std::make_unique<distance_constraint<utils::inf_rational>>(*constr));
+        for (const auto &[from_to, constr] : orig.dist_constr)
+            dist_constr.emplace(from_to, *var_dists.at(variable(constr.get().get_lit())));
+        for (const auto &[from_to, constrs] : orig.dist_constrs)
+            for (const auto &constr : constrs)
+                dist_constrs[from_to].emplace_back(*var_dists.at(variable(constr.get().get_lit())));
+    }
 
     VARIABLE_TYPE rdl_theory::new_var() noexcept
     {
@@ -30,7 +40,14 @@ namespace semitone
             return utils::FALSE_lit; // the constraint is inconsistent
         if (dists[from][to] <= dist)
             return utils::TRUE_lit; // the constraint is trivially satisfied
-        throw std::runtime_error("Not implemented yet");
+
+        // we need to create a new propositional variable..
+        const auto ctr = utils::lit(sat->new_var());
+        bind(variable(ctr));
+        auto constr = std::make_unique<distance_constraint<utils::inf_rational>>(ctr, from, to, dist);
+        dist_constrs[{from, to}].emplace_back(*constr);
+        var_dists.emplace(variable(ctr), std::move(constr));
+        return ctr;
     }
     utils::lit rdl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept { return sat->new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 

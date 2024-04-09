@@ -5,10 +5,10 @@
 namespace semitone
 {
   template <typename T>
-  class dl_distance
+  class distance_constraint
   {
   public:
-    dl_distance(const utils::lit &b, VARIABLE_TYPE from, VARIABLE_TYPE to, const T &dist) noexcept : b(b), from(from), to(to), dist(dist) {}
+    distance_constraint(const utils::lit &b, VARIABLE_TYPE from, VARIABLE_TYPE to, const T &dist) noexcept : b(b), from(from), to(to), dist(dist) {}
 
     [[nodiscard]] const utils::lit &get_lit() const noexcept { return b; }
     [[nodiscard]] VARIABLE_TYPE get_from() const noexcept { return from; }

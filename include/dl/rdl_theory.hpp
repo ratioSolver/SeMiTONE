@@ -2,7 +2,7 @@
 
 #include <vector>
 #include "theory.hpp"
-#include "dl_distance.hpp"
+#include "dl_distance_constraint.hpp"
 #include "inf_rational.hpp"
 #include "lin.hpp"
 #include "inf_rational.hpp"
@@ -13,6 +13,7 @@ namespace semitone
   {
   public:
     rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16) noexcept;
+    rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig) noexcept;
 
     /**
      * @brief Create a new difference logic variable.
@@ -143,9 +144,11 @@ namespace semitone
     void resize(const size_t &size) noexcept;
 
   private:
-    size_t n_vars = 1;
-    std::vector<std::vector<utils::inf_rational>> dists;                                            // the distance matrix..
-    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                  // the predecessor matrix..
-    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<dl_distance<utils::inf_rational>>> var_dists; // the constraints controlled by a propositional variable (for propagation purposes)..
+    size_t n_vars = 1;                                                                                                                             // the number of variables..
+    std::vector<std::vector<utils::inf_rational>> dists;                                                                                           // the distance matrix..
+    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                                 // the predecessor matrix..
+    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<utils::inf_rational>>> var_dists;                                        // the constraints controlled by a propositional variable (for propagation purposes)..
+    std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<utils::inf_rational>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
+    std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<utils::inf_rational>>> dist_constr;               // the currently enforced constraints..
   };
 } // namespace semitone
