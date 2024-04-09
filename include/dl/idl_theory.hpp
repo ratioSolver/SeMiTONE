@@ -132,10 +132,13 @@ namespace semitone
     [[nodiscard]] std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
   private:
-    bool propagate(const utils::lit &) noexcept override { return true; }
-    bool check() noexcept override { return true; }
+    [[nodiscard]] bool propagate(const utils::lit &) noexcept override { return true; }
+    [[nodiscard]] bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
+
+    void set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
+    void set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept;
 
   private:
     /**
@@ -145,12 +148,20 @@ namespace semitone
      */
     void resize(const size_t &size) noexcept;
 
+    struct layer
+    {
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, INTEGER_TYPE> old_dists;                                                // the updated distances..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, VARIABLE_TYPE> old_preds;                                               // the updated predecessors..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INTEGER_TYPE>>> old_constrs; // the updated constraints..
+    };
+
   private:
-    size_t n_vars = 1;                                                                                                                        // the number of variables..
-    std::vector<std::vector<INTEGER_TYPE>> dists;                                                                                             // the distance matrix..
-    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                            // the predecessor matrix..
-    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<INTEGER_TYPE>>> var_dists;                                          // the constraints controlled by a propositional variable (for propagation purposes)..
+    size_t n_vars = 1;                                                                                                                      // the number of variables..
+    std::vector<std::vector<INTEGER_TYPE>> dists;                                                                                           // the distance matrix..
+    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                          // the predecessor matrix..
+    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<INTEGER_TYPE>>> var_dists;                                        // the constraints controlled by a propositional variable (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<INTEGER_TYPE>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INTEGER_TYPE>>> dist_constr;               // the currently enforced constraints..
+    std::vector<layer> layers;                                                                                                              // we store the updates..
   };
 } // namespace semitone

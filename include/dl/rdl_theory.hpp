@@ -139,6 +139,9 @@ namespace semitone
     void push() noexcept override {}
     void pop() noexcept override {}
 
+    void set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept;
+    void set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept;
+
   private:
     /**
      * @brief Resize the distance and predecessor matrices.
@@ -147,12 +150,20 @@ namespace semitone
      */
     void resize(const size_t &size) noexcept;
 
+    struct layer
+    {
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, utils::inf_rational> old_dists;                                                // the updated distances..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, VARIABLE_TYPE> old_preds;                                                      // the updated predecessors..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<utils::inf_rational>>> old_constrs; // the updated constraints..
+    };
+
   private:
-    size_t n_vars = 1;                                                                                                                               // the number of variables..
-    std::vector<std::vector<utils::inf_rational>> dists;                                                                                             // the distance matrix..
-    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                                   // the predecessor matrix..
-    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<utils::inf_rational>>> var_dists;                                          // the constraints controlled by a propositional variable (for propagation purposes)..
+    size_t n_vars = 1;                                                                                                                             // the number of variables..
+    std::vector<std::vector<utils::inf_rational>> dists;                                                                                           // the distance matrix..
+    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                                 // the predecessor matrix..
+    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<utils::inf_rational>>> var_dists;                                        // the constraints controlled by a propositional variable (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<utils::inf_rational>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<utils::inf_rational>>> dist_constr;               // the currently enforced constraints..
+    std::vector<layer> layers;                                                                                                                     // we store the updates..
   };
 } // namespace semitone

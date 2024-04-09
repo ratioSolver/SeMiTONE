@@ -279,23 +279,6 @@ namespace semitone
         }
     }
 
-    void rdl_theory::resize(const size_t &size) noexcept
-    {
-        const size_t c_size = dists.size();
-        for (size_t i = 0; i < c_size; ++i)
-        {
-            dists[i].resize(size, utils::inf_rational(utils::rational::positive_infinite));
-            preds[i].resize(size, std::numeric_limits<INTEGER_TYPE>::max());
-        }
-        dists.resize(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite)));
-        preds.resize(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INTEGER_TYPE>::max()));
-        for (size_t i = c_size; i < size; ++i)
-        {
-            dists[i][i] = utils::inf_rational(utils::rational::zero);
-            preds[i][i] = i;
-        }
-    }
-
     std::pair<utils::inf_rational, utils::inf_rational> rdl_theory::bounds(const utils::lin &l) const noexcept
     {
         switch (l.vars.size())
@@ -324,6 +307,39 @@ namespace semitone
         }
         default:
             assert(false);
+        }
+    }
+
+    void rdl_theory::set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept
+    {
+        assert(dists[from][to] > dist);                                                 // we should never increase the distance
+        if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
+            layers.back().old_dists.emplace(std::make_pair(from, to), dists[from][to]); // save the old distance
+        dists[from][to] = dist;                                                         // set the new distance
+    }
+
+    void rdl_theory::set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept
+    {
+        assert(preds[from][to] != pred);                                                // we should never set the same predecessor
+        if (!layers.empty() && !layers.back().old_preds.count({from, to}))              // we have not updated this predecessor yet
+            layers.back().old_preds.emplace(std::make_pair(from, to), preds[from][to]); // save the old predecessor
+        preds[from][to] = pred;                                                         // set the new predecessor
+    }
+
+    void rdl_theory::resize(const size_t &size) noexcept
+    {
+        const size_t c_size = dists.size();
+        for (size_t i = 0; i < c_size; ++i)
+        {
+            dists[i].resize(size, utils::inf_rational(utils::rational::positive_infinite));
+            preds[i].resize(size, std::numeric_limits<INTEGER_TYPE>::max());
+        }
+        dists.resize(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite)));
+        preds.resize(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INTEGER_TYPE>::max()));
+        for (size_t i = c_size; i < size; ++i)
+        {
+            dists[i][i] = utils::inf_rational(utils::rational::zero);
+            preds[i][i] = i;
         }
     }
 } // namespace semitone
