@@ -25,6 +25,8 @@ namespace semitone
     /**
      * @brief Creates a new distance between the given variables and returns the corresponding literal.
      *
+     * The enforced constraint is `to - from <= dist`.
+     *
      * @param from the variable to get the distance from.
      * @param to the variable to get the distance to.
      * @param dist the distance between the variables.
@@ -33,6 +35,8 @@ namespace semitone
     [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept;
     /**
      * @brief Creates a new distance between the given variables and returns the corresponding literal.
+     * 
+     * The enforced constraint is `to - from >= min && to - from <= max`.
      *
      * @param from the variable to get the distance from.
      * @param to the variable to get the distance to.

@@ -22,6 +22,8 @@ namespace semitone
 
     /**
      * @brief Creates a new distance between the given variables and returns the corresponding literal.
+     * 
+     * The enforced constraint is `to - from <= dist`.
      *
      * @param from the variable to get the distance from.
      * @param to the variable to get the distance to.
@@ -31,6 +33,8 @@ namespace semitone
     [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
     /**
      * @brief Creates a new distance between the given variables and returns the corresponding literal.
+     * 
+     * The enforced constraint is `to - from >= min && to - from <= max`.
      *
      * @param from the variable to get the distance from.
      * @param to the variable to get the distance to.
@@ -99,33 +103,33 @@ namespace semitone
      * @brief Returns the bounds of the given variable.
      *
      * @param v the variable to get the bounds of.
-     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the bounds of the variable.
+     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the bounds of the variable.
      */
-    [[nodiscard]] inline std::pair<VARIABLE_TYPE, VARIABLE_TYPE> bounds(VARIABLE_TYPE v) const noexcept { return std::make_pair(-dists[v][0], dists[0][v]); }
+    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> bounds(VARIABLE_TYPE v) const noexcept { return std::make_pair(-dists[v][0], dists[0][v]); }
     /**
      * @brief Returns the distance between the given variables.
      *
      * @param from the variable to get the distance from.
      * @param to the variable to get the distance to.
-     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the distance between the variables.
+     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the distance between the variables.
      */
-    [[nodiscard]] inline std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(VARIABLE_TYPE from, VARIABLE_TYPE to) const noexcept { return std::make_pair(-dists[to][from], dists[from][to]); }
+    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(VARIABLE_TYPE from, VARIABLE_TYPE to) const noexcept { return std::make_pair(-dists[to][from], dists[from][to]); }
 
     /**
      * @brief Returns the bounds of the given linear expression.
      *
      * @param l the linear expression to get the bounds of.
-     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the bounds of the linear expression.
+     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the bounds of the linear expression.
      */
-    [[nodiscard]] std::pair<VARIABLE_TYPE, VARIABLE_TYPE> bounds(const utils::lin &l) const noexcept;
+    [[nodiscard]] std::pair<INTEGER_TYPE, INTEGER_TYPE> bounds(const utils::lin &l) const noexcept;
     /**
      * @brief Returns the distance between the given linear expressions.
      *
      * @param from the linear expression to get the distance from.
      * @param to the linear expression to get the distance to.
-     * @return std::pair<VARIABLE_TYPE, VARIABLE_TYPE> the distance between the linear expressions.
+     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the distance between the linear expressions.
      */
-    [[nodiscard]] std::pair<VARIABLE_TYPE, VARIABLE_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
+    [[nodiscard]] std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
   private:
     bool propagate(const utils::lit &) noexcept override { return true; }

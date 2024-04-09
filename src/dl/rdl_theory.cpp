@@ -14,6 +14,7 @@ namespace semitone
             std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<VARIABLE_TYPE>::max());
             preds[i][i] = i;
         }
+        [[maybe_unused]] const auto origin = new_var();
     }
     rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig) noexcept : theory(sat), n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
     {
@@ -53,23 +54,229 @@ namespace semitone
 
     utils::lit rdl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                return new_distance(v->first, 0, utils::inf_rational(expr.known_term, -1));
+            }
+            else
+            {
+                expr = expr / v->second;
+                return new_distance(0, v->first, utils::inf_rational(-expr.known_term, -1));
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v0, v1, utils::inf_rational(expr.known_term, -1));
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v1, v0, utils::inf_rational(-expr.known_term, -1));
+            }
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit rdl_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                return new_distance(v->first, 0, utils::inf_rational(expr.known_term));
+            }
+            else
+            {
+                expr = expr / v->second;
+                return new_distance(0, v->first, utils::inf_rational(-expr.known_term));
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v0, v1, utils::inf_rational(expr.known_term));
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v1, v0, utils::inf_rational(-expr.known_term));
+            }
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit rdl_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term == 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            expr = expr / v->second;
+            const auto d = distance(v->first, 0);
+            if (d.first <= expr.known_term && d.second >= expr.known_term)
+                return sat->new_conj({new_distance(v->first, 0, utils::inf_rational(expr.known_term)), new_distance(0, v->first, utils::inf_rational(-expr.known_term))});
+            else
+                return utils::FALSE_lit;
+        }
+        case 2:
+        {
+            expr = expr / expr.vars.cbegin()->second;
+            auto it = expr.vars.cbegin();
+            const auto [v0, c0] = *it++;
+            const auto [v1, c1] = *it;
+            const auto d = distance(v0, v1);
+            if (d.first <= expr.known_term && d.second >= expr.known_term)
+                return sat->new_conj({new_distance(v0, v1, utils::inf_rational(expr.known_term)), new_distance(v1, v0, utils::inf_rational(-expr.known_term))});
+            else
+                return utils::FALSE_lit;
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit rdl_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                return new_distance(v->first, 0, utils::inf_rational(-expr.known_term));
+            }
+            else
+            {
+                expr = expr / v->second;
+                return new_distance(0, v->first, utils::inf_rational(expr.known_term));
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v0, v1, utils::inf_rational(-expr.known_term));
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v1, v0, utils::inf_rational(expr.known_term));
+            }
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit rdl_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                return new_distance(v->first, 0, utils::inf_rational(-expr.known_term, -1));
+            }
+            else
+            {
+                expr = expr / v->second;
+                return new_distance(0, v->first, utils::inf_rational(expr.known_term, -1));
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v0, v1, utils::inf_rational(-expr.known_term, -1));
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one);
+                return new_distance(v1, v0, utils::inf_rational(expr.known_term, -1));
+            }
+        }
+        default:
+            assert(false);
+        }
     }
 
     void rdl_theory::resize(const size_t &size) noexcept
@@ -107,16 +314,16 @@ namespace semitone
             if (v0->second == 1)
             {
                 const auto d = distance(v1->first, v0->first);
-                return {l.known_term.numerator() + d.first, l.known_term.numerator() + d.second};
+                return {l.known_term + d.first, l.known_term + d.second};
             }
             else
             {
                 const auto d = distance(v0->first, v1->first);
-                return {-l.known_term.numerator() + d.first, -l.known_term.numerator() + d.second};
+                return {-l.known_term + d.first, -l.known_term + d.second};
             }
         }
         default:
-            throw std::invalid_argument("rdl_theory::bounds: invalid linear expression");
+            assert(false);
         }
     }
 } // namespace semitone

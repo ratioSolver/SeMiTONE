@@ -15,6 +15,7 @@ namespace semitone
             std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<VARIABLE_TYPE>::max());
             preds[i][i] = i;
         }
+        [[maybe_unused]] const auto origin = new_var();
     }
     idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const idl_theory &orig) noexcept : theory(sat), n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
     {
@@ -54,23 +55,238 @@ namespace semitone
 
     utils::lit idl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(v->first, 0, expr.known_term.numerator() - 1);
+            }
+            else
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(0, v->first, -expr.known_term.numerator() - 1);
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v0, v1, expr.known_term.numerator() - 1);
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v1, v0, -expr.known_term.numerator() - 1);
+            }
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit idl_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(v->first, 0, expr.known_term.numerator());
+            }
+            else
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(0, v->first, -expr.known_term.numerator());
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v0, v1, expr.known_term.numerator());
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v1, v0, -expr.known_term.numerator());
+            }
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit idl_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term == 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            expr = expr / v->second;
+            assert(is_integer(expr.known_term));
+            const auto d = distance(v->first, 0);
+            if (d.first <= expr.known_term.numerator() && d.second >= expr.known_term.numerator())
+                return sat->new_conj({new_distance(v->first, 0, expr.known_term.numerator()), new_distance(0, v->first, -expr.known_term.numerator())});
+            else
+                return utils::FALSE_lit;
+        }
+        case 2:
+        {
+            expr = expr / expr.vars.cbegin()->second;
+            auto it = expr.vars.cbegin();
+            const auto [v0, c0] = *it++;
+            const auto [v1, c1] = *it;
+            const auto d = distance(v0, v1);
+            if (d.first <= expr.known_term.numerator() && d.second >= expr.known_term.numerator())
+                return sat->new_conj({new_distance(v0, v1, expr.known_term.numerator()), new_distance(v1, v0, -expr.known_term.numerator())});
+            else
+                return utils::FALSE_lit;
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit idl_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(v->first, 0, -expr.known_term.numerator());
+            }
+            else
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(0, v->first, expr.known_term.numerator());
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v0, v1, -expr.known_term.numerator());
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v1, v0, expr.known_term.numerator());
+            }
+        }
+        default:
+            assert(false);
+        }
     }
     utils::lit idl_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
     {
-        throw std::runtime_error("Not implemented yet");
+        assert(left.vars.size() <= 2 && right.vars.size() <= 2);
+        utils::lin expr = left - right;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < 0 ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(v->first, 0, -expr.known_term.numerator() - 1);
+            }
+            else
+            {
+                expr = expr / v->second;
+                assert(is_integer(expr.known_term));
+                return new_distance(0, v->first, expr.known_term.numerator() - 1);
+            }
+        }
+        case 2:
+        {
+            const auto v = expr.vars.cbegin();
+            if (is_negative(v->second))
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v0, v1, -expr.known_term.numerator() - 1);
+            }
+            else
+            {
+                expr = expr / v->second;
+                auto it = expr.vars.cbegin();
+                const auto [v0, c0] = *it++;
+                const auto [v1, c1] = *it;
+                assert(c0 == utils::rational::one && c1 == -utils::rational::one && is_integer(expr.known_term));
+                return new_distance(v1, v0, expr.known_term.numerator() - 1);
+            }
+        }
+        default:
+            assert(false);
+        }
     }
 
     void idl_theory::resize(const size_t &size) noexcept
@@ -90,7 +306,7 @@ namespace semitone
         }
     }
 
-    std::pair<VARIABLE_TYPE, VARIABLE_TYPE> idl_theory::bounds(const utils::lin &l) const noexcept
+    std::pair<INTEGER_TYPE, INTEGER_TYPE> idl_theory::bounds(const utils::lin &l) const noexcept
     {
         switch (l.vars.size())
         {
@@ -120,7 +336,7 @@ namespace semitone
             }
         }
         default:
-            throw std::invalid_argument("idl_theory::bounds: invalid linear expression");
+            assert(false);
         }
     }
 } // namespace semitone
