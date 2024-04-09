@@ -140,7 +140,7 @@ namespace semitone
         c_lb += (is_positive(c) ? lb(v) : ub(v)) * c;
         c_ub += (is_positive(c) ? ub(v) : lb(v)) * c;
       }
-      return std::make_pair(c_lb, c_ub);
+      return {c_lb, c_ub};
     }
     /**
      * @brief Returns the current value of linear expression `l`.

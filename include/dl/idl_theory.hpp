@@ -22,7 +22,7 @@ namespace semitone
 
     /**
      * @brief Creates a new distance between the given variables and returns the corresponding literal.
-     * 
+     *
      * The enforced constraint is `to - from <= dist`.
      *
      * @param from the variable to get the distance from.
@@ -33,7 +33,7 @@ namespace semitone
     [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
     /**
      * @brief Creates a new distance between the given variables and returns the corresponding literal.
-     * 
+     *
      * The enforced constraint is `to - from >= min && to - from <= max`.
      *
      * @param from the variable to get the distance from.
@@ -105,7 +105,7 @@ namespace semitone
      * @param v the variable to get the bounds of.
      * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the bounds of the variable.
      */
-    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> bounds(VARIABLE_TYPE v) const noexcept { return std::make_pair(-dists[v][0], dists[0][v]); }
+    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> bounds(VARIABLE_TYPE v) const noexcept { return {-dists[v][0], dists[0][v]}; }
     /**
      * @brief Returns the distance between the given variables.
      *
@@ -113,7 +113,7 @@ namespace semitone
      * @param to the variable to get the distance to.
      * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the distance between the variables.
      */
-    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(VARIABLE_TYPE from, VARIABLE_TYPE to) const noexcept { return std::make_pair(-dists[to][from], dists[from][to]); }
+    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(VARIABLE_TYPE from, VARIABLE_TYPE to) const noexcept { return {-dists[to][from], dists[from][to]}; }
 
     /**
      * @brief Returns the bounds of the given linear expression.
@@ -146,10 +146,10 @@ namespace semitone
     void resize(const size_t &size) noexcept;
 
   private:
-    size_t n_vars = 1;                                                                                                                      // the number of variables..
-    std::vector<std::vector<INTEGER_TYPE>> dists;                                                                                           // the distance matrix..
-    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                          // the predecessor matrix..
-    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<INTEGER_TYPE>>> var_dists;                                        // the constraints controlled by a propositional variable (for propagation purposes)..
+    size_t n_vars = 1;                                                                                                                        // the number of variables..
+    std::vector<std::vector<INTEGER_TYPE>> dists;                                                                                             // the distance matrix..
+    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                            // the predecessor matrix..
+    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<INTEGER_TYPE>>> var_dists;                                          // the constraints controlled by a propositional variable (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<INTEGER_TYPE>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INTEGER_TYPE>>> dist_constr;               // the currently enforced constraints..
   };
