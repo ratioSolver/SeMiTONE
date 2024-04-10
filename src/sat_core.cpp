@@ -35,6 +35,11 @@ namespace semitone
             else
                 reason.push_back(std::nullopt);
     }
+    sat_core::~sat_core() noexcept
+    {
+        for (const auto &th : theories)
+            th->sat.reset();
+    }
 
     VARIABLE_TYPE sat_core::new_var() noexcept
     {
