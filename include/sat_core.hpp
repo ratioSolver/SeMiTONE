@@ -179,16 +179,16 @@ namespace semitone
      * @tparam Tp the type of the theory.
      * @tparam Args the type of the arguments.
      * @param args the arguments to pass to the theory constructor.
-     * @return std::shared_ptr<Tp> the new theory.
+     * @return Tp& the new theory.
      */
     template <typename Tp, typename... Args>
-    std::shared_ptr<Tp> new_theory(Args &&...args)
+    Tp &new_theory(Args &&...args)
     {
       static_assert(std::is_base_of_v<theory, Tp>, "Tp must be a subclass of theory");
-      auto th = std::make_shared<Tp>(std::forward<Args>(args)...);
+      auto th = new Tp(std::forward<Args>(args)...);
       th->sat = shared_from_this();
-      theories.push_back(th);
-      return th;
+      theories.push_back(std::unique_ptr<theory>(th));
+      return *th;
     }
 
   private:
@@ -237,7 +237,7 @@ namespace semitone
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
     std::vector<utils::lit> decisions; // the list of decisions in chronological order..
 
-    std::vector<std::shared_ptr<theory>> theories;                                        // all the theories..
+    std::vector<std::unique_ptr<theory>> theories;                                        // all the theories..
     std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<theory>>> binds; // for each variable, the theories that depend on it..
 
 #ifdef BUILD_LISTENERS

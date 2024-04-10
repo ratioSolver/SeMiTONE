@@ -1,16 +1,9 @@
-#include <algorithm>
 #include "theory.hpp"
 #include "sat_core.hpp"
 #include "clause.hpp"
 
 namespace semitone
 {
-    theory::~theory()
-    {
-        sat->theories.erase(std::find_if(sat->theories.begin(), sat->theories.end(), [this](const auto &t)
-                                         { return t.get() == this; }));
-    }
-
     void theory::bind(VARIABLE_TYPE v) noexcept { sat->bind(v, *this); }
 
     void theory::analyze_and_backjump() noexcept

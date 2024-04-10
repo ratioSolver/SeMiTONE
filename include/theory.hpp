@@ -13,7 +13,7 @@ namespace semitone
     friend class sat_core;
 
   public:
-    virtual ~theory();
+    virtual ~theory() = default;
 
     [[nodiscard]] sat_core &get_sat() const noexcept { return *sat; }
     [[nodiscard]] std::shared_ptr<sat_core> get_sat_ptr() const noexcept { return sat; }
