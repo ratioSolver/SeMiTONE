@@ -7,15 +7,29 @@
 #include "constr.hpp"
 #include "theory.hpp"
 
+#ifdef BUILD_LISTENERS
+#define FIRE_ON_VALUE_CHANGED(var)                                     \
+  if (const auto &at_v = listening.find(var); at_v != listening.end()) \
+    for (auto &l : at_v->second)                                       \
+      l.get().on_sat_value_changed(var);
+#else
+#define FIRE_ON_VALUE_CHANGED(var)
+#endif
+
 namespace semitone
 {
   class theory;
+#ifdef BUILD_LISTENERS
+  class sat_value_listener;
+#endif
 
   class sat_core
   {
     friend class constr;
     friend class theory;
-
+#ifdef BUILD_LISTENERS
+    friend class sat_value_listener;
+#endif
   public:
     /**
      * @brief Construct a new sat core object.
@@ -207,5 +221,17 @@ namespace semitone
 
     std::vector<std::reference_wrapper<theory>> theories;                                 // all the theories..
     std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<theory>>> binds; // for each variable, the theories that depend on it..
+
+#ifdef BUILD_LISTENERS
+  private:
+    inline void listen(VARIABLE_TYPE v, sat_value_listener &l) noexcept
+    {
+      if (value(v) == utils::Undefined)
+        listening[v].push_back(l);
+    }
+
+    std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<sat_value_listener>>> listening; // for each variable, the listeners listening to it..
+    std::vector<std::reference_wrapper<sat_value_listener>> listeners;                                    // the collection of listeners..
+#endif
   };
 } // namespace semitone
