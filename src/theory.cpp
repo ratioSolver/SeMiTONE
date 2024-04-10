@@ -5,11 +5,10 @@
 
 namespace semitone
 {
-    theory::theory(std::shared_ptr<sat_core> sat) noexcept : sat(sat) { sat->theories.push_back(*this); }
     theory::~theory()
     {
-        sat->theories.erase(std::find_if(sat->theories.begin(), sat->theories.end(), [this](const theory &t)
-                                         { return &t == this; }));
+        sat->theories.erase(std::find_if(sat->theories.begin(), sat->theories.end(), [this](const auto &t)
+                                         { return t.get() == this; }));
     }
 
     void theory::bind(VARIABLE_TYPE v) noexcept { sat->bind(v, *this); }

@@ -14,8 +14,6 @@ namespace semitone
     friend class ov_eq;
 
   public:
-    ov_theory(std::shared_ptr<sat_core> sat) noexcept;
-
     /**
      * @brief Create a new variable with the given domain.
      *

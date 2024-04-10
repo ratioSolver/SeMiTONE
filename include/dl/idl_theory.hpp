@@ -10,8 +10,8 @@ namespace semitone
   class idl_theory final : public theory
   {
   public:
-    idl_theory(std::shared_ptr<sat_core> sat, const size_t &size = 16) noexcept;
-    idl_theory(std::shared_ptr<sat_core> sat, const idl_theory &orig) noexcept;
+    idl_theory(const size_t &size = 16) noexcept;
+    idl_theory(const idl_theory &orig) noexcept;
 
     /**
      * @brief Create a new difference logic variable.

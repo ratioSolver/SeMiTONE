@@ -16,7 +16,7 @@ namespace semitone
         assigns[utils::FALSE_var] = utils::False;
         level[utils::FALSE_var] = 0;
     }
-    sat_core::sat_core(const sat_core &orig) noexcept : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
+    sat_core::sat_core(const sat_core &orig) noexcept : enable_shared_from_this(orig), assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
     {
         assert(orig.prop_queue.empty());
         constrs.reserve(orig.constrs.size());
@@ -298,7 +298,7 @@ namespace semitone
         trail_lim.push_back(trail.size());
         decisions.push_back(p);
         for (const auto &th : theories)
-            th.get().push();
+            th->push();
         return enqueue(p) && propagate();
     }
 
@@ -378,16 +378,16 @@ namespace semitone
 
         // finally, we check theories..
         for (const auto &th : theories)
-            if (!th.get().check())
+            if (!th->check())
             { // the theory is conflicting..
                 if (root_level())
                 { // the problem is unsatisfiable..
-                    th.get().cnfl.clear();
+                    th->cnfl.clear();
                     return false;
                 }
 
                 // we analyze the theory's conflict, create a no-good from the analysis and backjump..
-                th.get().analyze_and_backjump();
+                th->analyze_and_backjump();
                 goto main_loop;
             }
 
@@ -403,7 +403,7 @@ namespace semitone
         decisions.pop_back();
 
         for (const auto &th : theories)
-            th.get().pop();
+            th->pop();
     }
 
     bool sat_core::enqueue(const utils::lit &p, const std::optional<std::reference_wrapper<constr>> &c) noexcept

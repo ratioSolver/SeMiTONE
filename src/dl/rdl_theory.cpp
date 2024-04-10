@@ -6,7 +6,7 @@
 
 namespace semitone
 {
-    rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const size_t &size) noexcept : theory(sat), dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<VARIABLE_TYPE>(size))
+    rdl_theory::rdl_theory(const size_t &size) noexcept : dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<VARIABLE_TYPE>(size))
     {
         for (size_t i = 0; i < size; ++i)
         {
@@ -16,7 +16,7 @@ namespace semitone
         }
         [[maybe_unused]] const auto origin = new_var();
     }
-    rdl_theory::rdl_theory(std::shared_ptr<sat_core> sat, const rdl_theory &orig) noexcept : theory(sat), n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
+    rdl_theory::rdl_theory(const rdl_theory &orig) noexcept : n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
     {
         for (const auto &[var, constr] : orig.var_dists)
             var_dists.emplace(var, std::make_unique<distance_constraint<utils::inf_rational>>(*constr));

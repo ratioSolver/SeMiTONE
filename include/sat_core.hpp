@@ -23,7 +23,7 @@ namespace semitone
   class sat_value_listener;
 #endif
 
-  class sat_core
+  class sat_core : public std::enable_shared_from_this<sat_core>
   {
     friend class constr;
     friend class theory;
@@ -173,6 +173,24 @@ namespace semitone
      */
     void pop() noexcept;
 
+    /**
+     * @brief Create a new theory of type `Tp` with the given arguments.
+     *
+     * @tparam Tp the type of the theory.
+     * @tparam Args the type of the arguments.
+     * @param args the arguments to pass to the theory constructor.
+     * @return std::shared_ptr<Tp> the new theory.
+     */
+    template <typename Tp, typename... Args>
+    std::shared_ptr<Tp> new_theory(Args &&...args)
+    {
+      static_assert(std::is_base_of_v<theory, Tp>, "Tp must be a subclass of theory");
+      auto th = std::make_shared<Tp>(std::forward<Args>(args)...);
+      th->sat = shared_from_this();
+      theories.push_back(th);
+      return th;
+    }
+
   private:
     /**
      * @brief Enqueue a literal in the assignment.
@@ -219,7 +237,7 @@ namespace semitone
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
     std::vector<utils::lit> decisions; // the list of decisions in chronological order..
 
-    std::vector<std::reference_wrapper<theory>> theories;                                 // all the theories..
+    std::vector<std::shared_ptr<theory>> theories;                                        // all the theories..
     std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<theory>>> binds; // for each variable, the theories that depend on it..
 
 #ifdef BUILD_LISTENERS

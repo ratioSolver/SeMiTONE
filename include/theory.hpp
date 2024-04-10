@@ -8,12 +8,11 @@ namespace semitone
 {
   class sat_core;
 
-  class theory
+  class theory : public std::enable_shared_from_this<theory>
   {
     friend class sat_core;
 
   public:
-    theory(std::shared_ptr<sat_core> sat) noexcept;
     virtual ~theory();
 
     [[nodiscard]] sat_core &get_sat() const noexcept { return *sat; }

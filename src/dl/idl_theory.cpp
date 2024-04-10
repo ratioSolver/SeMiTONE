@@ -7,7 +7,7 @@
 
 namespace semitone
 {
-    idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const size_t &size) noexcept : theory(sat), dists(size, std::vector<INTEGER_TYPE>(size, utils::inf())), preds(size, std::vector<VARIABLE_TYPE>(size))
+    idl_theory::idl_theory(const size_t &size) noexcept : dists(size, std::vector<INTEGER_TYPE>(size, utils::inf())), preds(size, std::vector<VARIABLE_TYPE>(size))
     {
         for (size_t i = 0; i < size; ++i)
         {
@@ -17,7 +17,7 @@ namespace semitone
         }
         [[maybe_unused]] const auto origin = new_var();
     }
-    idl_theory::idl_theory(std::shared_ptr<sat_core> sat, const idl_theory &orig) noexcept : theory(sat), n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
+    idl_theory::idl_theory(const idl_theory &orig) noexcept : n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
     {
         for (const auto &[var, constr] : orig.var_dists)
             var_dists.emplace(var, std::make_unique<distance_constraint<INTEGER_TYPE>>(*constr));

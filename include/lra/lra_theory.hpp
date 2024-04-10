@@ -19,8 +19,6 @@ namespace semitone
     friend class lra_eq;
 
   public:
-    lra_theory(std::shared_ptr<sat_core> sat) noexcept;
-
     /**
      * @brief Create a new linear real arithmetic variable.
      *
