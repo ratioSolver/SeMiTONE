@@ -8,13 +8,13 @@ namespace semitone
 {
     rdl_theory::rdl_theory(const size_t &size) noexcept : dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<VARIABLE_TYPE>(size))
     {
+        assert(size > 1);
         for (size_t i = 0; i < size; ++i)
         {
             dists[i][i] = utils::inf_rational(utils::rational::zero);
             std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<VARIABLE_TYPE>::max());
             preds[i][i] = i;
         }
-        [[maybe_unused]] const auto origin = new_var();
     }
     rdl_theory::rdl_theory(const rdl_theory &orig) noexcept : n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
     {

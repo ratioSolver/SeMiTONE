@@ -9,13 +9,13 @@ namespace semitone
 {
     idl_theory::idl_theory(const size_t &size) noexcept : dists(size, std::vector<INTEGER_TYPE>(size, utils::inf())), preds(size, std::vector<VARIABLE_TYPE>(size))
     {
+        assert(size > 1);
         for (size_t i = 0; i < size; ++i)
         {
             dists[i][i] = 0;
             std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<VARIABLE_TYPE>::max());
             preds[i][i] = i;
         }
-        [[maybe_unused]] const auto origin = new_var();
     }
     idl_theory::idl_theory(const idl_theory &orig) noexcept : n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
     {
