@@ -4,8 +4,8 @@
 
 void test_lra()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &lra = sat->new_theory<semitone::lra_theory>();
+    semitone::sat_core sat;
+    auto &lra = sat.new_theory<semitone::lra_theory>();
 
     auto x = lra.new_var();
     auto y = lra.new_var();
@@ -13,33 +13,33 @@ void test_lra()
     auto s2 = lra.new_var(utils::lin(x, utils::rational::one) + utils::lin(y, utils::rational::one));
 
     // x <= -4
-    bool nc = sat->new_clause({lra.new_leq(utils::lin(x, utils::rational::one), utils::lin(utils::rational(-4)))});
+    bool nc = sat.new_clause({lra.new_leq(utils::lin(x, utils::rational::one), utils::lin(utils::rational(-4)))});
     assert(nc);
     // x >= -8
-    nc = sat->new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(-utils::rational(8)))});
+    nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(-utils::rational(8)))});
     assert(nc);
     // s1 <= 1
-    nc = sat->new_clause({lra.new_leq(utils::lin(s1, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_leq(utils::lin(s1, utils::rational::one), utils::lin(utils::rational::one))});
     assert(nc);
 
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
     // s2 >= -3
     auto s2_geq = lra.new_geq(utils::lin(s2, utils::rational::one), utils::lin(-utils::rational(3)));
-    assert(sat->value(s2_geq) == utils::False);
+    assert(sat.value(s2_geq) == utils::False);
 }
 
 void test_inequalities_0()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &lra = sat->new_theory<semitone::lra_theory>();
+    semitone::sat_core sat;
+    auto &lra = sat.new_theory<semitone::lra_theory>();
 
     auto x = lra.new_var();
     auto y = lra.new_var();
 
     // x >= y
-    bool nc = sat->new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
     assert(nc);
 
     utils::inf_rational x_val = lra.value(x);
@@ -49,10 +49,10 @@ void test_inequalities_0()
     assert(y_val == utils::rational::zero);
 
     // y >= 1
-    nc = sat->new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
     assert(nc);
 
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -64,17 +64,17 @@ void test_inequalities_0()
 
 void test_inequalities_1()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &lra = sat->new_theory<semitone::lra_theory>();
+    semitone::sat_core sat;
+    auto &lra = sat.new_theory<semitone::lra_theory>();
 
     auto x = lra.new_var();
     auto y = lra.new_var();
 
     // x >= y
-    bool nc = sat->new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
     assert(nc);
 
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
     utils::inf_rational x_val = lra.value(x);
@@ -84,10 +84,10 @@ void test_inequalities_1()
     assert(y_val == utils::rational::zero);
 
     // y >= 1
-    nc = sat->new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
     assert(nc);
 
-    prop = sat->propagate();
+    prop = sat.propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -99,17 +99,17 @@ void test_inequalities_1()
 
 void test_strict_inequalities_0()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &lra = sat->new_theory<semitone::lra_theory>();
+    semitone::sat_core sat;
+    auto &lra = sat.new_theory<semitone::lra_theory>();
 
     auto x = lra.new_var();
     auto y = lra.new_var();
 
     // x > y
-    bool nc = sat->new_clause({lra.new_gt(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({lra.new_gt(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
     assert(nc);
 
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
     utils::inf_rational x_val = lra.value(x);
@@ -119,10 +119,10 @@ void test_strict_inequalities_0()
     assert(y_val == utils::rational::zero);
 
     // y >= 1
-    nc = sat->new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
     assert(nc);
 
-    prop = sat->propagate();
+    prop = sat.propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -134,17 +134,17 @@ void test_strict_inequalities_0()
 
 void test_strict_inequalities_1()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &lra = sat->new_theory<semitone::lra_theory>();
+    semitone::sat_core sat;
+    auto &lra = sat.new_theory<semitone::lra_theory>();
 
     auto x = lra.new_var();
     auto y = lra.new_var();
 
     // ![x >= y] --> x < y
-    bool nc = sat->new_clause({!lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({!lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
     assert(nc);
 
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
     utils::inf_rational x_val = lra.value(x);
@@ -154,10 +154,10 @@ void test_strict_inequalities_1()
     assert(y_val == utils::rational::zero);
 
     // x >= 1
-    nc = sat->new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(utils::rational::one))});
     assert(nc);
 
-    prop = sat->propagate();
+    prop = sat.propagate();
     assert(prop);
 
     x_val = lra.value(x);
@@ -169,8 +169,8 @@ void test_strict_inequalities_1()
 
 void test_nonroot_constraints()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &lra = sat->new_theory<semitone::lra_theory>();
+    semitone::sat_core sat;
+    auto &lra = sat.new_theory<semitone::lra_theory>();
 
     auto x = lra.new_var();
     auto y = lra.new_var();
@@ -178,19 +178,19 @@ void test_nonroot_constraints()
     auto x_leq_y = lra.new_leq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one));
     auto y_leq_x = lra.new_leq(utils::lin(y, utils::rational::one), utils::lin(x, utils::rational::one));
 
-    bool nc = sat->new_clause({lra.new_leq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
+    bool nc = sat.new_clause({lra.new_leq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
     assert(nc);
 
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
-    nc = sat->new_clause({x_leq_y, y_leq_x});
+    nc = sat.new_clause({x_leq_y, y_leq_x});
     assert(nc);
 
-    bool assm = sat->assume({x_leq_y});
+    bool assm = sat.assume({x_leq_y});
     assert(assm);
 
-    assert(sat->value(x_leq_y) == utils::True);
+    assert(sat.value(x_leq_y) == utils::True);
 
     prop = lra.set_lb(x, utils::inf_rational(utils::rational::one), utils::TRUE_lit);
     assert(prop);

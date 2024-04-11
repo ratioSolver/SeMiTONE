@@ -8,7 +8,7 @@ namespace semitone
 {
   class sat_core;
 
-  class theory : public std::enable_shared_from_this<theory>
+  class theory
   {
     friend class sat_core;
 

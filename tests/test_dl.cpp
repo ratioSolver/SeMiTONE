@@ -26,27 +26,27 @@ VARIABLE_TYPE new_var(semitone::rdl_theory &dl, VARIABLE_TYPE horizon)
 
 void test_idl()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &dl = sat->new_theory<semitone::idl_theory>();
+    semitone::sat_core sat;
+    auto &dl = sat.new_theory<semitone::idl_theory>();
 
     auto horizon = dl.new_var();
 
-    bool nc = sat->new_clause({dl.new_distance(horizon, 0, 0)});
+    bool nc = sat.new_clause({dl.new_distance(horizon, 0, 0)});
     assert(nc);
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
     VARIABLE_TYPE tp0 = new_var(dl, horizon);
     VARIABLE_TYPE tp1 = new_var(dl, horizon);
     VARIABLE_TYPE tp2 = new_var(dl, horizon);
 
-    nc = sat->new_clause({dl.new_distance(tp0, tp1, 0, 10)});
+    nc = sat.new_clause({dl.new_distance(tp0, tp1, 0, 10)});
     assert(nc);
-    nc = sat->new_clause({dl.new_distance(tp1, tp2, 0, 10)});
+    nc = sat.new_clause({dl.new_distance(tp1, tp2, 0, 10)});
     assert(nc);
-    nc = sat->new_clause({dl.new_distance(0, tp0, 0, 10)});
+    nc = sat.new_clause({dl.new_distance(0, tp0, 0, 10)});
     assert(nc);
-    prop = sat->propagate();
+    prop = sat.propagate();
     assert(prop);
 
     auto bounds_tp0 = dl.bounds(tp0);
@@ -72,27 +72,27 @@ void test_idl()
 
 void test_rdl()
 {
-    auto sat = std::make_shared<semitone::sat_core>();
-    auto &dl = sat->new_theory<semitone::rdl_theory>();
+    semitone::sat_core sat;
+    auto &dl = sat.new_theory<semitone::rdl_theory>();
 
     auto horizon = dl.new_var();
 
-    bool nc = sat->new_clause({dl.new_distance(horizon, 0, utils::inf_rational::zero)});
+    bool nc = sat.new_clause({dl.new_distance(horizon, 0, utils::inf_rational::zero)});
     assert(nc);
-    bool prop = sat->propagate();
+    bool prop = sat.propagate();
     assert(prop);
 
     VARIABLE_TYPE tp0 = new_var(dl, horizon);
     VARIABLE_TYPE tp1 = new_var(dl, horizon);
     VARIABLE_TYPE tp2 = new_var(dl, horizon);
 
-    nc = sat->new_clause({dl.new_distance(tp0, tp1, utils::inf_rational::zero, utils::inf_rational(10))});
+    nc = sat.new_clause({dl.new_distance(tp0, tp1, utils::inf_rational::zero, utils::inf_rational(10))});
     assert(nc);
-    nc = sat->new_clause({dl.new_distance(tp1, tp2, utils::inf_rational::zero, utils::inf_rational(10))});
+    nc = sat.new_clause({dl.new_distance(tp1, tp2, utils::inf_rational::zero, utils::inf_rational(10))});
     assert(nc);
-    nc = sat->new_clause({dl.new_distance(0, tp0, utils::inf_rational::zero, utils::inf_rational(10))});
+    nc = sat.new_clause({dl.new_distance(0, tp0, utils::inf_rational::zero, utils::inf_rational(10))});
     assert(nc);
-    prop = sat->propagate();
+    prop = sat.propagate();
     assert(prop);
 
     auto bounds_tp0 = dl.bounds(tp0);
