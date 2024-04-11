@@ -20,7 +20,7 @@ namespace semitone
     }
     VARIABLE_TYPE lra_theory::new_var(const utils::lin &&l) noexcept
     {
-        assert(sat->root_level());
+        assert(get_sat().root_level());
         const auto s_expr = to_string(l);
         if (const auto it = exprs.find(s_expr); it != exprs.cend())
             return it->second;
@@ -71,7 +71,7 @@ namespace semitone
             return asrt_it->second;
 
         // we create a new control variable..
-        const auto ctr = sat->new_var();
+        const auto ctr = get_sat().new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
@@ -115,14 +115,14 @@ namespace semitone
             return asrt_it->second;
 
         // we create a new control variable..
-        const auto ctr = sat->new_var();
+        const auto ctr = get_sat().new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
         v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, new_var(std::move(expr)), c_right));
         return ctr_lit;
     }
-    utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept { return sat->new_conj({new_leq(left, right), new_geq(left, right)}); }
+    utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept { return get_sat().new_conj({new_leq(left, right), new_geq(left, right)}); }
     utils::lit lra_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept
     {
         // x+3>=y+4 -> x-y>=1
@@ -160,7 +160,7 @@ namespace semitone
             return asrt_it->second;
 
         // we create a new control variable..
-        const auto ctr = sat->new_var();
+        const auto ctr = get_sat().new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
@@ -204,7 +204,7 @@ namespace semitone
             return asrt_it->second;
 
         // we create a new control variable..
-        const auto ctr = sat->new_var();
+        const auto ctr = get_sat().new_var();
         const utils::lit ctr_lit(ctr);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
@@ -214,7 +214,7 @@ namespace semitone
 
     bool lra_theory::assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept
     {
-        assert(sat->value(p) != utils::Undefined); // the literal must be assigned..
+        assert(get_sat().value(p) != utils::Undefined); // the literal must be assigned..
         assert(cnfl.empty());
 
         if (val <= lb(x_i)) // the assertion is already satisfied..
@@ -249,7 +249,7 @@ namespace semitone
 
     bool lra_theory::assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept
     {
-        assert(sat->value(p) != utils::Undefined); // the literal must be assigned..
+        assert(get_sat().value(p) != utils::Undefined); // the literal must be assigned..
         assert(cnfl.empty());
         if (val >= ub(x_i)) // the assertion is already satisfied..
             return true;
@@ -281,9 +281,9 @@ namespace semitone
         }
     }
 
-    bool lra_theory::set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && sat->propagate(); }
-    bool lra_theory::set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_upper(x_i, val, p) && sat->propagate(); }
-    bool lra_theory::set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && assert_upper(x_i, val, p) && sat->propagate(); }
+    bool lra_theory::set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && get_sat().propagate(); }
+    bool lra_theory::set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_upper(x_i, val, p) && get_sat().propagate(); }
+    bool lra_theory::set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && assert_upper(x_i, val, p) && get_sat().propagate(); }
 
     void lra_theory::update(const VARIABLE_TYPE x_i, const utils::inf_rational &val) noexcept
     {
@@ -382,7 +382,7 @@ namespace semitone
     {
         assert(cnfl.empty());
         const auto &a = v_asrts[variable(p)];
-        switch (sat->value(a->get_lit()))
+        switch (get_sat().value(a->get_lit()))
         {
         case utils::True: // direct assertion..
             if (!((a->get_op() == leq) ? assert_upper(a->get_var(), a->get_val(), p) : assert_lower(a->get_var(), a->get_val(), p)))

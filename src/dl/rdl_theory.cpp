@@ -43,14 +43,14 @@ namespace semitone
             return utils::TRUE_lit; // the constraint is trivially satisfied
 
         // we need to create a new propositional variable..
-        const auto ctr = utils::lit(sat->new_var());
+        const auto ctr = utils::lit(get_sat().new_var());
         bind(variable(ctr));
         auto constr = std::make_unique<distance_constraint<utils::inf_rational>>(ctr, from, to, dist);
         dist_constrs[{from, to}].emplace_back(*constr);
         var_dists.emplace(variable(ctr), std::move(constr));
         return ctr;
     }
-    utils::lit rdl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept { return sat->new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
+    utils::lit rdl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept { return get_sat().new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
     utils::lit rdl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
@@ -162,7 +162,7 @@ namespace semitone
             expr = expr / v->second;
             const auto d = distance(v->first, 0);
             if (d.first <= expr.known_term && d.second >= expr.known_term)
-                return sat->new_conj({new_distance(v->first, 0, utils::inf_rational(expr.known_term)), new_distance(0, v->first, utils::inf_rational(-expr.known_term))});
+                return get_sat().new_conj({new_distance(v->first, 0, utils::inf_rational(expr.known_term)), new_distance(0, v->first, utils::inf_rational(-expr.known_term))});
             else
                 return utils::FALSE_lit;
         }
@@ -174,7 +174,7 @@ namespace semitone
             const auto [v1, c1] = *it;
             const auto d = distance(v0, v1);
             if (d.first <= expr.known_term && d.second >= expr.known_term)
-                return sat->new_conj({new_distance(v0, v1, utils::inf_rational(expr.known_term)), new_distance(v1, v0, utils::inf_rational(-expr.known_term))});
+                return get_sat().new_conj({new_distance(v0, v1, utils::inf_rational(expr.known_term)), new_distance(v1, v0, utils::inf_rational(-expr.known_term))});
             else
                 return utils::FALSE_lit;
         }
@@ -315,7 +315,7 @@ namespace semitone
         assert(cnfl.empty());
         assert(var_dists.count(variable(p)));
         auto &constr = *var_dists.at(variable(p));
-        switch (sat->value(constr.get_lit()))
+        switch (get_sat().value(constr.get_lit()))
         {
         case utils::True: // the constraint is asserted directly
             if (dists[constr.get_to()][constr.get_from()] < -constr.get_dist())
@@ -408,7 +408,7 @@ namespace semitone
         for (const auto &c_pairs : c_updates)
             if (const auto &c_dists = dist_constrs.find(c_pairs); c_dists != dist_constrs.cend())
                 for (const auto &c_dist : c_dists->second)
-                    if (sat->value(c_dist.get().get_lit()) == utils::Undefined)
+                    if (get_sat().value(c_dist.get().get_lit()) == utils::Undefined)
                     {
                         if (dists[c_dist.get().get_to()][c_dist.get().get_from()] < -c_dist.get().get_dist())
                         { // the constraint is inconsistent..
@@ -433,7 +433,7 @@ namespace semitone
         while (c_to != constr.get_to())
         {
             if (const auto &c_d = dist_constr.find({preds[constr.get_to()][c_to], c_to}); c_d != dist_constr.end())
-                switch (sat->value(c_d->second.get().get_lit()))
+                switch (get_sat().value(c_d->second.get().get_lit()))
                 {
                 case utils::True:
                     cnfl.emplace_back(!c_d->second.get().get_lit());

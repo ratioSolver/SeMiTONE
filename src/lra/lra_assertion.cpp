@@ -10,7 +10,7 @@ namespace semitone
 
     bool lra_leq::propagate_lb(const utils::inf_rational &lb) noexcept
     {
-        if (lb > v && th.sat->value(b) != utils::False)
+        if (lb > v && th.get_sat().value(b) != utils::False)
         { // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
             if (th.cnfl.empty())
             { // called from bounds propagation
@@ -20,7 +20,7 @@ namespace semitone
             }
             else // called from lra_eq propagation
                 th.cnfl[0] = !b;
-            switch (th.sat->value(b))
+            switch (th.get_sat().value(b))
             {
             case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                 return false;
@@ -34,7 +34,7 @@ namespace semitone
 
     bool lra_leq::propagate_ub(const utils::inf_rational &ub) noexcept
     {
-        if (ub <= v && th.sat->value(b) != utils::True)
+        if (ub <= v && th.get_sat().value(b) != utils::True)
         { // either the literal `b` is true or the (precomputed) reason for the upper bound of `x` is false..
             if (th.cnfl.empty())
             { // called from bounds propagation
@@ -44,7 +44,7 @@ namespace semitone
             }
             else // called from lra_eq propagation
                 th.cnfl[0] = b;
-            switch (th.sat->value(b))
+            switch (th.get_sat().value(b))
             {
             case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                 return false;
@@ -58,7 +58,7 @@ namespace semitone
 
     bool lra_geq::propagate_lb(const utils::inf_rational &lb) noexcept
     {
-        if (lb >= v && th.sat->value(b) != utils::True)
+        if (lb >= v && th.get_sat().value(b) != utils::True)
         { // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
             if (th.cnfl.empty())
             { // called from bounds propagation
@@ -68,7 +68,7 @@ namespace semitone
             }
             else // called from lra_eq propagation
                 th.cnfl[0] = b;
-            switch (th.sat->value(b))
+            switch (th.get_sat().value(b))
             {
             case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                 return false;
@@ -82,7 +82,7 @@ namespace semitone
 
     bool lra_geq::propagate_ub(const utils::inf_rational &ub) noexcept
     {
-        if (ub < v && th.sat->value(b) != utils::False)
+        if (ub < v && th.get_sat().value(b) != utils::False)
         { // either the literal `b` is false or the (precomputed) reason for the upper bound of `x` is false..
             if (th.cnfl.empty())
             { // called from bounds propagation
@@ -92,7 +92,7 @@ namespace semitone
             }
             else // called from lra_eq propagation
                 th.cnfl[0] = !b;
-            switch (th.sat->value(b))
+            switch (th.get_sat().value(b))
             {
             case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
                 return false;

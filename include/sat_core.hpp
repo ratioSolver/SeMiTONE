@@ -23,7 +23,7 @@ namespace semitone
   class sat_value_listener;
 #endif
 
-  class sat_core : public std::enable_shared_from_this<sat_core>
+  class sat_core
   {
     friend class constr;
     friend class theory;
@@ -42,11 +42,6 @@ namespace semitone
      * @param orig the sat core to copy.
      */
     sat_core(const sat_core &orig) noexcept;
-    /**
-     * @brief Destroy the sat core object.
-     *
-     */
-    ~sat_core() noexcept;
 
     /**
      * @brief Create a new propositional variable
@@ -191,8 +186,8 @@ namespace semitone
     {
       static_assert(std::is_base_of_v<theory, Tp>, "Tp must be a subclass of theory");
       auto th = new Tp(std::forward<Args>(args)...);
-      th->sat = shared_from_this();
-      theories.push_back(std::unique_ptr<theory>(th));
+      th->sat = this;
+      theories.push_back(std::unique_ptr<Tp>(th));
       return *th;
     }
 

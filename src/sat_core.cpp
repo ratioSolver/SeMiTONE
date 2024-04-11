@@ -16,7 +16,7 @@ namespace semitone
         assigns[utils::FALSE_var] = utils::False;
         level[utils::FALSE_var] = 0;
     }
-    sat_core::sat_core(const sat_core &orig) noexcept : enable_shared_from_this(orig), assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
+    sat_core::sat_core(const sat_core &orig) noexcept : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
     {
         assert(orig.prop_queue.empty());
         constrs.reserve(orig.constrs.size());
@@ -34,11 +34,6 @@ namespace semitone
                 reason.push_back(*old2new.at(&r->get()));
             else
                 reason.push_back(std::nullopt);
-    }
-    sat_core::~sat_core() noexcept
-    {
-        for (const auto &th : theories)
-            th->sat.reset();
     }
 
     VARIABLE_TYPE sat_core::new_var() noexcept
