@@ -132,7 +132,9 @@ namespace semitone
     [[nodiscard]] std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
   private:
-    [[nodiscard]] bool propagate(const utils::lit &) noexcept override { return true; }
+    [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
+    void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
+    void analyze(const distance_constraint<INTEGER_TYPE> &constr) noexcept;
     [[nodiscard]] bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
@@ -150,9 +152,9 @@ namespace semitone
 
     struct layer
     {
-      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, INTEGER_TYPE> old_dists;                                                // the updated distances..
-      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, VARIABLE_TYPE> old_preds;                                               // the updated predecessors..
-      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INTEGER_TYPE>>> old_constrs; // the updated constraints..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, INTEGER_TYPE> old_dists;                                                               // the updated distances..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, VARIABLE_TYPE> old_preds;                                                              // the updated predecessors..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::optional<std::reference_wrapper<distance_constraint<INTEGER_TYPE>>>> old_constrs; // the updated constraints..
     };
 
   private:

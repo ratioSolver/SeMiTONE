@@ -323,6 +323,142 @@ namespace semitone
         }
     }
 
+    bool idl_theory::propagate(const utils::lit &p) noexcept
+    {
+        assert(cnfl.empty());
+        assert(var_dists.count(variable(p)));
+        auto &constr = *var_dists.at(variable(p));
+        switch (sat->value(constr.get_lit()))
+        {
+        case utils::True: // the constraint is asserted directly
+            if (dists[constr.get_to()][constr.get_from()] < -constr.get_dist())
+            { // the constraint is inconsistent, we have a conflict..
+                cnfl.emplace_back(!constr.get_lit());
+                analyze(constr);
+                return false;
+            }
+            else if (dists[constr.get_from()][constr.get_to()] > constr.get_dist())
+            { // the constraint is not trivially satisfied
+                const auto from_to = std::make_pair(constr.get_from(), constr.get_to());
+                if (!layers.empty() && !layers.back().old_constrs.count(from_to))
+                {
+                    if (const auto &c_dist = dist_constr.find(from_to); c_dist != dist_constr.cend()) // we store the current constraint for backtracking purposes..
+                        layers.back().old_constrs.emplace(c_dist->first, c_dist->second);
+                    else // we store the absence of a constraint for backtracking purposes..
+                        layers.back().old_constrs.emplace(from_to, std::nullopt);
+                }
+                dist_constr.emplace(from_to, constr);
+                propagate(constr.get_from(), constr.get_to(), constr.get_dist());
+            }
+            break;
+        case utils::False: // the constraint is asserted negated (a.k.a. semantic branching)
+            if (dists[constr.get_from()][constr.get_to()] <= constr.get_dist())
+            { // the constraint is inconsistent, we have a conflict..
+                cnfl.emplace_back(constr.get_lit());
+                analyze(constr);
+                return false;
+            }
+            else if (dists[constr.get_to()][constr.get_from()] >= -constr.get_dist())
+            { // the constraint is not trivially satisfied
+                const auto to_from = std::make_pair(constr.get_to(), constr.get_from());
+                if (!layers.empty() && !layers.back().old_constrs.count(to_from))
+                {
+                    if (const auto &c_dist = dist_constr.find(to_from); c_dist != dist_constr.cend()) // we store the current constraint for backtracking purposes..
+                        layers.back().old_constrs.emplace(c_dist->first, c_dist->second);
+                    else // we store the absence of a constraint for backtracking purposes..
+                        layers.back().old_constrs.emplace(to_from, std::nullopt);
+                }
+                dist_constr.emplace(to_from, constr);
+                propagate(constr.get_to(), constr.get_from(), -constr.get_dist() - 1);
+            }
+        }
+        return true;
+    }
+
+    void idl_theory::propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept
+    {
+        assert(std::abs(dist) < utils::inf());
+        set_dist(from, to, dist);
+        set_pred(from, to, from);
+        std::vector<VARIABLE_TYPE> set_i;
+        std::vector<VARIABLE_TYPE> set_j;
+        std::vector<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>> c_updates;
+        c_updates.emplace_back(from, to);
+        c_updates.emplace_back(to, from);
+
+        // we start with an O(n) loop..
+        for (size_t u = 0; u < n_vars; ++u)
+        {
+            if (dists[u][from] != utils::inf() && dists[u][from] < dists[u][to] - dist)
+            { // u -> from -> to is shorter than u -> to..
+                set_dist(u, to, dists[u][from] + dist);
+                set_pred(u, to, from);
+                set_i.emplace_back(u);
+                c_updates.emplace_back(u, to);
+                c_updates.emplace_back(to, u);
+            }
+            if (dists[to][u] != utils::inf() && dists[to][u] < dists[from][u] - dist)
+            { // from -> to -> u is shorter than from -> u..
+                set_dist(from, u, dists[to][u] + dist);
+                set_pred(from, u, preds[to][u]);
+                set_j.emplace_back(u);
+                c_updates.emplace_back(from, u);
+                c_updates.emplace_back(u, from);
+            }
+        }
+
+        // finally, we loop over set_i and set_j in O(n^2) time (but possibly much less)..
+        for (const auto &i : set_i)
+            for (const auto &j : set_j)
+                if (i != j && dists[i][to] + dists[to][j] < dists[i][j])
+                { // i -> from -> to -> j is shorter than i -> j--
+                    set_dist(i, j, dists[i][to] + dists[to][j]);
+                    set_pred(i, j, preds[to][j]);
+                    c_updates.emplace_back(i, j);
+                    c_updates.emplace_back(j, i);
+                }
+
+        for (const auto &c_pairs : c_updates)
+            if (const auto &c_dists = dist_constrs.find(c_pairs); c_dists != dist_constrs.cend())
+                for (const auto &c_dist : c_dists->second)
+                    if (sat->value(c_dist.get().get_lit()) == utils::Undefined)
+                    {
+                        if (dists[c_dist.get().get_to()][c_dist.get().get_from()] < -c_dist.get().get_dist())
+                        { // the constraint is inconsistent..
+                            cnfl.emplace_back(!c_dist.get().get_lit());
+                            analyze(c_dist.get());
+                            // we propagate the reason for assigning false to dist->b..
+                            record(std::move(cnfl));
+                        }
+                        else if (dists[c_dist.get().get_from()][c_dist.get().get_to()] <= c_dist.get().get_dist())
+                        { // the constraint is redundant..
+                            cnfl.emplace_back(c_dist.get().get_lit());
+                            analyze(c_dist.get());
+                            // we propagate the reason for assigning true to dist->b..
+                            record(std::move(cnfl));
+                        }
+                    }
+    }
+
+    void idl_theory::analyze(const distance_constraint<INTEGER_TYPE> &constr) noexcept
+    {
+        VARIABLE_TYPE c_to = constr.get_from();
+        while (c_to != constr.get_to())
+        {
+            if (const auto &c_d = dist_constr.find({preds[constr.get_to()][c_to], c_to}); c_d != dist_constr.end())
+                switch (sat->value(c_d->second.get().get_lit()))
+                {
+                case utils::True:
+                    cnfl.emplace_back(!c_d->second.get().get_lit());
+                    break;
+                case utils::False:
+                    cnfl.emplace_back(c_d->second.get().get_lit());
+                    break;
+                }
+            c_to = preds[constr.get_from()][c_to];
+        }
+    }
+
     void idl_theory::set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept
     {
         assert(dists[from][to] > dist);                                                 // we should never increase the distance
