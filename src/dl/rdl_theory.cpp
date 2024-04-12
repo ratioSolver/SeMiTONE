@@ -3,8 +3,13 @@
 #include "sat_core.hpp"
 #include "rdl_theory.hpp"
 #include "logging.hpp"
+
 #ifdef BUILD_LISTENERS
 #include "rdl_value_listener.hpp"
+#define FIRE_ON_VALUE_CHANGED(var)                                       \
+    if (const auto &at_v = listening.find(var); at_v != listening.end()) \
+        for (auto &l : at_v->second)                                     \
+            l->on_rdl_value_changed(var);
 #endif
 
 namespace semitone
@@ -455,6 +460,10 @@ namespace semitone
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
             layers.back().old_dists.emplace(std::make_pair(from, to), dists[from][to]); // save the old distance
         dists[from][to] = dist;                                                         // set the new distance
+        if (from == 0)
+            FIRE_ON_VALUE_CHANGED(from);
+        if (to == 0)
+            FIRE_ON_VALUE_CHANGED(to);
     }
 
     void rdl_theory::set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept

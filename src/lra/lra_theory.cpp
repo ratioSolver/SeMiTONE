@@ -4,8 +4,13 @@
 #include "sat_core.hpp"
 #include "lra_assertion.hpp"
 #include "lra_eq.hpp"
+
 #ifdef BUILD_LISTENERS
 #include "lra_value_listener.hpp"
+#define FIRE_ON_VALUE_CHANGED(var)                                       \
+    if (const auto &at_v = listening.find(var); at_v != listening.end()) \
+        for (auto &l : at_v->second)                                     \
+            l->on_lra_value_changed(var);
 #endif
 
 namespace semitone
@@ -296,9 +301,11 @@ namespace semitone
         for (const auto &c : t_watches[x_i])
         { // x_j = x_j + a_ji(v - x_i)..
             vals[c] += tableau.at(c)->get_lin().vars.at(x_i) * (val - vals[x_i]);
+            FIRE_ON_VALUE_CHANGED(c);
         }
         // x_i = v..
         vals[x_i] = val;
+        FIRE_ON_VALUE_CHANGED(x_i);
     }
 
     void lra_theory::pivot_and_update(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j, const utils::inf_rational &v) noexcept
@@ -312,15 +319,18 @@ namespace semitone
 
         // x_i = v
         vals[x_i] = v;
+        FIRE_ON_VALUE_CHANGED(x_i);
 
         // x_j += theta
         vals[x_j] += theta;
+        FIRE_ON_VALUE_CHANGED(x_j);
 
         // the tableau rows containing `x_j` as a non-basic variable..
         for (const auto &c : t_watches[x_j])
             if (c != x_i)
             { // x_k += a_kj * theta..
                 vals[c] += tableau.at(c)->get_lin().vars.at(x_j) * theta;
+                FIRE_ON_VALUE_CHANGED(c);
             }
 
         pivot(x_i, x_j);

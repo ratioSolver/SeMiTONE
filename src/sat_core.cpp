@@ -6,8 +6,26 @@
 #include "sat_core.hpp"
 #include "clause.hpp"
 #include "logging.hpp"
+
 #ifdef BUILD_LISTENERS
 #include "sat_value_listener.hpp"
+#define FIRE_ON_VALUE_CHANGED(var)                                       \
+    if (const auto &at_v = listening.find(var); at_v != listening.end()) \
+    {                                                                    \
+        for (auto &l : at_v->second)                                     \
+            l->on_sat_value_changed(var);                                \
+        if (root_level())                                                \
+            listening.erase(at_v);                                       \
+    }
+#define FIRE_ON_VALUE_RESET(var)                                         \
+    if (const auto &at_v = listening.find(var); at_v != listening.end()) \
+    {                                                                    \
+        for (auto &l : at_v->second)                                     \
+            l->on_sat_value_changed(var);                                \
+    }
+#else
+#define FIRE_ON_VALUE_CHANGED(var)
+#define FIRE_ON_VALUE_RESET(var)
 #endif
 
 namespace semitone
@@ -428,6 +446,7 @@ namespace semitone
             reason[variable(p)] = c;
         trail.push_back(p);
         prop_queue.push(p);
+        FIRE_ON_VALUE_CHANGED(variable(p));
         return true;
     }
 
@@ -438,6 +457,7 @@ namespace semitone
         level[v] = 0;
         reason[v].reset();
         trail.pop_back();
+        FIRE_ON_VALUE_RESET(v);
     }
 
     void sat_core::analyze(constr &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
