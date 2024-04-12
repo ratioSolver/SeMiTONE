@@ -3,6 +3,7 @@
 #include <cassert>
 #include "ov_theory.hpp"
 #include "sat_core.hpp"
+
 #ifdef BUILD_LISTENERS
 #include "ov_value_listener.hpp"
 #endif

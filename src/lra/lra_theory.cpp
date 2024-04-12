@@ -11,6 +11,8 @@
     if (const auto &at_v = listening.find(var); at_v != listening.end()) \
         for (auto &l : at_v->second)                                     \
             l->on_lra_value_changed(var);
+#else
+#define FIRE_ON_VALUE_CHANGED(var)
 #endif
 
 namespace semitone
