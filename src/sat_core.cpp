@@ -6,6 +6,9 @@
 #include "sat_core.hpp"
 #include "clause.hpp"
 #include "logging.hpp"
+#ifdef BUILD_LISTENERS
+#include "sat_value_listener.hpp"
+#endif
 
 namespace semitone
 {
@@ -16,7 +19,11 @@ namespace semitone
         assigns[utils::FALSE_var] = utils::False;
         level[utils::FALSE_var] = 0;
     }
+#ifdef BUILD_LISTENERS
+    sat_core::sat_core(const sat_core &orig) noexcept : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions), listening(orig.listening), listeners(orig.listeners)
+#else
     sat_core::sat_core(const sat_core &orig) noexcept : assigns(orig.assigns), level(orig.level), prop_queue(orig.prop_queue), trail(orig.trail), trail_lim(orig.trail_lim), decisions(orig.decisions)
+#endif
     {
         assert(orig.prop_queue.empty());
         constrs.reserve(orig.constrs.size());
@@ -34,6 +41,11 @@ namespace semitone
                 reason.push_back(*old2new.at(&r->get()));
             else
                 reason.push_back(std::nullopt);
+
+#ifdef BUILD_LISTENERS
+        for (auto l : orig.listeners)
+            l->sat = this;
+#endif
     }
 
     VARIABLE_TYPE sat_core::new_var() noexcept
@@ -492,4 +504,19 @@ namespace semitone
             constrs.push_back(std::move(c));
         }
     }
+
+#ifdef BUILD_LISTENERS
+    void sat_core::add_listener(sat_value_listener &l) noexcept
+    {
+        l.sat = this;
+        listeners.insert(&l);
+    }
+    void sat_core::remove_listener(sat_value_listener &l) noexcept
+    {
+        l.sat = nullptr;
+        for (auto v : l.listening)
+            listening[v].erase(&l);
+        listeners.erase(&l);
+    }
+#endif
 } // namespace semitone

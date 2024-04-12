@@ -8,6 +8,7 @@
 #include "theory.hpp"
 
 #ifdef BUILD_LISTENERS
+#include <set>
 #define FIRE_ON_VALUE_CHANGED(var)                                     \
   if (const auto &at_v = listening.find(var); at_v != listening.end()) \
     for (auto &l : at_v->second)                                       \
@@ -191,6 +192,11 @@ namespace semitone
       return *th;
     }
 
+#ifdef BUILD_LISTENERS
+    void add_listener(sat_value_listener &l) noexcept;
+    void remove_listener(sat_value_listener &l) noexcept;
+#endif
+
   private:
     /**
      * @brief Enqueue a literal in the assignment.
@@ -242,14 +248,8 @@ namespace semitone
 
 #ifdef BUILD_LISTENERS
   private:
-    inline void listen(VARIABLE_TYPE v, sat_value_listener &l) noexcept
-    {
-      if (value(v) == utils::Undefined)
-        listening[v].push_back(l);
-    }
-
-    std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<sat_value_listener>>> listening; // for each variable, the listeners listening to it..
-    std::vector<std::reference_wrapper<sat_value_listener>> listeners;                                    // the collection of listeners..
+    std::unordered_map<VARIABLE_TYPE, std::set<sat_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::set<sat_value_listener *> listeners;                                    // the collection of listeners..
 #endif
   };
 } // namespace semitone
