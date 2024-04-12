@@ -84,6 +84,18 @@ namespace semitone
      */
     [[nodiscard]] bool forbid(const VARIABLE_TYPE var, utils::enum_val &val) noexcept;
 
+    /**
+     * @brief Checks if the given variables match.
+     *
+     * Two variables match if they can be equal.
+     *
+     * @param v0 the first variable.
+     * @param v1 the second variable.
+     * @return true if the variables match.
+     * @return false otherwise.
+     */
+    [[nodiscard]] bool matches(const VARIABLE_TYPE v0, const VARIABLE_TYPE v1);
+
 #ifdef BUILD_LISTENERS
     void add_listener(ov_value_listener &l) noexcept;
     void remove_listener(ov_value_listener &l) noexcept;

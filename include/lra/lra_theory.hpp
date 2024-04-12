@@ -170,7 +170,7 @@ namespace semitone
      * @param l1 the second linear expression.
      * @return bool whether the two linear expressions overlap.
      */
-    bool matches(const utils::lin &l0, const utils::lin &l1) const noexcept
+    [[nodiscard]] bool matches(const utils::lin &l0, const utils::lin &l1) const noexcept
     {
       const auto [l0_lb, l0_ub] = bounds(l0);
       const auto [l1_lb, l1_ub] = bounds(l1);
@@ -185,7 +185,7 @@ namespace semitone
      * @param p the literal that caused the assertion.
      * @return bool whether the assertion was successful.
      */
-    bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    [[nodiscard]] bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
     /**
      * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
      *
@@ -194,7 +194,7 @@ namespace semitone
      * @param p the literal that caused the assertion.
      * @return bool whether the assertion was successful.
      */
-    bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
 
     /**
      * @brief Sets the lower bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
@@ -204,7 +204,7 @@ namespace semitone
      * @param p the literal that caused the change.
      * @return bool whether the propagation was successful.
      */
-    bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    [[nodiscard]] bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
     /**
      * @brief Sets the upper bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
      *
@@ -213,7 +213,7 @@ namespace semitone
      * @param p the literal that caused the change.
      * @return bool whether the propagation was successful.
      */
-    bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
     /**
      * @brief Sets the value of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
      *
@@ -222,7 +222,7 @@ namespace semitone
      * @param p the literal that caused the change.
      * @return bool whether the propagation was successful.
      */
-    bool set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    [[nodiscard]] bool set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
 
 #ifdef BUILD_LISTENERS
     void add_listener(lra_value_listener &l) noexcept;

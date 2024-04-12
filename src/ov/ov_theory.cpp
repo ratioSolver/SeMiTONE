@@ -1,4 +1,5 @@
 #include <unordered_set>
+#include <algorithm>
 #include <cassert>
 #include "ov_theory.hpp"
 #include "sat_core.hpp"
@@ -95,6 +96,19 @@ namespace semitone
 
     bool ov_theory::assign(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return get_sat().assume(domains[var].at(&val)); }
     bool ov_theory::forbid(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return get_sat().assume(!domains[var].at(&val)); }
+
+    bool ov_theory::matches(const VARIABLE_TYPE v0, const VARIABLE_TYPE v1)
+    {
+        if (v0 == v1)
+            return true;
+        // we compute the intersection of the two domains
+        std::unordered_set<utils::enum_val *> intersection;
+        for (const auto &v : domains[v0])
+            if (domains[v1].count(v.first))
+                intersection.insert(v.first);
+        return std::any_of(intersection.begin(), intersection.end(), [&](const auto val)
+                           { return get_sat().matches(domains[v0].at(val), domains[v1].at(val)); });
+    }
 
 #ifdef BUILD_LISTENERS
     void ov_theory::add_listener(ov_value_listener &l) noexcept

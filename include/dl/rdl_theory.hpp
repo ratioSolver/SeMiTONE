@@ -154,7 +154,7 @@ namespace semitone
      * @return true if the linear expressions match.
      * @return false otherwise.
      */
-    bool matches(const utils::lin &l0, const utils::lin &l1) const;
+    [[nodiscard]] bool matches(const utils::lin &l0, const utils::lin &l1) const;
 
 #ifdef BUILD_LISTENERS
     void add_listener(rdl_value_listener &l) noexcept;

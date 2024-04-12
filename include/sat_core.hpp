@@ -128,6 +128,17 @@ namespace semitone
     }
 
     /**
+     * @brief Check if the literals `p` and `q` match.
+     *
+     * Two literals match if they can be equal.
+     *
+     * @param p the first literal.
+     * @param q the second literal.
+     * @return bool `true` if the literals match, `false` otherwise.
+     */
+    [[nodiscard]] bool matches(const utils::lit &p, const utils::lit &q) const noexcept { return value(p) == value(q) || value(p) == utils::Undefined || value(q) == utils::Undefined; }
+
+    /**
      * @brief Return the current decision level.
      *
      * @return The current decision level.
