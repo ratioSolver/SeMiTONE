@@ -144,6 +144,18 @@ namespace semitone
      */
     [[nodiscard]] std::pair<utils::inf_rational, utils::inf_rational> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
+    /**
+     * @brief Checks if the given linear expressions match.
+     *
+     * Two linear expressions match if they can be equal.
+     *
+     * @param l0 the first linear expression.
+     * @param l1 the second linear expression.
+     * @return true if the linear expressions match.
+     * @return false otherwise.
+     */
+    bool matches(const utils::lin &l0, const utils::lin &l1) const;
+
 #ifdef BUILD_LISTENERS
     void add_listener(rdl_value_listener &l) noexcept;
     void remove_listener(rdl_value_listener &l) noexcept;
