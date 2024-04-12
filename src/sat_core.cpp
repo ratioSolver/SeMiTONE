@@ -515,7 +515,11 @@ namespace semitone
     {
         l.sat = nullptr;
         for (auto v : l.listening)
+        {
             listening[v].erase(&l);
+            if (listening[v].empty())
+                listening.erase(v);
+        }
         listeners.erase(&l);
     }
 #endif

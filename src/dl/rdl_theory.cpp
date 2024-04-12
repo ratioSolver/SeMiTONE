@@ -3,6 +3,9 @@
 #include "sat_core.hpp"
 #include "rdl_theory.hpp"
 #include "logging.hpp"
+#ifdef BUILD_LISTENERS
+#include "rdl_value_listener.hpp"
+#endif
 
 namespace semitone
 {
@@ -478,4 +481,23 @@ namespace semitone
             preds[i][i] = i;
         }
     }
+
+#ifdef BUILD_LISTENERS
+    void rdl_theory::add_listener(rdl_value_listener &l) noexcept
+    {
+        l.th = this;
+        listeners.insert(&l);
+    }
+    void rdl_theory::remove_listener(rdl_value_listener &l) noexcept
+    {
+        l.th = nullptr;
+        for (auto v : l.listening)
+        {
+            listening[v].erase(&l);
+            if (listening[v].empty())
+                listening.erase(v);
+        }
+        listeners.erase(&l);
+    }
+#endif
 } // namespace semitone

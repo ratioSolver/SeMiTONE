@@ -4,6 +4,9 @@
 #include "idl_theory.hpp"
 #include "integer.hpp"
 #include "logging.hpp"
+#ifdef BUILD_LISTENERS
+#include "idl_value_listener.hpp"
+#endif
 
 namespace semitone
 {
@@ -491,4 +494,23 @@ namespace semitone
             preds[i][i] = i;
         }
     }
+
+#ifdef BUILD_LISTENERS
+    void idl_theory::add_listener(idl_value_listener &l) noexcept
+    {
+        l.th = this;
+        listeners.insert(&l);
+    }
+    void idl_theory::remove_listener(idl_value_listener &l) noexcept
+    {
+        l.th = nullptr;
+        for (auto v : l.listening)
+        {
+            listening[v].erase(&l);
+            if (listening[v].empty())
+                listening.erase(v);
+        }
+        listeners.erase(&l);
+    }
+#endif
 } // namespace semitone

@@ -8,15 +8,24 @@
 #include "lra_assertion.hpp"
 #include "lra_eq.hpp"
 #include "json.hpp"
+#ifdef BUILD_LISTENERS
+#include <set>
+#endif
 
 namespace semitone
 {
+#ifdef BUILD_LISTENERS
+  class lra_value_listener;
+#endif
   class lra_theory final : public theory
   {
     friend class lra_assertion;
     friend class lra_leq;
     friend class lra_geq;
     friend class lra_eq;
+#ifdef BUILD_LISTENERS
+    friend class lra_value_listener;
+#endif
 
   public:
     /**
@@ -215,6 +224,11 @@ namespace semitone
      */
     bool set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
 
+#ifdef BUILD_LISTENERS
+    void add_listener(lra_value_listener &l) noexcept;
+    void remove_listener(lra_value_listener &l) noexcept;
+#endif
+
   private:
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
@@ -251,5 +265,10 @@ namespace semitone
     std::unordered_map<std::string, VARIABLE_TYPE> exprs;                      // the expressions (string to numeric variable) for which already exist slack variables..
     std::unordered_map<std::string, utils::lit> s_asrts;                       // the assertions (string to literal) used for reducing the number of boolean variables..
     std::vector<std::unordered_map<size_t, bound>> layers;                     // we store the updated bounds..
+#ifdef BUILD_LISTENERS
+  private:
+    std::unordered_map<VARIABLE_TYPE, std::set<lra_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::set<lra_value_listener *> listeners;                                    // the collection of listeners..
+#endif
   };
 } // namespace semitone

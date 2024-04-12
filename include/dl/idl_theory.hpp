@@ -4,11 +4,22 @@
 #include "theory.hpp"
 #include "dl_distance_constraint.hpp"
 #include "lin.hpp"
+#ifdef BUILD_LISTENERS
+#include <set>
+#endif
 
 namespace semitone
 {
+#ifdef BUILD_LISTENERS
+  class idl_value_listener;
+#endif
+
   class idl_theory final : public theory
   {
+#ifdef BUILD_LISTENERS
+    friend class idl_value_listener;
+#endif
+
   public:
     idl_theory(const size_t &size = 16) noexcept;
     idl_theory(const idl_theory &orig) noexcept;
@@ -131,6 +142,11 @@ namespace semitone
      */
     [[nodiscard]] std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
+#ifdef BUILD_LISTENERS
+    void add_listener(idl_value_listener &l) noexcept;
+    void remove_listener(idl_value_listener &l) noexcept;
+#endif
+
   private:
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
     void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
@@ -165,5 +181,10 @@ namespace semitone
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<INTEGER_TYPE>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INTEGER_TYPE>>> dist_constr;               // the currently enforced constraints..
     std::vector<layer> layers;                                                                                                              // we store the updates..
+#ifdef BUILD_LISTENERS
+  private:
+    std::unordered_map<VARIABLE_TYPE, std::set<idl_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::set<idl_value_listener *> listeners;                                    // the collection of listeners..
+#endif
   };
 } // namespace semitone

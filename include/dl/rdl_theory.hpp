@@ -6,11 +6,22 @@
 #include "inf_rational.hpp"
 #include "lin.hpp"
 #include "inf_rational.hpp"
+#ifdef BUILD_LISTENERS
+#include <set>
+#endif
 
 namespace semitone
 {
+#ifdef BUILD_LISTENERS
+  class rdl_value_listener;
+#endif
+
   class rdl_theory final : public theory
   {
+#ifdef BUILD_LISTENERS
+    friend class rdl_value_listener;
+#endif
+
   public:
     rdl_theory(const size_t &size = 16) noexcept;
     rdl_theory(const rdl_theory &orig) noexcept;
@@ -133,6 +144,11 @@ namespace semitone
      */
     [[nodiscard]] std::pair<utils::inf_rational, utils::inf_rational> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
+#ifdef BUILD_LISTENERS
+    void add_listener(rdl_value_listener &l) noexcept;
+    void remove_listener(rdl_value_listener &l) noexcept;
+#endif
+
   private:
     [[nodiscard]] bool propagate(const utils::lit &) noexcept override;
     void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept;
@@ -167,5 +183,10 @@ namespace semitone
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<utils::inf_rational>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<utils::inf_rational>>> dist_constr;               // the currently enforced constraints..
     std::vector<layer> layers;                                                                                                                     // we store the updates..
+#ifdef BUILD_LISTENERS
+  private:
+    std::unordered_map<VARIABLE_TYPE, std::set<rdl_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::set<rdl_value_listener *> listeners;                                    // the collection of listeners..
+#endif
   };
 } // namespace semitone

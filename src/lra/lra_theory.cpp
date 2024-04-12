@@ -4,6 +4,9 @@
 #include "sat_core.hpp"
 #include "lra_assertion.hpp"
 #include "lra_eq.hpp"
+#ifdef BUILD_LISTENERS
+#include "lra_value_listener.hpp"
+#endif
 
 namespace semitone
 {
@@ -485,4 +488,23 @@ namespace semitone
 
         return j_th;
     }
+
+#ifdef BUILD_LISTENERS
+    void lra_theory::add_listener(lra_value_listener &l) noexcept
+    {
+        l.th = this;
+        listeners.insert(&l);
+    }
+    void lra_theory::remove_listener(lra_value_listener &l) noexcept
+    {
+        l.th = nullptr;
+        for (auto v : l.listening)
+        {
+            listening[v].erase(&l);
+            if (listening[v].empty())
+                listening.erase(v);
+        }
+        listeners.erase(&l);
+    }
+#endif
 } // namespace semitone
