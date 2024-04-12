@@ -2,6 +2,9 @@
 #include <cassert>
 #include "ov_theory.hpp"
 #include "sat_core.hpp"
+#ifdef BUILD_LISTENERS
+#include "ov_value_listener.hpp"
+#endif
 
 namespace semitone
 {
@@ -92,4 +95,19 @@ namespace semitone
 
     bool ov_theory::assign(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return get_sat().assume(domains[var].at(&val)); }
     bool ov_theory::forbid(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return get_sat().assume(!domains[var].at(&val)); }
+
+#ifdef BUILD_LISTENERS
+    void ov_theory::add_listener(ov_value_listener &l) noexcept
+    {
+        l.th = this;
+        listeners.insert(&l);
+    }
+    void ov_theory::remove_listener(ov_value_listener &l) noexcept
+    {
+        l.th = nullptr;
+        for (auto v : l.listening)
+            listening[v].erase(&l);
+        listeners.erase(&l);
+    }
+#endif
 } // namespace semitone

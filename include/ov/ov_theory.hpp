@@ -4,14 +4,23 @@
 #include <unordered_map>
 #include "theory.hpp"
 #include "enum.hpp"
+#ifdef BUILD_LISTENERS
+#include <set>
+#endif
 
 namespace semitone
 {
   class ov_eq;
+#ifdef BUILD_LISTENERS
+  class ov_value_listener;
+#endif
 
   class ov_theory final : public theory
   {
     friend class ov_eq;
+#ifdef BUILD_LISTENERS
+    friend class ov_value_listener;
+#endif
 
   public:
     /**
@@ -75,6 +84,11 @@ namespace semitone
      */
     [[nodiscard]] bool forbid(const VARIABLE_TYPE var, utils::enum_val &val) noexcept;
 
+#ifdef BUILD_LISTENERS
+    void add_listener(ov_value_listener &l) noexcept;
+    void remove_listener(ov_value_listener &l) noexcept;
+#endif
+
   private:
     [[nodiscard]] bool propagate(const utils::lit &) noexcept override { return true; }
     [[nodiscard]] bool check() noexcept override { return true; }
@@ -83,5 +97,10 @@ namespace semitone
 
   private:
     std::vector<std::unordered_map<utils::enum_val *, utils::lit>> domains;
+#ifdef BUILD_LISTENERS
+  private:
+    std::unordered_map<VARIABLE_TYPE, std::set<ov_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::set<ov_value_listener *> listeners;                                    // the collection of listeners..
+#endif
   };
 } // namespace semitone

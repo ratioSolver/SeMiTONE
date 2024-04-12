@@ -1,7 +1,6 @@
 #pragma once
 
 #include "sat_core.hpp"
-#include <algorithm>
 
 namespace semitone
 {
@@ -19,9 +18,11 @@ namespace semitone
   protected:
     void listen_sat(VARIABLE_TYPE v) noexcept
     {
-      listening.push_back(v);
       if (sat->value(v) == utils::Undefined)
+      { // the variable is not yet assigned
+        listening.push_back(v);
         sat->listening[v].insert(this);
+      }
     }
 
   private:
