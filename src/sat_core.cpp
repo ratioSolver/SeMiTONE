@@ -260,8 +260,8 @@ namespace semitone
             for (size_t i = 0; i < ls.size(); ++i)
             {
                 std::vector<utils::lit> c_lits = ls;
-                c_lits.push_back(ctr);
                 c_lits[i] = !c_lits[i];
+                c_lits.push_back(ctr);
                 if (!new_clause(std::move(c_lits))) // if all literals except one are `false`, the at-most-one is `true`..
                     return utils::FALSE_lit;        // the at-most-one is unsatisfiable..
             }
@@ -311,9 +311,9 @@ namespace semitone
             for (size_t i = 0; i < ls.size(); ++i)
             {
                 std::vector<utils::lit> c_lits = ls;
-                c_lits.push_back(ctr);
                 c_lits[i] = !c_lits[i];
-                if (!new_clause(std::move(c_lits))) // if all literals except one are `false`, the exact-one is `true`..
+                c_lits.push_back(ctr);
+                if (!new_clause(std::move(c_lits))) // if exactly one literal is `true`, the exact-one is `true`..
                     return utils::FALSE_lit;        // the exact-one is unsatisfiable..
             }
             return ctr;
