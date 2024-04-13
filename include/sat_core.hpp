@@ -58,7 +58,7 @@ namespace semitone
      * @param lits the literals of the clause.
      * @return bool `true` if the clause was added, `false` otherwise.
      */
-    bool new_clause(std::vector<utils::lit> &&lits) noexcept;
+    [[nodiscard]] bool new_clause(std::vector<utils::lit> &&lits) noexcept;
 
     /**
      * @brief Create a new equality constraint.
@@ -71,6 +71,8 @@ namespace semitone
 
     /**
      * @brief Create a new reified conjunction of the literals in `ls`.
+     * 
+     * @note An empty conjunction is always `true`.
      *
      * @param ls the literals of the conjunction.
      * @return lit the reified conjunction.
@@ -79,6 +81,8 @@ namespace semitone
 
     /**
      * @brief Create a new reified disjunction of the literals in `ls`.
+     * 
+     * @note An empty disjunction is always `false`.
      *
      * @param ls the literals of the disjunction.
      * @return lit the reified disjunction.
