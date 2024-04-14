@@ -8,6 +8,7 @@ enable_testing()
 add_subdirectory(extern/json)
 
 option(BUILD_LISTENERS "Builds the listeners" OFF)
+option(ENABLE_VISUALIZATION "Enable visualization features" OFF)
 
 add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp src/ov/ov_theory.cpp src/lra/lra_theory.cpp src/lra/lra_assertion.cpp src/lra/lra_eq.cpp src/dl/idl_theory.cpp src/dl/rdl_theory.cpp)
 add_dependencies(SeMiTONE json)
@@ -18,6 +19,11 @@ target_link_libraries(SeMiTONE PUBLIC json)
 message(STATUS "Build listeners: ${BUILD_LISTENERS}")
 if(BUILD_LISTENERS)
     target_compile_definitions(SeMiTONE PUBLIC BUILD_LISTENERS)
+endif()
+
+message(STATUS "Enable SeMiTONE visualization features: ${ENABLE_VISUALIZATION}")
+if(ENABLE_VISUALIZATION)
+    target_compile_definitions(SeMiTONE PUBLIC ENABLE_VISUALIZATION)
 endif()
 
 if(BUILD_TESTING)

@@ -7,7 +7,10 @@
 #include "inf_rational.hpp"
 #include "lra_assertion.hpp"
 #include "lra_eq.hpp"
+
+#ifdef ENABLE_VISUALIZATION
 #include "json.hpp"
+#endif
 #ifdef BUILD_LISTENERS
 #include <set>
 #endif
@@ -244,7 +247,9 @@ namespace semitone
     void push() noexcept override;
     void pop() noexcept override;
 
+#ifdef ENABLE_VISUALIZATION
     friend json::json to_json(const lra_theory &rhs) noexcept;
+#endif
 
   private:
     /**

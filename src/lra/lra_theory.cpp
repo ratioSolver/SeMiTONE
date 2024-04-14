@@ -467,6 +467,7 @@ namespace semitone
         layers.pop_back();
     }
 
+#ifdef ENABLE_VISUALIZATION
     [[nodiscard]] json::json to_json(const lra_theory &rhs) noexcept
     {
         json::json j_th;
@@ -500,6 +501,7 @@ namespace semitone
 
         return j_th;
     }
+#endif
 
 #ifdef BUILD_LISTENERS
     void lra_theory::add_listener(lra_value_listener &l) noexcept

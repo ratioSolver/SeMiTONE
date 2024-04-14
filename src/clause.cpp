@@ -77,6 +77,7 @@ namespace semitone
         return r;
     }
 
+#ifdef ENABLE_VISUALIZATION
     json::json clause::to_json() const noexcept
     {
         json::json j_lits(json::json_type::array);
@@ -96,4 +97,5 @@ namespace semitone
         }
         return j_lits;
     }
+#endif
 } // namespace semitone

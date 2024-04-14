@@ -2,7 +2,10 @@
 
 #include "lin.hpp"
 #include "inf_rational.hpp"
+
+#ifdef ENABLE_VISUALIZATION
 #include "json.hpp"
+#endif
 
 namespace semitone
 {
@@ -24,7 +27,9 @@ namespace semitone
     [[nodiscard]] utils::inf_rational lb() const noexcept;
     [[nodiscard]] utils::inf_rational ub() const noexcept;
 
+#ifdef ENABLE_VISUALIZATION
     friend json::json to_json(const lra_eq &rhs) noexcept;
+#endif
 
   private:
     lra_theory &th;        // the linear real arithmetic theory..

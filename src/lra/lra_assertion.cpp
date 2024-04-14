@@ -104,6 +104,7 @@ namespace semitone
         return true;
     }
 
+#ifdef ENABLE_VISUALIZATION
     [[nodiscard]] json::json to_json(const lra_assertion &rhs) noexcept
     {
         json::json j_asrt;
@@ -123,4 +124,5 @@ namespace semitone
         j_asrt["constr"] = "x" + std::to_string(rhs.x) + (rhs.o == geq ? " >= " : " <= ") + to_string(rhs.v);
         return j_asrt;
     }
+#endif
 } // namespace semitone
