@@ -33,7 +33,9 @@ namespace semitone
 
     [[nodiscard]] std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept override;
 
+#ifdef ENABLE_VISUALIZATION
     [[nodiscard]] json::json to_json() const noexcept override;
+#endif
 
   private:
     std::vector<utils::lit> lits;
