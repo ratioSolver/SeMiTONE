@@ -71,21 +71,19 @@ namespace semitone
 
     /**
      * @brief Create a new reified conjunction of the literals in `ls`.
-     * 
-     * @note An empty conjunction is always `true`.
      *
      * @param ls the literals of the conjunction.
      * @return lit the reified conjunction.
+     * @note An empty conjunction is always `true`.
      */
     [[nodiscard]] utils::lit new_conj(std::vector<utils::lit> &&ls) noexcept;
 
     /**
      * @brief Create a new reified disjunction of the literals in `ls`.
      * 
-     * @note An empty disjunction is always `false`.
-     *
      * @param ls the literals of the disjunction.
      * @return lit the reified disjunction.
+     * @note An empty disjunction is always `false`.
      */
     [[nodiscard]] utils::lit new_disj(std::vector<utils::lit> &&ls) noexcept;
 
