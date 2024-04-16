@@ -5,7 +5,7 @@
 
 namespace semitone
 {
-  class ov_value_listener : private sat_value_listener
+  class ov_value_listener : protected sat_value_listener
   {
     friend class ov_theory;
 

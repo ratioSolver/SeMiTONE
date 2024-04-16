@@ -4,6 +4,15 @@
 
 namespace semitone
 {
+  /**
+   * @class sat_value_listener
+   * @brief Interface for listening to changes in the value of variables in a SAT solver.
+   *
+   * The `sat_value_listener` class provides an interface for classes that want to be notified
+   * when the value of a variable in a SAT solver changes. Classes that implement this interface
+   * can register themselves as listeners with a SAT solver and receive callbacks when the value
+   * of the registered variables changes.
+   */
   class sat_value_listener
   {
     friend class sat_core;

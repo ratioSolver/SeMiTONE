@@ -8,6 +8,13 @@ namespace semitone
 {
   class sat_core;
 
+  /**
+   * @class theory
+   * @brief Represents a theory in a SAT solver.
+   *
+   * The `theory` class provides an interface for implementing theories in a SAT solver. A theory is responsible for performing propagation, checking consistency, and handling backtracking.
+   * The `theory` class is designed to be inherited from and extended to implement specific theories.
+   */
   class theory
   {
     friend class sat_core;

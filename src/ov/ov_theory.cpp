@@ -114,6 +114,7 @@ namespace semitone
 #ifdef BUILD_LISTENERS
     void ov_theory::add_listener(ov_value_listener &l) noexcept
     {
+        get_sat().add_listener(l);
         l.th = this;
         listeners.insert(&l);
     }
@@ -127,6 +128,7 @@ namespace semitone
                 listening.erase(v);
         }
         listeners.erase(&l);
+        get_sat().remove_listener(l);
     }
 #endif
 } // namespace semitone
