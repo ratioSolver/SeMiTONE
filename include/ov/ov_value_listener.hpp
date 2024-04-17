@@ -26,12 +26,12 @@ namespace semitone
     }
 
   private:
-    virtual void on_ov_value_change(VARIABLE_TYPE v) = 0;
+    virtual void on_ov_value_changed(VARIABLE_TYPE v) = 0;
 
     void on_sat_value_changed(VARIABLE_TYPE v) override
     {
       for (auto &d : listening_map.at(v))
-        on_ov_value_change(d);
+        on_ov_value_changed(d);
     }
 
   private:
