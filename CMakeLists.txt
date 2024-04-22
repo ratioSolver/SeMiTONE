@@ -5,8 +5,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=undefined")
 include(CTest)
 enable_testing()
 
-add_subdirectory(extern/json)
-
 option(BUILD_LISTENERS "Builds the listeners" OFF)
 option(ENABLE_VISUALIZATION "Enable visualization features" OFF)
 
@@ -14,6 +12,10 @@ add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.c
 add_dependencies(SeMiTONE json)
 target_compile_features(SeMiTONE PUBLIC cxx_std_17)
 target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ov> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lra> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dl>)
+if(NOT TARGET json)
+    add_subdirectory(extern/json)
+    add_dependencies(SeMiTONE json)
+endif()
 target_link_libraries(SeMiTONE PUBLIC json)
 
 message(STATUS "Build listeners: ${BUILD_LISTENERS}")
