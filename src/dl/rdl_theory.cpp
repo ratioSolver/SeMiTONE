@@ -506,10 +506,10 @@ namespace semitone
         for (size_t i = 0; i < c_size; ++i)
         {
             dists[i].resize(size, utils::inf_rational(utils::rational::positive_infinite));
-            preds[i].resize(size, std::numeric_limits<INTEGER_TYPE>::max());
+            preds[i].resize(size, std::numeric_limits<INT_TYPE>::max());
         }
         dists.resize(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite)));
-        preds.resize(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INTEGER_TYPE>::max()));
+        preds.resize(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INT_TYPE>::max()));
         for (size_t i = c_size; i < size; ++i)
         {
             dists[i][i] = utils::inf_rational(utils::rational::zero);

@@ -17,7 +17,7 @@
 
 namespace semitone
 {
-    idl_theory::idl_theory(const size_t &size) noexcept : dists(size, std::vector<INTEGER_TYPE>(size, utils::inf())), preds(size, std::vector<VARIABLE_TYPE>(size))
+    idl_theory::idl_theory(const size_t &size) noexcept : dists(size, std::vector<INT_TYPE>(size, utils::inf())), preds(size, std::vector<VARIABLE_TYPE>(size))
     {
         assert(size > 1);
         for (size_t i = 0; i < size; ++i)
@@ -30,7 +30,7 @@ namespace semitone
     idl_theory::idl_theory(const idl_theory &orig) noexcept : n_vars(orig.n_vars), dists(orig.dists), preds(orig.preds)
     {
         for (const auto &[var, constr] : orig.var_dists)
-            var_dists.emplace(var, std::make_unique<distance_constraint<INTEGER_TYPE>>(*constr));
+            var_dists.emplace(var, std::make_unique<distance_constraint<INT_TYPE>>(*constr));
         for (const auto &[from_to, constr] : orig.dist_constr)
             dist_constr.emplace(from_to, *var_dists.at(variable(constr.get().get_lit())));
         for (const auto &[from_to, constrs] : orig.dist_constrs)
@@ -46,7 +46,7 @@ namespace semitone
         return var;
     }
 
-    utils::lit idl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept
+    utils::lit idl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept
     {
         if (dists[to][from] < -dist)
             return utils::FALSE_lit; // the constraint is inconsistent
@@ -56,12 +56,12 @@ namespace semitone
         // we need to create a new propositional variable..
         const auto ctr = utils::lit(get_sat().new_var());
         bind(variable(ctr));
-        auto constr = std::make_unique<distance_constraint<INTEGER_TYPE>>(ctr, from, to, dist);
+        auto constr = std::make_unique<distance_constraint<INT_TYPE>>(ctr, from, to, dist);
         dist_constrs[{from, to}].emplace_back(*constr);
         var_dists.emplace(variable(ctr), std::move(constr));
         return ctr;
     }
-    utils::lit idl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE min, INTEGER_TYPE max) noexcept { return get_sat().new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
+    utils::lit idl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE min, INT_TYPE max) noexcept { return get_sat().new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
     utils::lit idl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
@@ -299,7 +299,7 @@ namespace semitone
         }
     }
 
-    std::pair<INTEGER_TYPE, INTEGER_TYPE> idl_theory::bounds(const utils::lin &l) const noexcept
+    std::pair<INT_TYPE, INT_TYPE> idl_theory::bounds(const utils::lin &l) const noexcept
     {
         switch (l.vars.size())
         {
@@ -409,7 +409,7 @@ namespace semitone
         return true;
     }
 
-    void idl_theory::propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept
+    void idl_theory::propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept
     {
         assert(std::abs(dist) < utils::inf());
         set_dist(from, to, dist);
@@ -474,7 +474,7 @@ namespace semitone
                     }
     }
 
-    void idl_theory::analyze(const distance_constraint<INTEGER_TYPE> &constr) noexcept
+    void idl_theory::analyze(const distance_constraint<INT_TYPE> &constr) noexcept
     {
         VARIABLE_TYPE c_to = constr.get_from();
         while (c_to != constr.get_to())
@@ -493,7 +493,7 @@ namespace semitone
         }
     }
 
-    void idl_theory::set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept
+    void idl_theory::set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept
     {
         assert(dists[from][to] > dist);                                                 // we should never increase the distance
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
@@ -519,10 +519,10 @@ namespace semitone
         for (size_t i = 0; i < c_size; ++i)
         {
             dists[i].resize(size, utils::inf());
-            preds[i].resize(size, std::numeric_limits<INTEGER_TYPE>::max());
+            preds[i].resize(size, std::numeric_limits<INT_TYPE>::max());
         }
-        dists.resize(size, std::vector<INTEGER_TYPE>(size, utils::inf()));
-        preds.resize(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INTEGER_TYPE>::max()));
+        dists.resize(size, std::vector<INT_TYPE>(size, utils::inf()));
+        preds.resize(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INT_TYPE>::max()));
         for (size_t i = c_size; i < size; ++i)
         {
             dists[i][i] = 0;

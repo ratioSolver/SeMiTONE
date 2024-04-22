@@ -41,7 +41,7 @@ namespace semitone
      * @param dist the distance between the variables.
      * @return utils::lit the literal corresponding to the distance.
      */
-    [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
+    [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept;
     /**
      * @brief Creates a new distance between the given variables and returns the corresponding literal.
      *
@@ -53,7 +53,7 @@ namespace semitone
      * @param max the maximum distance between the variables.
      * @return utils::lit the literal corresponding to the distance.
      */
-    [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE min, INTEGER_TYPE max) noexcept;
+    [[nodiscard]] utils::lit new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE min, INT_TYPE max) noexcept;
 
     /**
      * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
@@ -114,33 +114,33 @@ namespace semitone
      * @brief Returns the bounds of the given variable.
      *
      * @param v the variable to get the bounds of.
-     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the bounds of the variable.
+     * @return std::pair<INT_TYPE, INT_TYPE> the bounds of the variable.
      */
-    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> bounds(VARIABLE_TYPE v) const noexcept { return {-dists[v][0], dists[0][v]}; }
+    [[nodiscard]] inline std::pair<INT_TYPE, INT_TYPE> bounds(VARIABLE_TYPE v) const noexcept { return {-dists[v][0], dists[0][v]}; }
     /**
      * @brief Returns the distance between the given variables.
      *
      * @param from the variable to get the distance from.
      * @param to the variable to get the distance to.
-     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the distance between the variables.
+     * @return std::pair<INT_TYPE, INT_TYPE> the distance between the variables.
      */
-    [[nodiscard]] inline std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(VARIABLE_TYPE from, VARIABLE_TYPE to) const noexcept { return {-dists[to][from], dists[from][to]}; }
+    [[nodiscard]] inline std::pair<INT_TYPE, INT_TYPE> distance(VARIABLE_TYPE from, VARIABLE_TYPE to) const noexcept { return {-dists[to][from], dists[from][to]}; }
 
     /**
      * @brief Returns the bounds of the given linear expression.
      *
      * @param l the linear expression to get the bounds of.
-     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the bounds of the linear expression.
+     * @return std::pair<INT_TYPE, INT_TYPE> the bounds of the linear expression.
      */
-    [[nodiscard]] std::pair<INTEGER_TYPE, INTEGER_TYPE> bounds(const utils::lin &l) const noexcept;
+    [[nodiscard]] std::pair<INT_TYPE, INT_TYPE> bounds(const utils::lin &l) const noexcept;
     /**
      * @brief Returns the distance between the given linear expressions.
      *
      * @param from the linear expression to get the distance from.
      * @param to the linear expression to get the distance to.
-     * @return std::pair<INTEGER_TYPE, INTEGER_TYPE> the distance between the linear expressions.
+     * @return std::pair<INT_TYPE, INT_TYPE> the distance between the linear expressions.
      */
-    [[nodiscard]] std::pair<INTEGER_TYPE, INTEGER_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
+    [[nodiscard]] std::pair<INT_TYPE, INT_TYPE> distance(const utils::lin &from, const utils::lin &to) const noexcept { return bounds(from - to); }
 
     /**
      * @brief Checks if the given linear expressions match.
@@ -161,13 +161,13 @@ namespace semitone
 
   private:
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
-    void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
-    void analyze(const distance_constraint<INTEGER_TYPE> &constr) noexcept;
+    void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept;
+    void analyze(const distance_constraint<INT_TYPE> &constr) noexcept;
     [[nodiscard]] bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
 
-    void set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INTEGER_TYPE dist) noexcept;
+    void set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept;
     void set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept;
 
   private:
@@ -180,18 +180,18 @@ namespace semitone
 
     struct layer
     {
-      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, INTEGER_TYPE> old_dists;                                                               // the updated distances..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, INT_TYPE> old_dists;                                                               // the updated distances..
       std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, VARIABLE_TYPE> old_preds;                                                              // the updated predecessors..
-      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::optional<std::reference_wrapper<distance_constraint<INTEGER_TYPE>>>> old_constrs; // the updated constraints..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::optional<std::reference_wrapper<distance_constraint<INT_TYPE>>>> old_constrs; // the updated constraints..
     };
 
   private:
     size_t n_vars = 1;                                                                                                                      // the number of variables..
-    std::vector<std::vector<INTEGER_TYPE>> dists;                                                                                           // the distance matrix..
+    std::vector<std::vector<INT_TYPE>> dists;                                                                                           // the distance matrix..
     std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                          // the predecessor matrix..
-    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<INTEGER_TYPE>>> var_dists;                                        // the constraints controlled by a propositional variable (for propagation purposes)..
-    std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<INTEGER_TYPE>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
-    std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INTEGER_TYPE>>> dist_constr;               // the currently enforced constraints..
+    std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<INT_TYPE>>> var_dists;                                        // the constraints controlled by a propositional variable (for propagation purposes)..
+    std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<INT_TYPE>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
+    std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INT_TYPE>>> dist_constr;               // the currently enforced constraints..
     std::vector<layer> layers;                                                                                                              // we store the updates..
 #ifdef BUILD_LISTENERS
   private:
