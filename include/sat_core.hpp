@@ -80,7 +80,7 @@ namespace semitone
 
     /**
      * @brief Create a new reified disjunction of the literals in `ls`.
-     * 
+     *
      * @param ls the literals of the disjunction.
      * @return lit the reified disjunction.
      * @note An empty disjunction is always `false`.
@@ -155,6 +155,13 @@ namespace semitone
     [[nodiscard]] bool root_level() const noexcept { return trail_lim.empty(); }
 
     /**
+     * @brief Get the decisions taken so far in chronological order.
+     *
+     * @return const std::vector<utils::lit>& the decisions taken so far in chronological order.
+     */
+    [[nodiscard]] const std::vector<utils::lit> &get_decisions() const noexcept { return decisions; }
+
+    /**
      * @brief Assume the literal `p` and propagate the current set of assumptions returning `false` if a conflict is detected.
      *
      * @param p the literal to assume.
@@ -175,6 +182,15 @@ namespace semitone
      * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
      */
     [[nodiscard]] bool propagate() noexcept;
+
+    /**
+     * @brief Advances to the next state.
+     *
+     * This function advances the state to the next state by propagating the negation of the current assumptions.
+     *
+     * @return true if the state was successfully advanced, false otherwise.
+     */
+    [[nodiscard]] bool next() noexcept;
 
     /**
      * @brief Pop the last decision from the trail.

@@ -423,6 +423,27 @@ namespace semitone
         return true;
     }
 
+    bool sat_core::next() noexcept
+    {
+        if (root_level())
+            return false;
+
+        std::vector<utils::lit> no_good;
+        no_good.reserve(decisions.size());
+        for (const auto &l : decisions)
+            no_good.push_back(!l);
+        pop();
+
+        assert(!no_good.empty());
+        assert(value(no_good.back()) == utils::Undefined);
+
+        // we reverse the no-good and store it..
+        std::reverse(no_good.begin(), no_good.end());
+        record(std::move(no_good));
+
+        return propagate();
+    }
+
     void sat_core::pop() noexcept
     {
         LOG_DEBUG("-[" << to_string(decisions.back()) << "]");
