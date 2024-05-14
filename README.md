@@ -1,6 +1,7 @@
 # SeMiTONE
 
 ![Build Status](https://github.com/ratioSolver/SeMiTONE/actions/workflows/cmake.yml/badge.svg)
+[![codecov](https://codecov.io/gh/ratioSolver/SeMiTONE/branch/master/graph/badge.svg)](https://codecov.io/gh/ratioSolver/SeMiTONE)
 
 Satisfiability Modulo Theories (SMT) concerns the satisfiability of formulas with respect to some background theory.
 SeMiTONE is a Satisfiability Modulo TheOries NEtwork, allowing the creation of variables and constraints in different underlying theories.
