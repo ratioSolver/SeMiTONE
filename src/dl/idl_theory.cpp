@@ -500,9 +500,9 @@ namespace semitone
             layers.back().old_dists.emplace(std::make_pair(from, to), dists[from][to]); // save the old distance
         dists[from][to] = dist;                                                         // set the new distance
         if (from == 0)
-            FIRE_ON_VALUE_CHANGED(from);
-        if (to == 0)
             FIRE_ON_VALUE_CHANGED(to);
+        if (to == 0)
+            FIRE_ON_VALUE_CHANGED(from);
     }
 
     void idl_theory::set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept
