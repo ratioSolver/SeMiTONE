@@ -234,7 +234,7 @@ void test_core_copy()
     assert(core2.value(b2) == core.value(b2));
 }
 
-int main(int, char **)
+int main()
 {
     test_basic_core_0();
 
