@@ -6,6 +6,25 @@ namespace semitone
 {
     void theory::bind(VARIABLE_TYPE v) noexcept { sat->bind(v, *this); }
 
+    bool theory::backtrack_analyze_and_backjump() noexcept
+    {
+        // we backtrack to a level at which we can analyze the conflict..
+        size_t bt_level = 0;
+        for (const auto &l : cnfl)
+            if (bt_level < sat->level[variable(l)])
+                bt_level = sat->level[variable(l)];
+
+        while (sat->decision_level() > bt_level)
+            sat->pop();
+
+        if (sat->root_level())
+            return sat->new_clause(std::move(cnfl)) && sat->propagate();
+
+        // we analyze the conflict and backjump..
+        analyze_and_backjump();
+        return sat->propagate();
+    }
+
     void theory::analyze_and_backjump() noexcept
     {
         // we create a conflict clause for the analysis..
