@@ -5,7 +5,7 @@
 #include "lit.hpp"
 #include "bool.hpp"
 
-#ifdef ENABLE_VISUALIZATION
+#ifdef ENABLE_API
 #include "json.hpp"
 #endif
 
@@ -105,10 +105,10 @@ namespace semitone
      */
     [[nodiscard]] bool must_propagate(const utils::lit &p) const noexcept;
 
-#ifdef ENABLE_VISUALIZATION
+#ifdef ENABLE_API
   private:
     [[nodiscard]] virtual json::json to_json() const noexcept { return json::json(); }
-    [[nodiscard]] inline friend json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
+    [[nodiscard]] friend json::json to_json(const constr &rhs) noexcept;
 #endif
 
   protected:

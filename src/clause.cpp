@@ -77,7 +77,7 @@ namespace semitone
         return r;
     }
 
-#ifdef ENABLE_VISUALIZATION
+#ifdef ENABLE_API
     json::json clause::to_json() const noexcept
     {
         json::json j_lits(json::json_type::array);

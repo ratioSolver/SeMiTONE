@@ -103,26 +103,4 @@ namespace semitone
         }
         return true;
     }
-
-#ifdef ENABLE_VISUALIZATION
-    [[nodiscard]] json::json to_json(const lra_assertion &rhs) noexcept
-    {
-        json::json j_asrt;
-        j_asrt["lit"] = to_string(rhs.b);
-        switch (rhs.th.get_sat().value(rhs.b))
-        {
-        case utils::True:
-            j_asrt["val"] = "T";
-            break;
-        case utils::False:
-            j_asrt["val"] = "F";
-            break;
-        case utils::Undefined:
-            j_asrt["val"] = "U";
-            break;
-        }
-        j_asrt["constr"] = "x" + std::to_string(rhs.x) + (rhs.o == geq ? " >= " : " <= ") + to_string(rhs.v);
-        return j_asrt;
-    }
-#endif
 } // namespace semitone

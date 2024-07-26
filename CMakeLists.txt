@@ -6,9 +6,16 @@ include(CTest)
 enable_testing()
 
 option(BUILD_LISTENERS "Builds the listeners" OFF)
-option(ENABLE_VISUALIZATION "Enable visualization features" OFF)
+option(ENABLE_API "SeMiTONE API" OFF)
 
-add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp src/ov/ov_theory.cpp src/lra/lra_theory.cpp src/lra/lra_assertion.cpp src/lra/lra_eq.cpp src/dl/idl_theory.cpp src/dl/rdl_theory.cpp)
+set(SEMITONE_SOURCE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp src/ov/ov_theory.cpp src/lra/lra_theory.cpp src/lra/lra_assertion.cpp src/lra/lra_eq.cpp src/dl/idl_theory.cpp src/dl/rdl_theory.cpp)
+
+message(STATUS "SeMiTONE API: ${ENABLE_API}")
+if(ENABLE_API)
+    list(APPEND SEMITONE_SOURCE src/semitone_api.cpp)
+endif()
+
+add_library(SeMiTONE ${SEMITONE_SOURCE})
 add_dependencies(SeMiTONE json)
 target_compile_features(SeMiTONE PUBLIC cxx_std_17)
 target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ov> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lra> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dl>)
@@ -23,9 +30,8 @@ if(BUILD_LISTENERS)
     target_compile_definitions(SeMiTONE PUBLIC BUILD_LISTENERS)
 endif()
 
-message(STATUS "Enable SeMiTONE visualization features: ${ENABLE_VISUALIZATION}")
-if(ENABLE_VISUALIZATION)
-    target_compile_definitions(SeMiTONE PUBLIC ENABLE_VISUALIZATION)
+if(ENABLE_API)
+    target_compile_definitions(SeMiTONE PUBLIC ENABLE_API)
 endif()
 
 if(BUILD_TESTING)

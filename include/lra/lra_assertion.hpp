@@ -4,7 +4,7 @@
 #include "lit.hpp"
 #include "inf_rational.hpp"
 
-#ifdef ENABLE_VISUALIZATION
+#ifdef ENABLE_API
 #include "json.hpp"
 #endif
 
@@ -32,8 +32,8 @@ namespace semitone
     [[nodiscard]] virtual bool propagate_lb(const utils::inf_rational &lb) noexcept = 0;
     [[nodiscard]] virtual bool propagate_ub(const utils::inf_rational &ub) noexcept = 0;
 
-#ifdef ENABLE_VISUALIZATION
-    friend json::json to_json(const lra_assertion &rhs) noexcept;
+#ifdef ENABLE_API
+    [[nodiscard]] friend json::json to_json(const lra_assertion &rhs) noexcept;
 #endif
 
   protected:

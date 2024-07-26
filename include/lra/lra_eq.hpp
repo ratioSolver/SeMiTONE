@@ -3,7 +3,7 @@
 #include "lin.hpp"
 #include "inf_rational.hpp"
 
-#ifdef ENABLE_VISUALIZATION
+#ifdef ENABLE_API
 #include "json.hpp"
 #endif
 
@@ -27,7 +27,7 @@ namespace semitone
     [[nodiscard]] utils::inf_rational lb() const noexcept;
     [[nodiscard]] utils::inf_rational ub() const noexcept;
 
-#ifdef ENABLE_VISUALIZATION
+#ifdef ENABLE_API
     friend json::json to_json(const lra_eq &rhs) noexcept;
 #endif
 
