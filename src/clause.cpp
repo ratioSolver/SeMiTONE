@@ -68,12 +68,13 @@ namespace semitone
     std::vector<utils::lit> clause::get_reason(const utils::lit &p) const noexcept
     {
         assert(is_undefined(p) || p == lits[0]);
-        assert(std::all_of(lits.cbegin(), lits.cend(), [this](const auto &l)
-                           { return value(l) == utils::False; }));
         std::vector<utils::lit> r;
         r.reserve(is_undefined(p) ? lits.size() : lits.size() - 1);
         for (size_t i = is_undefined(p) ? 0 : 1; i < lits.size(); ++i)
+        {
+            assert(value(lits[i]) == utils::False);
             r.push_back(!lits[i]);
+        }
         return r;
     }
 
