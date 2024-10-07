@@ -368,7 +368,21 @@ namespace semitone
             if (dists[constr.get_to()][constr.get_from()] < -constr.get_dist())
             { // the constraint is inconsistent, we have a conflict..
                 cnfl.emplace_back(!constr.get_lit());
-                analyze(constr);
+                VARIABLE_TYPE c_to = constr.get_from();
+                while (c_to != constr.get_to())
+                {
+                    const auto &c_d = dist_constr.find({preds[constr.get_to()][c_to], c_to})->second.get();
+                    switch (get_sat().value(c_d.get_lit()))
+                    {
+                    case utils::True:
+                        cnfl.emplace_back(!c_d.get_lit());
+                        break;
+                    case utils::False:
+                        cnfl.emplace_back(c_d.get_lit());
+                        break;
+                    }
+                    c_to = preds[constr.get_to()][c_to];
+                }
                 return false;
             }
             else if (dists[constr.get_from()][constr.get_to()] > constr.get_dist())
@@ -389,7 +403,21 @@ namespace semitone
             if (dists[constr.get_from()][constr.get_to()] <= constr.get_dist())
             { // the constraint is inconsistent, we have a conflict..
                 cnfl.emplace_back(constr.get_lit());
-                analyze(constr);
+                VARIABLE_TYPE c_to = constr.get_to();
+                while (c_to != constr.get_from())
+                {
+                    const auto &c_d = dist_constr.find({preds[constr.get_from()][c_to], c_to})->second.get();
+                    switch (get_sat().value(c_d.get_lit()))
+                    {
+                    case utils::True:
+                        cnfl.emplace_back(!c_d.get_lit());
+                        break;
+                    case utils::False:
+                        cnfl.emplace_back(c_d.get_lit());
+                        break;
+                    }
+                    c_to = preds[constr.get_from()][c_to];
+                }
                 return false;
             }
             else if (dists[constr.get_to()][constr.get_from()] >= -constr.get_dist())
@@ -460,37 +488,46 @@ namespace semitone
                         if (dists[c_dist.get().get_to()][c_dist.get().get_from()] < -c_dist.get().get_dist())
                         { // the constraint is inconsistent..
                             cnfl.emplace_back(!c_dist.get().get_lit());
-                            analyze(c_dist.get());
+                            VARIABLE_TYPE c_to = c_dist.get().get_from();
+                            while (c_to != c_dist.get().get_to())
+                            {
+                                const auto &c_d = dist_constr.find({preds[c_dist.get().get_to()][c_to], c_to})->second.get();
+                                switch (get_sat().value(c_d.get_lit()))
+                                {
+                                case utils::True:
+                                    cnfl.emplace_back(!c_d.get_lit());
+                                    break;
+                                case utils::False:
+                                    cnfl.emplace_back(c_d.get_lit());
+                                    break;
+                                }
+                                c_to = preds[c_dist.get().get_to()][c_to];
+                            }
                             // we propagate the reason for assigning false to dist->b..
                             record(std::move(cnfl));
                         }
                         else if (dists[c_dist.get().get_from()][c_dist.get().get_to()] <= c_dist.get().get_dist())
                         { // the constraint is redundant..
                             cnfl.emplace_back(c_dist.get().get_lit());
-                            analyze(c_dist.get());
+                            VARIABLE_TYPE c_to = c_dist.get().get_to();
+                            while (c_to != c_dist.get().get_from())
+                            {
+                                const auto &c_d = dist_constr.find({preds[c_dist.get().get_from()][c_to], c_to})->second.get();
+                                switch (get_sat().value(c_d.get_lit()))
+                                {
+                                case utils::True:
+                                    cnfl.emplace_back(!c_d.get_lit());
+                                    break;
+                                case utils::False:
+                                    cnfl.emplace_back(c_d.get_lit());
+                                    break;
+                                }
+                                c_to = preds[c_dist.get().get_from()][c_to];
+                            }
                             // we propagate the reason for assigning true to dist->b..
                             record(std::move(cnfl));
                         }
                     }
-    }
-
-    void idl_theory::analyze(const distance_constraint<INT_TYPE> &constr) noexcept
-    {
-        VARIABLE_TYPE c_to = constr.get_from();
-        while (c_to != constr.get_to())
-        {
-            if (const auto &c_d = dist_constr.find({preds[constr.get_to()][c_to], c_to}); c_d != dist_constr.end())
-                switch (get_sat().value(c_d->second.get().get_lit()))
-                {
-                case utils::True:
-                    cnfl.emplace_back(!c_d->second.get().get_lit());
-                    break;
-                case utils::False:
-                    cnfl.emplace_back(c_d->second.get().get_lit());
-                    break;
-                }
-            c_to = preds[constr.get_from()][c_to];
-        }
     }
 
     void idl_theory::set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept

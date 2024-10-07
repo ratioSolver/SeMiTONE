@@ -164,7 +164,6 @@ namespace semitone
   private:
     [[nodiscard]] bool propagate(const utils::lit &) noexcept override;
     void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept;
-    void analyze(const distance_constraint<utils::inf_rational> &constr) noexcept;
     [[nodiscard]] bool check() noexcept override { return true; }
     void push() noexcept override {}
     void pop() noexcept override {}
