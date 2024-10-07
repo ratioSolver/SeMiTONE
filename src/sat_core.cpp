@@ -1,11 +1,10 @@
-#include <unordered_map>
-#include <set>
-#include <algorithm>
-#include <cmath>
-#include <cassert>
 #include "sat_core.hpp"
 #include "clause.hpp"
 #include "logging.hpp"
+#include <unordered_map>
+#include <algorithm>
+#include <cmath>
+#include <cassert>
 
 #ifdef BUILD_LISTENERS
 #include "sat_value_listener.hpp"

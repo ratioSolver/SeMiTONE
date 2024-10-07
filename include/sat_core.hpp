@@ -1,15 +1,12 @@
 #pragma once
 
+#include "constr.hpp"
+#include "theory.hpp"
 #include <memory>
 #include <optional>
 #include <queue>
 #include <unordered_map>
-#include "constr.hpp"
-#include "theory.hpp"
-
-#ifdef BUILD_LISTENERS
 #include <set>
-#endif
 
 namespace semitone
 {
