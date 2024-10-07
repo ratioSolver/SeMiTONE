@@ -385,19 +385,19 @@ namespace semitone
             if (const auto bnds_it = binds.find(variable(p)); bnds_it != binds.cend())
             {
                 for (const auto &th : bnds_it->second)
-                    if (!th.get().propagate(p))
+                    if (!th->propagate(p))
                     { // the theory is conflicting..
                         while (!prop_queue.empty())
                             prop_queue.pop();
 
                         if (root_level())
                         { // the problem is unsatisfiable..
-                            th.get().cnfl.clear();
+                            th->cnfl.clear();
                             return false;
                         }
 
                         // we analyze the theory's conflict, create a no-good from the analysis and backjump..
-                        th.get().analyze_and_backjump();
+                        th->analyze_and_backjump();
                         goto main_loop;
                     }
                 if (root_level()) // since this variable will no more be assigned, we can perform some cleanings..

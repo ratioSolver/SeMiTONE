@@ -252,7 +252,7 @@ namespace semitone
     void record(std::vector<utils::lit> lits) noexcept;
 
   private:
-    void bind(VARIABLE_TYPE v, theory &th) noexcept { binds[v].push_back(th); }
+    void bind(VARIABLE_TYPE v, theory &th) noexcept { binds[v].insert(&th); }
 
   private:
     std::vector<std::unique_ptr<constr>> constrs;                      // the collection of problem constraints..
@@ -266,8 +266,8 @@ namespace semitone
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
     std::vector<utils::lit> decisions; // the list of decisions in chronological order..
 
-    std::vector<std::unique_ptr<theory>> theories;                                        // all the theories..
-    std::unordered_map<VARIABLE_TYPE, std::vector<std::reference_wrapper<theory>>> binds; // for each variable, the theories that depend on it..
+    std::vector<std::unique_ptr<theory>> theories;               // all the theories..
+    std::unordered_map<VARIABLE_TYPE, std::set<theory *>> binds; // for each variable, the theories that depend on it..
 
 #ifdef BUILD_LISTENERS
   private:
