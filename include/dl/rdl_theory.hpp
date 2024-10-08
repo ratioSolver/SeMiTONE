@@ -25,6 +25,7 @@ namespace semitone
   public:
     rdl_theory(const size_t &size = 16) noexcept;
     rdl_theory(const rdl_theory &orig) noexcept;
+    ~rdl_theory();
 
     /**
      * @brief Create a new difference logic variable.

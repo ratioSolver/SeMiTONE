@@ -31,6 +31,8 @@ namespace semitone
 #endif
 
   public:
+    ~lra_theory();
+
     /**
      * @brief Create a new linear real arithmetic variable.
      *

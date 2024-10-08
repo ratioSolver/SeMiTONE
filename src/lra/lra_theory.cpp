@@ -1,9 +1,10 @@
-#include <algorithm>
-#include <cassert>
 #include "lra_theory.hpp"
 #include "sat_core.hpp"
 #include "lra_assertion.hpp"
 #include "lra_eq.hpp"
+#include "logging.hpp"
+#include <algorithm>
+#include <cassert>
 
 #ifdef BUILD_LISTENERS
 #include "lra_value_listener.hpp"
@@ -17,6 +18,15 @@
 
 namespace semitone
 {
+    lra_theory::~lra_theory()
+    {
+        LOG_DEBUG("Destroying lra_theory");
+#ifdef BUILD_LISTENERS
+        for (auto l : listeners)
+            l->th = nullptr;
+#endif
+    }
+
     VARIABLE_TYPE lra_theory::new_var() noexcept
     {
         auto var = vals.size();

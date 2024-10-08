@@ -23,6 +23,8 @@ namespace semitone
 #endif
 
   public:
+    ~ov_theory();
+
     /**
      * @brief Create a new variable with the given domain.
      *

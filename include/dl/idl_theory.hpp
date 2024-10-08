@@ -23,6 +23,7 @@ namespace semitone
   public:
     idl_theory(const size_t &size = 16) noexcept;
     idl_theory(const idl_theory &orig) noexcept;
+    ~idl_theory();
 
     /**
      * @brief Create a new difference logic variable.

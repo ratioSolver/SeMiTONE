@@ -1,8 +1,8 @@
-#include <cassert>
-#include <stdexcept>
 #include "sat_core.hpp"
 #include "rdl_theory.hpp"
 #include "logging.hpp"
+#include <cassert>
+#include <stdexcept>
 
 #ifdef BUILD_LISTENERS
 #include "rdl_value_listener.hpp"
@@ -35,6 +35,14 @@ namespace semitone
         for (const auto &[from_to, constrs] : orig.dist_constrs)
             for (const auto &constr : constrs)
                 dist_constrs[from_to].emplace_back(*var_dists.at(variable(constr.get().get_lit())));
+    }
+    rdl_theory::~rdl_theory()
+    {
+        LOG_DEBUG("Destroying rdl_theory");
+#ifdef BUILD_LISTENERS
+        for (auto l : listeners)
+            l->th = nullptr;
+#endif
     }
 
     VARIABLE_TYPE rdl_theory::new_var() noexcept

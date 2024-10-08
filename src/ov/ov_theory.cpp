@@ -1,8 +1,9 @@
+#include "ov_theory.hpp"
+#include "sat_core.hpp"
+#include "logging.hpp"
 #include <unordered_set>
 #include <algorithm>
 #include <cassert>
-#include "ov_theory.hpp"
-#include "sat_core.hpp"
 
 #ifdef BUILD_LISTENERS
 #include "ov_value_listener.hpp"
@@ -10,6 +11,15 @@
 
 namespace semitone
 {
+    ov_theory::~ov_theory()
+    {
+        LOG_DEBUG("Destroying ov_theory");
+#ifdef BUILD_LISTENERS
+        for (auto l : listeners)
+            l->th = nullptr;
+#endif
+    }
+
     VARIABLE_TYPE ov_theory::new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one) noexcept
     {
         assert(!domain.empty());

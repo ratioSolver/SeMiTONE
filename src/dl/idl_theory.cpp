@@ -1,9 +1,9 @@
-#include <cassert>
-#include <stdexcept>
 #include "sat_core.hpp"
 #include "idl_theory.hpp"
 #include "integer.hpp"
 #include "logging.hpp"
+#include <cassert>
+#include <stdexcept>
 
 #ifdef BUILD_LISTENERS
 #include "idl_value_listener.hpp"
@@ -36,6 +36,14 @@ namespace semitone
         for (const auto &[from_to, constrs] : orig.dist_constrs)
             for (const auto &constr : constrs)
                 dist_constrs[from_to].emplace_back(*var_dists.at(variable(constr.get().get_lit())));
+    }
+    idl_theory::~idl_theory()
+    {
+        LOG_DEBUG("Destroying idl_theory");
+#ifdef BUILD_LISTENERS
+        for (auto l : listeners)
+            l->th = nullptr;
+#endif
     }
 
     VARIABLE_TYPE idl_theory::new_var() noexcept
