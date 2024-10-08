@@ -1,7 +1,7 @@
-#include <cassert>
+#include "clause.hpp"
 #include <functional>
 #include <algorithm>
-#include "clause.hpp"
+#include <cassert>
 
 namespace semitone
 {

@@ -345,41 +345,45 @@ namespace semitone
         assert(tableau.at(x_i)->get_lin().vars.count(x_j)); // the variable `x_j` must be in the row of `x_i`..
         assert(t_watches[x_i].empty());                     // the variable `x_i` must not be in any other row of the tableau..
 
-        // we remove the leaving variable `x_i` from the watches
-        for (const auto &x : tableau[x_i]->get_lin().vars)
-            t_watches[x.first].erase(x_i);
+        // we remove the row from the watches
+        for ([[maybe_unused]] const auto &[v, c] : tableau[x_i]->get_lin().vars)
+        {
+            assert(t_watches[v].count(x_i));
+            t_watches[v].erase(x_i);
+        }
 
-        // we rewrite `x_i = ...` as `y_j = ...`
+        // we rewrite `x_i = ...` as `x_j = ...`
         utils::lin l = std::move(tableau[x_i]->get_lin());
-        utils::rational c = l.vars.at(x_j);
+        utils::rational cc = l.vars.at(x_j);
         l.vars.erase(x_j);
-        l /= -c;
-        l.vars.emplace(x_i, utils::rational::one / c);
+        l /= -cc;
+        l.vars.emplace(x_i, utils::rational::one / cc);
         tableau.erase(x_i);
 
-        // we update the rows that contain `y_j`
-        for (auto &x : t_watches[x_j])
+        // we update the rows that contain `x_j`
+        for (auto &r : t_watches[x_j])
         {
-            auto &c_l = tableau[x]->get_lin();
+            auto &c_l = tableau[r]->get_lin();
             assert(c_l.known_term == utils::rational::zero);
-            c = c_l.vars.at(x_j);
+            cc = c_l.vars.at(x_j);
             c_l.vars.erase(x_j);
-            for (const auto &term : l.vars)
-                if (const auto trm_it = c_l.vars.find(term.first); trm_it == c_l.vars.cend())
-                {                                                  // `term.first` is not in the linear expression of `x`, so we add it
-                    c_l.vars.emplace(term.first, c * term.second); // we add `c * term.second` to the linear expression of `x`
-                    t_watches[term.first].insert(x);               // we add `x` to the watches of `term.first`
+            for (const auto &[v, c] : l.vars)
+                if (const auto trm_it = c_l.vars.find(v); trm_it == c_l.vars.cend())
+                {                                // `v` is not in the linear expression of `r`, so we add it
+                    c_l.vars.emplace(v, c * cc); // we add `c * cc` to the linear expression of `r`
+                    t_watches[v].insert(r);      // we add `r` to the watches of `v`
                 }
                 else
                 {
-                    trm_it->second += c * term.second;
+                    trm_it->second += c * cc;
                     if (trm_it->second == 0)
-                    {                                   // if the coefficient of `term.first` is zero, we remove the term from the linear expression
-                        c_l.vars.erase(trm_it);         // we remove `term.first` from the linear expression of `x`
-                        t_watches[term.first].erase(x); // we remove `x` from the watches of `term.first`
+                    {                           // if the coefficient of `v` is zero, we remove the term from the linear expression
+                        c_l.vars.erase(trm_it); // we remove `v` from the linear expression of `r`
+                        t_watches[v].erase(r);  // we remove `r` from the watches of `v`
                     }
                 }
         }
+        t_watches[x_j].clear();
 
         // we add the new row `x_j = ...`
         new_row(x_j, std::move(l));
