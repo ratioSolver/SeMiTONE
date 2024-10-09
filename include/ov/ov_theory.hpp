@@ -66,7 +66,7 @@ namespace semitone
      * @param val the value to check.
      * @return lit the literal that represents the presence of the value in the domain.
      */
-    [[nodiscard]] utils::lit allows(const VARIABLE_TYPE var, utils::enum_val &val) const noexcept { return domains[var].at(&val); }
+    [[nodiscard]] utils::lit allows(const VARIABLE_TYPE var, utils::enum_val &val) const noexcept;
 
     /**
      * @brief Assign the given value to the variable.

@@ -105,6 +105,13 @@ namespace semitone
         return d;
     }
 
+    utils::lit ov_theory::allows(const VARIABLE_TYPE var, utils::enum_val &val) const noexcept
+    {
+        if (const auto it = domains[var].find(&val); it != domains[var].end())
+            return it->second;
+        return utils::FALSE_lit;
+    }
+
     bool ov_theory::assign(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return get_sat().assume(domains[var].at(&val)); }
     bool ov_theory::forbid(const VARIABLE_TYPE var, utils::enum_val &val) noexcept { return get_sat().assume(!domains[var].at(&val)); }
 

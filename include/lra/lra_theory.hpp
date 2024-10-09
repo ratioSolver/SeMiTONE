@@ -36,9 +36,11 @@ namespace semitone
     /**
      * @brief Create a new linear real arithmetic variable.
      *
+     * @param lb the lower bound of the new variable.
+     * @param ub the upper bound of the new variable.
      * @return VARIABLE_TYPE the new variable.
      */
-    [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
+    [[nodiscard]] VARIABLE_TYPE new_var(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
 
     /**
      * @brief Create a new linear real arithmetic variable and make it equal to the given linear expression.

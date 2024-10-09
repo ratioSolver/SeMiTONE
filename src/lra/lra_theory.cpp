@@ -27,11 +27,12 @@ namespace semitone
 #endif
     }
 
-    VARIABLE_TYPE lra_theory::new_var() noexcept
+    VARIABLE_TYPE lra_theory::new_var(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept
     {
+        assert(lb < ub);
         auto var = vals.size();
-        c_bounds.emplace_back(bound{utils::inf_rational(utils::rational::negative_infinite), utils::TRUE_lit});
-        c_bounds.emplace_back(bound{utils::inf_rational(utils::rational::positive_infinite), utils::TRUE_lit});
+        c_bounds.emplace_back(bound{lb, utils::TRUE_lit});
+        c_bounds.emplace_back(bound{ub, utils::TRUE_lit});
         vals.push_back(utils::inf_rational(utils::rational::zero));
         exprs.emplace("x" + std::to_string(var), var);
         a_watches.emplace_back();
