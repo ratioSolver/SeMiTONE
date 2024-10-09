@@ -38,7 +38,7 @@ namespace semitone
     }
     rdl_theory::~rdl_theory()
     {
-        LOG_DEBUG("Destroying rdl_theory");
+        LOG_DEBUG("Destroying the RDL theory");
 #ifdef BUILD_LISTENERS
         for (auto l : listeners)
             l->th = nullptr;

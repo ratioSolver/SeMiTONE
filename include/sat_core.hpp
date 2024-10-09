@@ -36,6 +36,12 @@ namespace semitone
     sat_core(const sat_core &orig) noexcept;
 
     /**
+     * @brief Destroy the sat core object.
+     *
+     */
+    ~sat_core() noexcept;
+
+    /**
      * @brief Create a new propositional variable
      *
      * @return The new variable.

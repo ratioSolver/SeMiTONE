@@ -65,6 +65,15 @@ namespace semitone
 #endif
     }
 
+    sat_core::~sat_core()
+    {
+        LOG_DEBUG("Destroying the SAT core");
+#ifdef BUILD_LISTENERS
+        for (auto l : listeners)
+            l->sat = nullptr;
+#endif
+    }
+
     VARIABLE_TYPE sat_core::new_var() noexcept
     {
         const auto x = assigns.size();

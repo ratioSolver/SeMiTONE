@@ -20,7 +20,7 @@ namespace semitone
 {
     lra_theory::~lra_theory()
     {
-        LOG_DEBUG("Destroying lra_theory");
+        LOG_DEBUG("Destroying the LRA theory");
 #ifdef BUILD_LISTENERS
         for (auto l : listeners)
             l->th = nullptr;

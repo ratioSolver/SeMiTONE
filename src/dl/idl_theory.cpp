@@ -39,7 +39,7 @@ namespace semitone
     }
     idl_theory::~idl_theory()
     {
-        LOG_DEBUG("Destroying idl_theory");
+        LOG_DEBUG("Destroying the IDL theory");
 #ifdef BUILD_LISTENERS
         for (auto l : listeners)
             l->th = nullptr;
