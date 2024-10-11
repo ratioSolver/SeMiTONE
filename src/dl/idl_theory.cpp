@@ -462,7 +462,7 @@ namespace semitone
             if (dists[u][from] != utils::inf() && dists[u][from] < dists[u][to] - dist)
             { // u -> from -> to is shorter than u -> to..
                 set_dist(u, to, dists[u][from] + dist);
-                set_pred(u, to, from);
+                set_pred(u, to, preds[from][to]);
                 set_i.emplace_back(u);
                 c_updates.emplace_back(u, to);
                 c_updates.emplace_back(to, u);
@@ -538,6 +538,22 @@ namespace semitone
                     }
     }
 
+    void idl_theory::push() noexcept { layers.emplace_back(layer()); }
+
+    void idl_theory::pop() noexcept
+    {
+        for (const auto &[vars, dist] : layers.back().old_dists)
+            dists[vars.first][vars.second] = dist;
+        for (const auto &[vars, pred] : layers.back().old_preds)
+            preds[vars.first][vars.second] = pred;
+        for (const auto &[vars, dist] : layers.back().old_constrs)
+            if (dist.has_value()) // we replace the current constraint..
+                dist_constr.emplace(vars, dist.value());
+            else // we make some cleanings..
+                dist_constr.erase(vars);
+        layers.pop_back();
+    }
+
     void idl_theory::set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept
     {
         assert(dists[from][to] > dist);                                                 // we should never increase the distance
@@ -552,6 +568,7 @@ namespace semitone
 
     void idl_theory::set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept
     {
+        assert(dist_constr.find({pred, to}) != dist_constr.end());
         assert(preds[from][to] != pred);                                                // we should never set the same predecessor
         if (!layers.empty() && !layers.back().old_preds.count({from, to}))              // we have not updated this predecessor yet
             layers.back().old_preds.emplace(std::make_pair(from, to), preds[from][to]); // save the old predecessor

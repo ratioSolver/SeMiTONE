@@ -164,8 +164,8 @@ namespace semitone
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
     void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept;
     [[nodiscard]] bool check() noexcept override { return true; }
-    void push() noexcept override {}
-    void pop() noexcept override {}
+    void push() noexcept override;
+    void pop() noexcept override;
 
     void set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, INT_TYPE dist) noexcept;
     void set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept;
@@ -181,18 +181,18 @@ namespace semitone
     struct layer
     {
       std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, INT_TYPE> old_dists;                                                               // the updated distances..
-      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, VARIABLE_TYPE> old_preds;                                                              // the updated predecessors..
+      std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, VARIABLE_TYPE> old_preds;                                                          // the updated predecessors..
       std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::optional<std::reference_wrapper<distance_constraint<INT_TYPE>>>> old_constrs; // the updated constraints..
     };
 
   private:
-    size_t n_vars = 1;                                                                                                                      // the number of variables..
+    size_t n_vars = 1;                                                                                                                  // the number of variables..
     std::vector<std::vector<INT_TYPE>> dists;                                                                                           // the distance matrix..
-    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                          // the predecessor matrix..
+    std::vector<std::vector<VARIABLE_TYPE>> preds;                                                                                      // the predecessor matrix..
     std::unordered_map<VARIABLE_TYPE, std::unique_ptr<distance_constraint<INT_TYPE>>> var_dists;                                        // the constraints controlled by a propositional variable (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::vector<std::reference_wrapper<distance_constraint<INT_TYPE>>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
     std::map<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>, std::reference_wrapper<distance_constraint<INT_TYPE>>> dist_constr;               // the currently enforced constraints..
-    std::vector<layer> layers;                                                                                                              // we store the updates..
+    std::vector<layer> layers;                                                                                                          // we store the updates..
 #ifdef BUILD_LISTENERS
   private:
     std::unordered_map<VARIABLE_TYPE, std::set<idl_value_listener *>> listening; // for each variable, the listeners listening to it..

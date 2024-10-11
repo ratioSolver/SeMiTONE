@@ -166,8 +166,8 @@ namespace semitone
     [[nodiscard]] bool propagate(const utils::lit &) noexcept override;
     void propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept;
     [[nodiscard]] bool check() noexcept override { return true; }
-    void push() noexcept override {}
-    void pop() noexcept override {}
+    void push() noexcept override;
+    void pop() noexcept override;
 
     void set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept;
     void set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept;
