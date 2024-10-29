@@ -16,7 +16,7 @@ void test_lra()
     bool nc = sat.new_clause({lra.new_leq(utils::lin(x, utils::rational::one), utils::lin(utils::rational(-4)))});
     assert(nc);
     // x >= -8
-    nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(-utils::rational(8)))});
+    nc = sat.new_clause({lra.new_leq(utils::lin(-utils::rational(8)), utils::lin(x, utils::rational::one))});
     assert(nc);
     // s1 <= 1
     nc = sat.new_clause({lra.new_leq(utils::lin(s1, utils::rational::one), utils::lin(utils::rational::one))});
@@ -26,7 +26,7 @@ void test_lra()
     assert(prop);
 
     // s2 >= -3
-    auto s2_geq = lra.new_geq(utils::lin(s2, utils::rational::one), utils::lin(-utils::rational(3)));
+    auto s2_geq = lra.new_leq(utils::lin(-utils::rational(3)), utils::lin(s2, utils::rational::one));
     assert(sat.value(s2_geq) == utils::False);
 }
 
@@ -39,7 +39,7 @@ void test_inequalities_0()
     auto y = lra.new_var();
 
     // x >= y
-    bool nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({lra.new_leq(utils::lin(y, utils::rational::one), utils::lin(x, utils::rational::one))});
     assert(nc);
 
     utils::inf_rational x_val = lra.value(x);
@@ -49,7 +49,7 @@ void test_inequalities_0()
     assert(y_val == utils::rational::zero);
 
     // y >= 1
-    nc = sat.new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_leq(utils::lin(utils::rational::one), utils::lin(y, utils::rational::one))});
     assert(nc);
 
     bool prop = sat.propagate();
@@ -71,7 +71,7 @@ void test_inequalities_1()
     auto y = lra.new_var();
 
     // x >= y
-    bool nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({lra.new_leq(utils::lin(y, utils::rational::one), utils::lin(x, utils::rational::one))});
     assert(nc);
 
     bool prop = sat.propagate();
@@ -84,7 +84,7 @@ void test_inequalities_1()
     assert(y_val == utils::rational::zero);
 
     // y >= 1
-    nc = sat.new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_leq(utils::lin(utils::rational::one), utils::lin(y, utils::rational::one))});
     assert(nc);
 
     prop = sat.propagate();
@@ -106,7 +106,7 @@ void test_strict_inequalities_0()
     auto y = lra.new_var();
 
     // x > y
-    bool nc = sat.new_clause({lra.new_gt(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({lra.new_lt(utils::lin(y, utils::rational::one), utils::lin(x, utils::rational::one))});
     assert(nc);
 
     bool prop = sat.propagate();
@@ -119,7 +119,7 @@ void test_strict_inequalities_0()
     assert(y_val == utils::rational::zero);
 
     // y >= 1
-    nc = sat.new_clause({lra.new_geq(utils::lin(y, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_leq(utils::lin(utils::rational::one), utils::lin(y, utils::rational::one))});
     assert(nc);
 
     prop = sat.propagate();
@@ -141,7 +141,7 @@ void test_strict_inequalities_1()
     auto y = lra.new_var();
 
     // ![x >= y] --> x < y
-    bool nc = sat.new_clause({!lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(y, utils::rational::one))});
+    bool nc = sat.new_clause({!lra.new_leq(utils::lin(y, utils::rational::one), utils::lin(x, utils::rational::one))});
     assert(nc);
 
     bool prop = sat.propagate();
@@ -154,7 +154,7 @@ void test_strict_inequalities_1()
     assert(y_val == utils::rational::zero);
 
     // x >= 1
-    nc = sat.new_clause({lra.new_geq(utils::lin(x, utils::rational::one), utils::lin(utils::rational::one))});
+    nc = sat.new_clause({lra.new_leq(utils::lin(utils::rational::one), utils::lin(x, utils::rational::one))});
     assert(nc);
 
     prop = sat.propagate();

@@ -74,22 +74,6 @@ namespace semitone
      * @return lit the literal corresponding to the constraint.
      */
     [[nodiscard]] utils::lit new_eq(const utils::lin &left, const utils::lin &right) noexcept;
-    /**
-     * @brief Creates a new greater or equal constraint between the given linear expressions and returns the corresponding literal.
-     *
-     * @param left the left hand side of the constraint.
-     * @param right the right hand side of the constraint.
-     * @return lit the literal corresponding to the constraint.
-     */
-    [[nodiscard]] utils::lit new_geq(const utils::lin &left, const utils::lin &right) noexcept;
-    /**
-     * @brief Creates a new greater then constraint between the given linear expressions and returns the corresponding literal.
-     *
-     * @param left the left hand side of the constraint.
-     * @param right the right hand side of the constraint.
-     * @return lit the literal corresponding to the constraint.
-     */
-    [[nodiscard]] utils::lit new_gt(const utils::lin &left, const utils::lin &right) noexcept;
 
     /**
      * @brief Returns the current lower bound of variable `v`.
