@@ -1,5 +1,6 @@
 #include "constr.hpp"
 #include "sat_core.hpp"
+#include <cassert>
 #include <algorithm>
 
 namespace semitone
@@ -13,8 +14,13 @@ namespace semitone
 
     void constr::unwatch(const utils::lit &p) noexcept
     {
-        std::remove_if(sat.watches[index(p)].begin(), sat.watches[index(p)].end(), [&](const auto &c)
-                       { return &c.get() == this; });
+        assert(!sat.watches[index(p)].empty());
+        assert(std::any_of(sat.watches[index(p)].begin(), sat.watches[index(p)].end(), [&](const auto &w)
+                           { return &w.get() == this; }));
+        auto &ws = sat.watches[index(p)];
+        ws.erase(std::remove_if(ws.begin(), ws.end(), [&](const auto &w)
+                                { return &w.get() == this; }),
+                 ws.end());
     }
 
     void constr::remove_constr_from_reason(const VARIABLE_TYPE &x) noexcept
