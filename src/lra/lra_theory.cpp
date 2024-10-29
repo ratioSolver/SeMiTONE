@@ -72,32 +72,79 @@ namespace semitone
                 expr += c * tableau.at(v)->get_lin();
             }
 
-        const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, -1);
-        expr.known_term = utils::rational::zero;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < utils::rational::zero ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto [v, c] = *expr.vars.cbegin();
+            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, -1) / c;
+            if (c > 0)
+            {
+                if (ub(v) <= c_right)
+                    return utils::TRUE_lit; // the constraint is already satisfied..
+                else if (lb(v) > c_right)
+                    return utils::FALSE_lit; // the constraint is unsatisfable..
 
-        if (ub(expr) <= c_right)
-            return utils::TRUE_lit; // the constraint is already satisfied..
-        else if (lb(expr) > c_right)
-            return utils::FALSE_lit; // the constraint is unsatisfable..
+                const auto s_asrt = "x" + std::to_string(v) + " <= " + to_string(c_right);
+                if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+                    return asrt_it->second;
 
-        // we create a slack variable from the current expression (notice that the variable can be reused)..
-        const auto slack = new_var(std::move(expr));
-        if (ub(slack) <= c_right)
-            return utils::TRUE_lit; // the constraint is already satisfied..
-        else if (lb(slack) > c_right)
-            return utils::FALSE_lit; // the constraint is unsatisfable..
+                // we create a new control variable..
+                const auto ctr = get_sat().new_var();
+                const utils::lit ctr_lit(ctr);
+                bind(ctr);
+                s_asrts.emplace(s_asrt, ctr_lit);
+                v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, v, c_right));
+                return ctr_lit;
+            }
+            else
+            {
+                if (lb(v) >= c_right)
+                    return utils::TRUE_lit; // the constraint is already satisfied..
+                else if (ub(v) < c_right)
+                    return utils::FALSE_lit; // the constraint is unsatisfable..
 
-        const auto s_asrt = "x" + std::to_string(slack) + " <= " + to_string(c_right);
-        if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
-            return asrt_it->second;
+                const auto s_asrt = "x" + std::to_string(v) + " >= " + to_string(c_right);
+                if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+                    return asrt_it->second;
 
-        // we create a new control variable..
-        const auto ctr = get_sat().new_var();
-        const utils::lit ctr_lit(ctr);
-        bind(ctr);
-        s_asrts.emplace(s_asrt, ctr_lit);
-        v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, slack, c_right));
-        return ctr_lit;
+                // we create a new control variable..
+                const auto ctr = get_sat().new_var();
+                const utils::lit ctr_lit(ctr);
+                bind(ctr);
+                s_asrts.emplace(s_asrt, ctr_lit);
+                v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, v, c_right));
+                return ctr_lit;
+            }
+        }
+        default:
+        {
+            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, -1);
+            expr.known_term = utils::rational::zero;
+
+            if (ub(expr) <= c_right)
+                return utils::TRUE_lit; // the constraint is already satisfied..
+            else if (lb(expr) > c_right)
+                return utils::FALSE_lit; // the constraint is unsatisfable..
+
+            // we create a slack variable from the current expression (notice that the variable can be reused)..
+            const auto slack = new_var(std::move(expr));
+
+            const auto s_asrt = "x" + std::to_string(slack) + " <= " + to_string(c_right);
+            if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+                return asrt_it->second;
+
+            // we create a new control variable..
+            const auto ctr = get_sat().new_var();
+            const utils::lit ctr_lit(ctr);
+            bind(ctr);
+            s_asrts.emplace(s_asrt, ctr_lit);
+            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, slack, c_right));
+            return ctr_lit;
+        }
+        }
     }
     utils::lit lra_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
     {
@@ -116,32 +163,79 @@ namespace semitone
                 expr += c * tableau.at(v)->get_lin();
             }
 
-        const utils::inf_rational c_right = utils::inf_rational(-expr.known_term);
-        expr.known_term = utils::rational::zero;
+        switch (expr.vars.size())
+        {
+        case 0:
+            return expr.known_term < utils::rational::zero ? utils::TRUE_lit : utils::FALSE_lit;
+        case 1:
+        {
+            const auto [v, c] = *expr.vars.cbegin();
+            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term) / c;
+            if (c > 0)
+            {
+                if (ub(v) <= c_right)
+                    return utils::TRUE_lit; // the constraint is already satisfied..
+                else if (lb(v) > c_right)
+                    return utils::FALSE_lit; // the constraint is unsatisfable..
 
-        if (ub(expr) <= c_right)
-            return utils::TRUE_lit; // the constraint is already satisfied..
-        else if (lb(expr) > c_right)
-            return utils::FALSE_lit; // the constraint is unsatisfable..
+                const auto s_asrt = "x" + std::to_string(v) + " <= " + to_string(c_right);
+                if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+                    return asrt_it->second;
 
-        // we create a slack variable from the current expression (notice that the variable can be reused)..
-        const auto slack = new_var(std::move(expr));
-        if (ub(slack) <= c_right)
-            return utils::TRUE_lit; // the constraint is already satisfied..
-        else if (lb(slack) > c_right)
-            return utils::FALSE_lit; // the constraint is unsatisfable..
+                // we create a new control variable..
+                const auto ctr = get_sat().new_var();
+                const utils::lit ctr_lit(ctr);
+                bind(ctr);
+                s_asrts.emplace(s_asrt, ctr_lit);
+                v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, v, c_right));
+                return ctr_lit;
+            }
+            else
+            {
+                if (lb(v) >= c_right)
+                    return utils::TRUE_lit; // the constraint is already satisfied..
+                else if (ub(v) < c_right)
+                    return utils::FALSE_lit; // the constraint is unsatisfable..
 
-        const auto s_asrt = "x" + std::to_string(slack) + " <= " + to_string(c_right);
-        if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
-            return asrt_it->second;
+                const auto s_asrt = "x" + std::to_string(v) + " >= " + to_string(c_right);
+                if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+                    return asrt_it->second;
 
-        // we create a new control variable..
-        const auto ctr = get_sat().new_var();
-        const utils::lit ctr_lit(ctr);
-        bind(ctr);
-        s_asrts.emplace(s_asrt, ctr_lit);
-        v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, slack, c_right));
-        return ctr_lit;
+                // we create a new control variable..
+                const auto ctr = get_sat().new_var();
+                const utils::lit ctr_lit(ctr);
+                bind(ctr);
+                s_asrts.emplace(s_asrt, ctr_lit);
+                v_asrts.emplace(ctr, std::make_unique<lra_geq>(*this, ctr_lit, v, c_right));
+                return ctr_lit;
+            }
+        }
+        default:
+        {
+            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term);
+            expr.known_term = utils::rational::zero;
+
+            if (ub(expr) <= c_right)
+                return utils::TRUE_lit; // the constraint is already satisfied..
+            else if (lb(expr) > c_right)
+                return utils::FALSE_lit; // the constraint is unsatisfable..
+
+            // we create a slack variable from the current expression (notice that the variable can be reused)..
+            const auto slack = new_var(std::move(expr));
+
+            const auto s_asrt = "x" + std::to_string(slack) + " <= " + to_string(c_right);
+            if (const auto asrt_it = s_asrts.find(s_asrt); asrt_it != s_asrts.cend())
+                return asrt_it->second;
+
+            // we create a new control variable..
+            const auto ctr = get_sat().new_var();
+            const utils::lit ctr_lit(ctr);
+            bind(ctr);
+            s_asrts.emplace(s_asrt, ctr_lit);
+            v_asrts.emplace(ctr, std::make_unique<lra_leq>(*this, ctr_lit, slack, c_right));
+            return ctr_lit;
+        }
+        }
     }
     utils::lit lra_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept { return get_sat().new_conj({new_leq(left, right), new_leq(right, left)}); }
 
