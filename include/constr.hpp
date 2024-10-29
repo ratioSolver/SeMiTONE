@@ -94,16 +94,7 @@ namespace semitone
      */
     [[nodiscard]] utils::lbool value(const utils::lit &p) const noexcept;
 
-    /**
-     * @brief Return whether the constraint must propagate after the given literal is assigned.
-     *
-     * This method is used to check if the constraint must propagate after the given literal is assigned. This is used to avoid unnecessary propagations.
-     * The default implementation returns `true` if the literal is not assigned by the constraint.
-     *
-     * @param p The literal.
-     * @return `true` if the constraint must propagate after the given literal is assigned, `false` otherwise.
-     */
-    [[nodiscard]] bool must_propagate(const utils::lit &p) const noexcept;
+    void remove_constr_from_reason(const VARIABLE_TYPE &x) noexcept;
 
 #ifdef ENABLE_API
   private:

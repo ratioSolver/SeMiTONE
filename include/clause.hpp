@@ -17,6 +17,7 @@ namespace semitone
      * @param lits the literals of the clause.
      */
     clause(sat_core &s, std::vector<utils::lit> &&ls) noexcept;
+    ~clause() override;
 
     /**
      * @brief Get the literals of the clause.
