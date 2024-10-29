@@ -51,6 +51,28 @@ namespace semitone
     [[nodiscard]] VARIABLE_TYPE new_var(const utils::lin &&l) noexcept;
 
     /**
+     * @brief Creates a new less-than-or-equal-to literal.
+     *
+     * This function generates a new literal representing the inequality x <= v.
+     *
+     * @param x The variable to be compared.
+     * @param v The value to compare the variable against, represented as an inf_rational.
+     * @return A utils::lit object representing the inequality x <= v.
+     */
+    [[nodiscard]] utils::lit new_leq(const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept;
+
+    /**
+     * @brief Creates a new greater-than-or-equal-to literal.
+     *
+     * This function generates a new literal representing the inequality x >= v.
+     *
+     * @param x The variable to be compared.
+     * @param v The inf_rational value to compare against.
+     * @return A utils::lit object representing the inequality x >= v.
+     */
+    [[nodiscard]] utils::lit new_geq(const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept;
+
+    /**
      * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
      *
      * @param left the left hand side of the constraint.
