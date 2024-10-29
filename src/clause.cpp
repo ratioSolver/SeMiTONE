@@ -8,17 +8,13 @@ namespace semitone
     clause::clause(sat_core &s, std::vector<utils::lit> &&ls) noexcept : constr(s), lits(std::move(ls))
     {
         assert(lits.size() >= 2);
-        watches(!lits[0]).emplace_back(*this);
-        watches(!lits[1]).emplace_back(*this);
+        watch(!lits[0]);
+        watch(!lits[1]);
     }
     clause::~clause()
     {
-        auto &w0 = watches(!lits[0]);
-        w0.erase(std::find_if(w0.begin(), w0.end(), [this](const constr &c)
-                              { return &c == this; }));
-        auto &w1 = watches(!lits[1]);
-        w1.erase(std::find_if(w1.begin(), w1.end(), [this](const constr &c)
-                              { return &c == this; }));
+        unwatch(!lits[0]);
+        unwatch(!lits[1]);
         for (const auto &l : lits)
             remove_constr_from_reason(variable(l));
     }
@@ -42,7 +38,7 @@ namespace semitone
         // if 0th watch is true, the clause is already satisfied..
         if (value(lits[0]) == utils::True)
         {
-            watches(p).emplace_back(*this);
+            watch(p);
             return true;
         }
 
@@ -51,12 +47,12 @@ namespace semitone
             if (value(lits[i]) != utils::False)
             {
                 std::swap(*(std::next(lits.begin())), *(std::next(lits.begin(), i)));
-                watches(!lits[1]).emplace_back(*this);
+                watch(!lits[1]);
                 return true;
             }
 
         // clause is unit under assignment..
-        watches(p).emplace_back(*this);
+        watch(p);
         return enqueue(lits[0]);
     }
 

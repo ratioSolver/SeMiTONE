@@ -39,7 +39,7 @@ namespace semitone
     }
     idl_theory::~idl_theory()
     {
-        LOG_DEBUG("Destroying the IDL theory");
+        LOG_TRACE("Destroying the IDL theory");
 #ifdef BUILD_LISTENERS
         for (auto l : listeners)
             l->th = nullptr;
@@ -561,9 +561,13 @@ namespace semitone
             layers.back().old_dists.emplace(std::make_pair(from, to), dists[from][to]); // save the old distance
         dists[from][to] = dist;                                                         // set the new distance
         if (from == 0)
+        {
             FIRE_ON_VALUE_CHANGED(to);
+        }
         if (to == 0)
+        {
             FIRE_ON_VALUE_CHANGED(from);
+        }
     }
 
     void idl_theory::set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept

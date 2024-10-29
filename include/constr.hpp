@@ -71,15 +71,6 @@ namespace semitone
      */
     [[nodiscard]] bool enqueue(const utils::lit &p) noexcept;
     /**
-     * @brief Get the watches of a literal.
-     *
-     * The watches are the constraints that are watching the literal.
-     *
-     * @param p The literal.
-     * @return The watches of the literal.
-     */
-    [[nodiscard]] std::vector<std::reference_wrapper<constr>> &watches(const utils::lit &p) noexcept;
-    /**
      * @brief Compute the value of a variable.
      *
      * @param x The variable.
@@ -94,6 +85,35 @@ namespace semitone
      */
     [[nodiscard]] utils::lbool value(const utils::lit &p) const noexcept;
 
+    /**
+     * @brief Monitors the specified literal.
+     *
+     * This function sets up a watch on the given literal, allowing the system
+     * to track changes or events related to it.
+     *
+     * @param p The literal to be watched.
+     */
+    void watch(const utils::lit &p) noexcept;
+
+    /**
+     * @brief Stops watching the specified literal.
+     *
+     * This function removes the specified literal from the watch list,
+     * ensuring that it is no longer monitored for changes or updates.
+     *
+     * @param p The literal to be unwatched.
+     */
+    void unwatch(const utils::lit &p) noexcept;
+
+    /**
+     * @brief Removes a constraint from the reason associated with a given variable.
+     *
+     * This function removes the constraint associated with the specified variable
+     * from the reason list. It ensures that the constraint is no longer considered
+     * in the reasoning process for the given variable.
+     *
+     * @param x The variable whose associated constraint is to be removed.
+     */
     void remove_constr_from_reason(const VARIABLE_TYPE &x) noexcept;
 
 #ifdef ENABLE_API

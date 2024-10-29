@@ -13,7 +13,7 @@ namespace semitone
 {
     ov_theory::~ov_theory()
     {
-        LOG_DEBUG("Destroying ov_theory");
+        LOG_TRACE("Destroying ov_theory");
 #ifdef BUILD_LISTENERS
         for (auto l : listeners)
             l->th = nullptr;

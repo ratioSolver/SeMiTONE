@@ -67,7 +67,9 @@ namespace semitone
 
     sat_core::~sat_core()
     {
-        LOG_DEBUG("Destroying the SAT core");
+        LOG_TRACE("Destroying the SAT core");
+        theories.clear();
+        constrs.clear();
 #ifdef BUILD_LISTENERS
         for (auto l : listeners)
             l->sat = nullptr;
