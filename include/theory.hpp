@@ -61,7 +61,7 @@ namespace semitone
 
     /**
      * @brief Backtracks to the proper decision level and analyzes the conflict.
-     * 
+     *
      * @return true if the conflict is resolved, false otherwise.
      */
     [[nodiscard]] bool backtrack_analyze_and_backjump() noexcept;

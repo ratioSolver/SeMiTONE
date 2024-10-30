@@ -11,18 +11,20 @@ namespace semitone
     {
         assert(th.cnfl.empty());
         assert(l.vars.find(x_i) != l.vars.end());
+        // we make room for the first literal..
+        th.cnfl.push_back(utils::lit());
         if (is_positive(l.vars.at(x_i)))
         { // we compute the lower bound of the linear expression along with its reason..
-            if (auto c_lb = lb(); !is_infinite(c_lb) && c_lb >= th.lb(x))
-                for (const auto &c : th.a_watches[x])
-                    if (!c.get().propagate_lb(c_lb))
+            if (auto var_lb = free_var_lb(); var_lb.has_value())
+                for (const auto &c : th.a_watches[var_lb->first])
+                    if (!c.get().propagate_lb(var_lb->second))
                         return false;
         }
         else
         { // we compute the upper bound of the linear expression along with its reason..
-            if (auto c_ub = ub(); !is_infinite(c_ub) && c_ub <= th.ub(x))
-                for (const auto &c : th.a_watches[x])
-                    if (!c.get().propagate_ub(c_ub))
+            if (auto var_ub = free_var_ub(); var_ub.has_value())
+                for (const auto &c : th.a_watches[var_ub->first])
+                    if (!c.get().propagate_ub(var_ub->second))
                         return false;
         }
         th.cnfl.clear();
@@ -33,68 +35,92 @@ namespace semitone
     {
         assert(th.cnfl.empty());
         assert(l.vars.find(x_i) != l.vars.end());
+        // we make room for the first literal..
+        th.cnfl.push_back(utils::lit());
         if (is_positive(l.vars.at(x_i)))
         { // we compute the upper bound of the linear expression along with its reason..
-            if (auto c_ub = ub(); !is_infinite(c_ub) && c_ub <= th.ub(x))
-                for (const auto &c : th.a_watches[x])
-                    if (!c.get().propagate_ub(c_ub))
+            if (auto var_ub = free_var_ub(); var_ub.has_value())
+                for (const auto &c : th.a_watches[var_ub->first])
+                    if (!c.get().propagate_ub(var_ub->second))
                         return false;
         }
         else
         { // we compute the lower bound of the linear expression along with its reason..
-            if (auto c_lb = lb(); !is_infinite(c_lb) && c_lb >= th.lb(x))
-                for (const auto &c : th.a_watches[x])
-                    if (!c.get().propagate_lb(c_lb))
+            if (auto var_lb = free_var_lb(); var_lb.has_value())
+                for (const auto &c : th.a_watches[var_lb->first])
+                    if (!c.get().propagate_lb(var_lb->second))
                         return false;
         }
         th.cnfl.clear();
         return true;
     }
 
-    utils::inf_rational lra_eq::lb() const noexcept
+    [[nodiscard]] std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> lra_eq::free_var_lb() const noexcept
     {
+        utils::lin l_expr = l - utils::lin(x, utils::rational(1));
         utils::inf_rational lb(l.known_term);
-        th.cnfl.reserve(l.vars.size() + 1);
-        // we make room for the first literal..
-        th.cnfl.push_back(utils::lit());
-        for (const auto &[c_v, c] : l.vars)
-        {
+        VARIABLE_TYPE free_var = std::numeric_limits<VARIABLE_TYPE>::max();
+        for (const auto &[c_v, c] : l_expr.vars)
             if (is_positive(c))
             {
-                lb += th.lb(c_v) * c;
-                th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(x)].reason);
+                if (auto c_lb = th.lb(c_v); !is_infinite(c_lb))
+                { // `c_v` has a lower bound that might be useful for the propagation..
+                    lb += c_lb * c;
+                    th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(c_v)].reason);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
             }
             else
             {
-                lb += th.ub(c_v) * c;
-                th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(x)].reason);
+                if (auto c_ub = th.ub(c_v); !is_infinite(c_ub))
+                { // `c_v` has an upper bound that might be useful for the propagation..
+                    lb += c_ub * c;
+                    th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(c_v)].reason);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
             }
-            if (is_infinite(lb))
-                return lb;
-        }
-        return lb;
+        if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+            return std::nullopt;
+        return std::make_pair(free_var, lb);
     }
-    utils::inf_rational lra_eq::ub() const noexcept
+    [[nodiscard]] std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> lra_eq::free_var_ub() const noexcept
     {
+        utils::lin l_expr = l - utils::lin(x, utils::rational(1));
         utils::inf_rational ub(l.known_term);
-        th.cnfl.reserve(l.vars.size() + 1);
-        // we make room for the first literal..
-        th.cnfl.push_back(utils::lit());
-        for (const auto &[c_v, c] : l.vars)
-        {
+        VARIABLE_TYPE free_var = std::numeric_limits<VARIABLE_TYPE>::max();
+        for (const auto &[c_v, c] : l_expr.vars)
             if (is_positive(c))
             {
-                ub += th.ub(c_v) * c;
-                th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(x)].reason);
+                if (auto c_ub = th.ub(c_v); !is_infinite(c_ub))
+                { // `c_v` has an upper bound that might be useful for the propagation..
+                    ub += c_ub * c;
+                    th.cnfl.push_back(!th.c_bounds[lra_theory::ub_index(c_v)].reason);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
             }
             else
             {
-                ub += th.lb(c_v) * c;
-                th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(x)].reason);
+                if (auto c_lb = th.lb(c_v); !is_infinite(c_lb))
+                { // `c_v` has a lower bound that might be useful for the propagation..
+                    ub += c_lb * c;
+                    th.cnfl.push_back(!th.c_bounds[lra_theory::lb_index(c_v)].reason);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
             }
-            if (is_infinite(ub))
-                return ub;
-        }
-        return ub;
+        if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+            return std::nullopt;
+        return std::make_pair(free_var, ub);
     }
 } // namespace semitone
