@@ -1,39 +1,10 @@
 #include "semitone_api.hpp"
 #include "sat_core.hpp"
 #include "lra_theory.hpp"
-#include "lra_assertion.hpp"
 
 namespace semitone
 {
     [[nodiscard]] json::json to_json(const constr &rhs) noexcept { return rhs.to_json(); }
-
-    [[nodiscard]] json::json to_json(const lra_assertion &rhs) noexcept
-    {
-        json::json j_asrt;
-        j_asrt["lit"] = to_string(rhs.b);
-        switch (rhs.th.get_sat().value(rhs.b))
-        {
-        case utils::True:
-            j_asrt["val"] = "T";
-            break;
-        case utils::False:
-            j_asrt["val"] = "F";
-            break;
-        case utils::Undefined:
-            j_asrt["val"] = "U";
-            break;
-        }
-        j_asrt["constr"] = "x" + std::to_string(rhs.x) + (rhs.o == geq ? " >= " : " <= ") + to_string(rhs.v);
-        return j_asrt;
-    }
-
-    [[nodiscard]] json::json to_json(const lra_eq &rhs) noexcept
-    {
-        json::json j_row;
-        j_row["var"] = "x" + std::to_string(rhs.x);
-        j_row["expr"] = to_string(rhs.l);
-        return j_row;
-    }
 
     [[nodiscard]] json::json to_json(const lra_theory &rhs) noexcept
     {
@@ -55,12 +26,33 @@ namespace semitone
 
         json::json j_asrts(json::json_type::array);
         for (const auto &c_asrts : rhs.v_asrts)
-            j_asrts.push_back(to_json(*c_asrts.second));
+        {
+            json::json j_asrt;
+            j_asrt["lit"] = to_string(c_asrts.second->get_lit());
+            switch (rhs.get_sat().value(c_asrts.second->get_lit()))
+            {
+            case utils::True:
+                j_asrt["val"] = "T";
+                break;
+            case utils::False:
+                j_asrt["val"] = "F";
+                break;
+            case utils::Undefined:
+                j_asrt["val"] = "U";
+                break;
+            }
+            j_asrt["constr"] = "x" + std::to_string(c_asrts.first) + (c_asrts.second->get_op() == geq ? " >= " : " <= ") + to_string(c_asrts.second->get_val());
+            j_asrts.push_back(std::move(j_asrt));
+        }
         j_th["asrts"] = std::move(j_asrts);
 
         json::json j_tabl(json::json_type::array);
         for (auto it = rhs.tableau.cbegin(); it != rhs.tableau.cend(); ++it)
-            j_tabl.push_back(to_json(*it->second));
+        {
+            json::json j_row;
+            j_row["var"] = "x" + std::to_string(it->first);
+            j_row["expr"] = to_string(it->second->get_lin());
+        }
         j_th["tableau"] = std::move(j_tabl);
 
         return j_th;

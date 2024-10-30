@@ -184,6 +184,25 @@ namespace semitone
     bool lra_theory::set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_lower(x_i, val, p) && get_sat().propagate(); }
     bool lra_theory::set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept { return assert_upper(x_i, val, p) && get_sat().propagate(); }
 
+#ifdef BUILD_LISTENERS
+    void lra_theory::add_listener(lra_value_listener &l) noexcept
+    {
+        l.th = this;
+        listeners.insert(&l);
+    }
+    void lra_theory::remove_listener(lra_value_listener &l) noexcept
+    {
+        l.th = nullptr;
+        for (auto v : l.listening)
+        {
+            listening[v].erase(&l);
+            if (listening[v].empty())
+                listening.erase(v);
+        }
+        listeners.erase(&l);
+    }
+#endif
+
     void lra_theory::update(const VARIABLE_TYPE x_i, const utils::inf_rational &val) noexcept
     {
         assert(!is_basic(x_i)); // the variable must not be basic..

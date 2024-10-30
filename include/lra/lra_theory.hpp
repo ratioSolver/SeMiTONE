@@ -34,10 +34,6 @@ namespace semitone
     [[nodiscard]] op get_op() const noexcept { return o; }
     [[nodiscard]] const utils::inf_rational &get_val() const noexcept { return v; }
 
-#ifdef ENABLE_API
-    [[nodiscard]] friend json::json to_json(const lra_assertion &rhs) noexcept;
-#endif
-
   protected:
     const utils::lit b;          // the literal associated to the assertion..
     const VARIABLE_TYPE x;       // the numeric variable..
@@ -54,17 +50,21 @@ namespace semitone
     [[nodiscard]] utils::lin &get_lin() noexcept { return l; }
     [[nodiscard]] const utils::lin &get_lin() const noexcept { return l; }
 
-#ifdef ENABLE_API
-    [[nodiscard]] friend json::json to_json(const lra_eq &rhs) noexcept;
-#endif
-
   private:
     const VARIABLE_TYPE x; // the numeric variable..
     utils::lin l;          // the linear expression..
   };
 
+#ifdef BUILD_LISTENERS
+  class lra_value_listener;
+#endif
+
   class lra_theory final : public theory
   {
+#ifdef BUILD_LISTENERS
+    friend class lra_value_listener;
+#endif
+
   public:
     ~lra_theory();
 
@@ -147,6 +147,20 @@ namespace semitone
     [[nodiscard]] inline utils::inf_rational value(const VARIABLE_TYPE v) const noexcept { return vals[v]; }
 
     /**
+     * @brief Returns the current value of linear expression `l`.
+     *
+     * @param l the linear expression to get the value of.
+     * @return utils::inf_rational the current value of linear expression `l`.
+     */
+    [[nodiscard]] inline utils::inf_rational value(const utils::lin &l) const
+    {
+      utils::inf_rational val(l.known_term);
+      for (const auto &[v, c] : l.vars)
+        val += value(v) * c;
+      return val;
+    }
+
+    /**
      * @brief Returns the current bounds of linear expression `l`.
      *
      * @param l the linear expression to get the bounds of.
@@ -196,6 +210,11 @@ namespace semitone
      * @return bool whether the propagation was successful.
      */
     [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+
+#ifdef BUILD_LISTENERS
+    void add_listener(lra_value_listener &l) noexcept;
+    void remove_listener(lra_value_listener &l) noexcept;
+#endif
 
   private:
     /**
