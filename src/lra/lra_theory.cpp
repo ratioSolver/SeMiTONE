@@ -430,6 +430,9 @@ namespace semitone
                                 cnfl.push_back(!c_asr.get().get_lit());
                                 for (const auto &b : c_bounds[lb_index(c)].reason)
                                     cnfl.push_back(!b);
+                                if (!layers.empty()) // we store the current bounds for backtracking..
+                                    layers.back().emplace(lb_index(c), bound{lb(c), c_bounds[lb_index(c)].reason});
+                                c_bounds[lb_index(c)] = {b, cnfl}; // we update the lower bound of the variable..
                                 record(std::move(cnfl));
                                 break;
                             }
@@ -454,6 +457,9 @@ namespace semitone
                                 cnfl.push_back(c_asr.get().get_lit());
                                 for (const auto &b : c_bounds[lb_index(c)].reason)
                                     cnfl.push_back(!b);
+                                if (!layers.empty()) // we store the current bounds for backtracking..
+                                    layers.back().emplace(lb_index(c), bound{lb(c), c_bounds[lb_index(c)].reason});
+                                c_bounds[lb_index(c)] = {b, cnfl}; // we update the lower bound of the variable..
                                 record(std::move(cnfl));
                                 break;
                             }
@@ -599,6 +605,9 @@ namespace semitone
                                 cnfl.push_back(!c_asr.get().get_lit());
                                 for (const auto &b : c_bounds[ub_index(c)].reason)
                                     cnfl.push_back(!b);
+                                if (!layers.empty()) // we store the current bounds for backtracking..
+                                    layers.back().emplace(ub_index(c), bound{ub(c), c_bounds[ub_index(c)].reason});
+                                c_bounds[ub_index(c)] = {b, cnfl}; // we update the upper bound of the variable..
                                 record(std::move(cnfl));
                                 break;
                             }
@@ -623,6 +632,9 @@ namespace semitone
                                 cnfl.push_back(c_asr.get().get_lit());
                                 for (const auto &b : c_bounds[ub_index(c)].reason)
                                     cnfl.push_back(!b);
+                                if (!layers.empty()) // we store the current bounds for backtracking..
+                                    layers.back().emplace(ub_index(c), bound{ub(c), c_bounds[ub_index(c)].reason});
+                                c_bounds[ub_index(c)] = {b, cnfl}; // we update the upper bound of the variable..
                                 record(std::move(cnfl));
                                 break;
                             }
