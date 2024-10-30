@@ -1,12 +1,13 @@
 #pragma once
 
+#include "theory.hpp"
+#include "lit.hpp"
+#include "lin.hpp"
+#include "inf_rational.hpp"
+
 #include <vector>
 #include <set>
 #include <unordered_map>
-#include "theory.hpp"
-#include "inf_rational.hpp"
-#include "lra_assertion.hpp"
-#include "lra_eq.hpp"
 
 #ifdef ENABLE_API
 #include "json.hpp"
@@ -17,19 +18,53 @@
 
 namespace semitone
 {
-#ifdef BUILD_LISTENERS
-  class lra_value_listener;
-#endif
-  class lra_theory final : public theory
+  enum op
   {
-    friend class lra_assertion;
-    friend class lra_leq;
-    friend class lra_geq;
-    friend class lra_eq;
-#ifdef BUILD_LISTENERS
-    friend class lra_value_listener;
+    leq,
+    geq
+  };
+
+  class lra_assertion
+  {
+  public:
+    lra_assertion(const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : b(b), x(x), o(o), v(v) {}
+
+    [[nodiscard]] const utils::lit &get_lit() const noexcept { return b; }
+    [[nodiscard]] VARIABLE_TYPE get_var() const noexcept { return x; }
+    [[nodiscard]] op get_op() const noexcept { return o; }
+    [[nodiscard]] const utils::inf_rational &get_val() const noexcept { return v; }
+
+#ifdef ENABLE_API
+    [[nodiscard]] friend json::json to_json(const lra_assertion &rhs) noexcept;
 #endif
 
+  protected:
+    const utils::lit b;          // the literal associated to the assertion..
+    const VARIABLE_TYPE x;       // the numeric variable..
+    const op o;                  // the operator..
+    const utils::inf_rational v; // the constant..
+  };
+
+  class lra_eq
+  {
+  public:
+    lra_eq(const VARIABLE_TYPE x, const utils::lin &&l) noexcept : x(x), l(std::move(l)) {}
+
+    [[nodiscard]] VARIABLE_TYPE get_var() const noexcept { return x; }
+    [[nodiscard]] utils::lin &get_lin() noexcept { return l; }
+    [[nodiscard]] const utils::lin &get_lin() const noexcept { return l; }
+
+#ifdef ENABLE_API
+    [[nodiscard]] friend json::json to_json(const lra_eq &rhs) noexcept;
+#endif
+
+  private:
+    const VARIABLE_TYPE x; // the numeric variable..
+    utils::lin l;          // the linear expression..
+  };
+
+  class lra_theory final : public theory
+  {
   public:
     ~lra_theory();
 
@@ -88,14 +123,6 @@ namespace semitone
      * @return lit the literal corresponding to the constraint.
      */
     [[nodiscard]] utils::lit new_leq(const utils::lin &left, const utils::lin &right) noexcept;
-    /**
-     * @brief Creates a new equal constraint between the given linear expressions and returns the corresponding literal.
-     *
-     * @param left the left hand side of the constraint.
-     * @param right the right hand side of the constraint.
-     * @return lit the literal corresponding to the constraint.
-     */
-    [[nodiscard]] utils::lit new_eq(const utils::lin &left, const utils::lin &right) noexcept;
 
     /**
      * @brief Returns the current lower bound of variable `v`.
@@ -120,32 +147,6 @@ namespace semitone
     [[nodiscard]] inline utils::inf_rational value(const VARIABLE_TYPE v) const noexcept { return vals[v]; }
 
     /**
-     * @brief Returns the current lower bound of linear expression `l`.
-     *
-     * @param l the linear expression to get the lower bound of.
-     * @return utils::inf_rational the current lower bound of linear expression `l`.
-     */
-    [[nodiscard]] inline utils::inf_rational lb(const utils::lin &l) const noexcept
-    {
-      utils::inf_rational b(l.known_term);
-      for (const auto &[v, c] : l.vars)
-        b += (is_positive(c) ? lb(v) : ub(v)) * c;
-      return b;
-    }
-    /**
-     * @brief Returns the current upper bound of linear expression `l`.
-     *
-     * @param l the linear expression to get the upper bound of.
-     * @return utils::inf_rational the current upper bound of linear expression `l`.
-     */
-    [[nodiscard]] inline utils::inf_rational ub(const utils::lin &l) const noexcept
-    {
-      utils::inf_rational b(l.known_term);
-      for (const auto &[v, c] : l.vars)
-        b += (is_positive(c) ? ub(v) : lb(v)) * c;
-      return b;
-    }
-    /**
      * @brief Returns the current bounds of linear expression `l`.
      *
      * @param l the linear expression to get the bounds of.
@@ -162,19 +163,6 @@ namespace semitone
       }
       return {c_lb, c_ub};
     }
-    /**
-     * @brief Returns the current value of linear expression `l`.
-     *
-     * @param l the linear expression to get the value of.
-     * @return utils::inf_rational the current value of linear expression `l`.
-     */
-    [[nodiscard]] inline utils::inf_rational value(const utils::lin &l) const
-    {
-      utils::inf_rational val(l.known_term);
-      for (const auto &[v, c] : l.vars)
-        val += value(v) * c;
-      return val;
-    }
 
     /**
      * @brief Returns whether the two linear expressions overlap. That is, whether the two linear expressions can have a common value.
@@ -189,25 +177,6 @@ namespace semitone
       const auto [l1_lb, l1_ub] = bounds(l1);
       return l0_ub >= l1_lb && l0_lb <= l1_ub; // the two intervals overlap..
     }
-
-    /**
-     * @brief Asserts that the lower bound of variable `x_i` is `val` and returns whether the assertion was successful.
-     *
-     * @param x_i the variable to assert the lower bound of.
-     * @param val the lower bound to assert.
-     * @param p the literal that caused the assertion.
-     * @return bool whether the assertion was successful.
-     */
-    [[nodiscard]] bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
-    /**
-     * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
-     *
-     * @param x_i the variable to assert the upper bound of.
-     * @param val the upper bound to assert.
-     * @param p the literal that caused the assertion.
-     * @return bool whether the assertion was successful.
-     */
-    [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
 
     /**
      * @brief Sets the lower bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
@@ -227,22 +196,27 @@ namespace semitone
      * @return bool whether the propagation was successful.
      */
     [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
-    /**
-     * @brief Sets the value of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
-     *
-     * @param x_i the variable to set the value of.
-     * @param val the value to set.
-     * @param p the literal that caused the change.
-     * @return bool whether the propagation was successful.
-     */
-    [[nodiscard]] bool set_eq(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
-
-#ifdef BUILD_LISTENERS
-    void add_listener(lra_value_listener &l) noexcept;
-    void remove_listener(lra_value_listener &l) noexcept;
-#endif
 
   private:
+    /**
+     * @brief Asserts that the lower bound of variable `x_i` is `val` and returns whether the assertion was successful.
+     *
+     * @param x_i the variable to assert the lower bound of.
+     * @param val the lower bound to assert.
+     * @param p the literal that caused the assertion.
+     * @return bool whether the assertion was successful.
+     */
+    [[nodiscard]] bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    /**
+     * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
+     *
+     * @param x_i the variable to assert the upper bound of.
+     * @param val the upper bound to assert.
+     * @param p the literal that caused the assertion.
+     * @return bool whether the assertion was successful.
+     */
+    [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
@@ -267,8 +241,8 @@ namespace semitone
      */
     struct bound
     {
-      utils::inf_rational value; // the value of the bound..
-      utils::lit reason;         // the reason for the value..
+      utils::inf_rational value;      // the value of the bound..
+      std::vector<utils::lit> reason; // the reason for the value..
     };
 
     std::vector<bound> c_bounds;                                               // the current bounds..

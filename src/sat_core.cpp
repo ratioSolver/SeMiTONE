@@ -395,16 +395,13 @@ namespace semitone
             if (const auto bnds_it = binds.find(variable(p)); bnds_it != binds.cend())
             {
                 for (const auto &th : bnds_it->second)
-                    if (!th->propagate(p))
-                    { // the theory is conflicting..
+                    if (!th->propagate(p)) // the theory is conflicting..
+                    {
                         while (!prop_queue.empty())
                             prop_queue.pop();
 
-                        if (root_level())
-                        { // the problem is unsatisfiable..
-                            th->cnfl.clear();
+                        if (root_level()) // the problem is unsatisfiable..
                             return false;
-                        }
 
                         // we analyze the theory's conflict, create a no-good from the analysis and backjump..
                         th->analyze_and_backjump();
@@ -417,13 +414,10 @@ namespace semitone
 
         // finally, we check theories..
         for (const auto &th : theories)
-            if (!th->check())
-            { // the theory is conflicting..
-                if (root_level())
-                { // the problem is unsatisfiable..
-                    th->cnfl.clear();
+            if (!th->check()) // the theory is conflicting..
+            {
+                if (root_level()) // the problem is unsatisfiable..
                     return false;
-                }
 
                 // we analyze the theory's conflict, create a no-good from the analysis and backjump..
                 th->analyze_and_backjump();

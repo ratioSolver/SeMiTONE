@@ -60,6 +60,16 @@ namespace semitone
     void record(std::vector<utils::lit> &&clause) noexcept;
 
     /**
+     * @brief Sets the theory conflict.
+     *
+     * This function sets the theory conflict by moving the given vector of literals
+     * into the member variable `cnfl`.
+     *
+     * @param cnfl A rvalue reference to a vector of literals representing the theory conflict.
+     */
+    void set_theory_conflict(std::vector<utils::lit> &&cnfl) noexcept { this->cnfl = std::move(cnfl); }
+
+    /**
      * @brief Backtracks to the proper decision level and analyzes the conflict.
      *
      * @return true if the conflict is resolved, false otherwise.
@@ -74,8 +84,6 @@ namespace semitone
 
   private:
     sat_core *sat;
-
-  protected:
-    std::vector<utils::lit> cnfl; // conflict clause to be analyzed by the SAT solver after a conflict is detected by propagate or check
+    std::vector<utils::lit> cnfl;
   };
 } // namespace semitone

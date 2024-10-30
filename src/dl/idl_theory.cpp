@@ -367,7 +367,6 @@ namespace semitone
 
     bool idl_theory::propagate(const utils::lit &p) noexcept
     {
-        assert(cnfl.empty());
         assert(var_dists.count(variable(p)));
         auto &constr = *var_dists.at(variable(p));
         switch (get_sat().value(constr.get_lit()))
@@ -375,6 +374,7 @@ namespace semitone
         case utils::True: // the constraint is asserted directly
             if (dists[constr.get_to()][constr.get_from()] < -constr.get_dist())
             { // the constraint is inconsistent, we have a conflict..
+                std::vector<utils::lit> cnfl;
                 cnfl.emplace_back(!constr.get_lit());
                 VARIABLE_TYPE c_to = constr.get_from();
                 while (c_to != constr.get_to())
@@ -410,6 +410,7 @@ namespace semitone
         case utils::False: // the constraint is asserted negated (a.k.a. semantic branching)
             if (dists[constr.get_from()][constr.get_to()] <= constr.get_dist())
             { // the constraint is inconsistent, we have a conflict..
+                std::vector<utils::lit> cnfl;
                 cnfl.emplace_back(constr.get_lit());
                 VARIABLE_TYPE c_to = constr.get_to();
                 while (c_to != constr.get_from())
@@ -495,6 +496,7 @@ namespace semitone
                     {
                         if (dists[c_dist.get().get_to()][c_dist.get().get_from()] < -c_dist.get().get_dist())
                         { // the constraint is inconsistent..
+                            std::vector<utils::lit> cnfl;
                             cnfl.emplace_back(!c_dist.get().get_lit());
                             VARIABLE_TYPE c_to = c_dist.get().get_from();
                             while (c_to != c_dist.get().get_to())
@@ -516,6 +518,7 @@ namespace semitone
                         }
                         else if (dists[c_dist.get().get_from()][c_dist.get().get_to()] <= c_dist.get().get_dist())
                         { // the constraint is redundant..
+                            std::vector<utils::lit> cnfl;
                             cnfl.emplace_back(c_dist.get().get_lit());
                             VARIABLE_TYPE c_to = c_dist.get().get_to();
                             while (c_to != c_dist.get().get_from())
