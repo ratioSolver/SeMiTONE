@@ -548,7 +548,7 @@ namespace semitone
             preds[vars.first][vars.second] = pred;
         for (const auto &[vars, dist] : layers.back().old_constrs)
             if (dist.has_value()) // we replace the current constraint..
-                dist_constr.emplace(vars, dist.value());
+                dist_constr.emplace(vars, *dist);
             else // we make some cleanings..
                 dist_constr.erase(vars);
         layers.pop_back();

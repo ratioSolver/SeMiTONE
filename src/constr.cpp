@@ -25,7 +25,7 @@ namespace semitone
 
     void constr::remove_constr_from_reason(const VARIABLE_TYPE &x) noexcept
     {
-        if (sat.reason[x].has_value() && &sat.reason[x].value().get() == this)
+        if (sat.reason[x].has_value() && &sat.reason[x]->get() == this)
             sat.reason[x].reset();
     }
 } // namespace semitone
