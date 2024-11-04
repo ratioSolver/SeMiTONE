@@ -320,31 +320,8 @@ namespace semitone
             if (vals[x_i] < val && !is_basic(x_i))
                 update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
 
-            // unate propagation..
-            for (const auto &c : a_watches[x_i])
-                if (!c.get().propagate_lb(val))
-                    return false;
-
-            // bound propagation..
-            if (auto it = tableau.find(x_i); it != tableau.cend())
-            {
-                auto ulb = it->second->unbounded_lb();
-                if (ulb)
-                    for (const auto &c : a_watches[ulb->first])
-                        if (!c.get().propagate_lb(ulb->second))
-                            return false;
-            }
-            else
-                for (const auto &c : t_watches[x_i])
-                {
-                    auto ulb = tableau.at(c)->unbounded_lb();
-                    if (ulb)
-                        for (const auto &c : a_watches[ulb->first])
-                            if (!c.get().propagate_lb(ulb->second))
-                                return false;
-                }
-
-            return true;
+            prop_queue.push({x_i, op::geq, val});
+            return propagate();
         }
     }
 
@@ -371,27 +348,72 @@ namespace semitone
             if (vals[x_i] > val && !is_basic(x_i))
                 update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
 
-            // unate propagation..
-            if (auto it = tableau.find(x_i); it != tableau.cend())
+            prop_queue.push({x_i, op::leq, val});
+            return propagate();
+        }
+    }
+
+    [[nodiscard]] bool lra_theory::propagate()
+    {
+        while (!prop_queue.empty())
+        {
+            const auto &v = prop_queue.front();
+            if (v.o == op::leq)
             {
-                auto uub = it->second->unbounded_ub();
-                if (uub)
-                    for (const auto &c : a_watches[uub->first])
-                        if (!c.get().propagate_ub(uub->second))
-                            return false;
-            }
-            else
-                for (const auto &c : t_watches[x_i])
+                // unate propagation..
+                for (const auto &c : a_watches[v.x])
+                    if (!c.get().propagate_ub(v.v))
+                        return false;
+
+                // bound propagation..
+                if (auto it = tableau.find(v.x); it != tableau.cend())
                 {
-                    auto uub = tableau.at(c)->unbounded_ub();
+                    auto uub = it->second->unbounded_ub();
                     if (uub)
                         for (const auto &c : a_watches[uub->first])
                             if (!c.get().propagate_ub(uub->second))
                                 return false;
                 }
+                else
+                    for (const auto &c : t_watches[v.x])
+                    {
+                        auto uub = tableau.at(c)->unbounded_ub();
+                        if (uub)
+                            for (const auto &c : a_watches[uub->first])
+                                if (!c.get().propagate_ub(uub->second))
+                                    return false;
+                    }
+            }
+            else
+            {
+                // unate propagation..
+                for (const auto &c : a_watches[v.x])
+                    if (!c.get().propagate_lb(v.v))
+                        return false;
 
-            return true;
+                // bound propagation..
+                if (auto it = tableau.find(v.x); it != tableau.cend())
+                {
+                    auto ulb = it->second->unbounded_lb();
+                    if (ulb)
+                        for (const auto &c : a_watches[ulb->first])
+                            if (!c.get().propagate_lb(ulb->second))
+                                return false;
+                }
+                else
+                    for (const auto &c : t_watches[v.x])
+                    {
+                        auto ulb = tableau.at(c)->unbounded_lb();
+                        if (ulb)
+                            for (const auto &c : a_watches[ulb->first])
+                                if (!c.get().propagate_lb(ulb->second))
+                                    return false;
+                    }
+            }
+            prop_queue.pop();
         }
+
+        return true;
     }
 
     void lra_theory::new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept

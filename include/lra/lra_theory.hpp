@@ -6,6 +6,7 @@
 #include "inf_rational.hpp"
 
 #include <optional>
+#include <queue>
 #include <vector>
 #include <set>
 #include <unordered_map>
@@ -68,6 +69,19 @@ namespace semitone
     lra_theory &th;        // the theory..
     const VARIABLE_TYPE x; // the numeric variable..
     utils::lin l;          // the linear expression..
+  };
+
+  class var_update
+  {
+    friend class lra_theory;
+
+  public:
+    var_update(const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : x(x), o(o), v(v) {}
+
+  private:
+    const VARIABLE_TYPE x;       // the numeric variable..
+    const op o;                  // the operator..
+    const utils::inf_rational v; // the constant..
   };
 
 #ifdef BUILD_LISTENERS
@@ -253,6 +267,8 @@ namespace semitone
      */
     [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
 
+    [[nodiscard]] bool propagate();
+
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
@@ -281,6 +297,7 @@ namespace semitone
       std::vector<utils::lit> reason; // the reason for the value..
     };
 
+    std::queue<var_update> prop_queue;                                         // propagation queue..
     std::vector<bound> c_bounds;                                               // the current bounds..
     std::vector<utils::inf_rational> vals;                                     // the current values..
     std::map<const VARIABLE_TYPE, std::unique_ptr<lra_assertion>> v_asrts;     // the assertions (literal to assertions) used for enforcing (negating) assertions..
