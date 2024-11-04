@@ -510,6 +510,8 @@ namespace semitone
             do
             { // select next literal to look at..
                 p = trail.back();
+                LOG_DEBUG("b" << variable(p) << " = " << value(p) << " @ " << level[variable(p)]);
+                LOG_DEBUG("Current decision level: " << decision_level());
                 assert(level[variable(p)] == decision_level()); // this variable must have been assigned at the current decision level..
                 if (reason[variable(p)])                        // `p` can be the asserting literal..
                     p_reason = reason[variable(p)]->get().get_reason(p);

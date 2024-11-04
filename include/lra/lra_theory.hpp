@@ -5,6 +5,7 @@
 #include "lin.hpp"
 #include "inf_rational.hpp"
 
+#include <optional>
 #include <vector>
 #include <set>
 #include <unordered_map>
@@ -24,17 +25,25 @@ namespace semitone
     geq
   };
 
+  class lra_theory;
+
   class lra_assertion
   {
+    friend class lra_theory;
+
   public:
-    lra_assertion(const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : b(b), x(x), o(o), v(v) {}
+    lra_assertion(lra_theory &th, const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : th(th), b(b), x(x), o(o), v(v) {}
 
-    [[nodiscard]] const utils::lit &get_lit() const noexcept { return b; }
-    [[nodiscard]] VARIABLE_TYPE get_var() const noexcept { return x; }
-    [[nodiscard]] op get_op() const noexcept { return o; }
-    [[nodiscard]] const utils::inf_rational &get_val() const noexcept { return v; }
+  private:
+    bool propagate_lb(const utils::inf_rational &val) const noexcept;
+    bool propagate_ub(const utils::inf_rational &val) const noexcept;
 
-  protected:
+#ifdef ENABLE_API
+    [[nodiscard]] friend json::json to_json(const lra_theory &th) noexcept;
+#endif
+
+  private:
+    lra_theory &th;              // the theory..
     const utils::lit b;          // the literal associated to the assertion..
     const VARIABLE_TYPE x;       // the numeric variable..
     const op o;                  // the operator..
@@ -43,14 +52,20 @@ namespace semitone
 
   class lra_eq
   {
-  public:
-    lra_eq(const VARIABLE_TYPE x, const utils::lin &&l) noexcept : x(x), l(std::move(l)) {}
+    friend class lra_theory;
 
-    [[nodiscard]] VARIABLE_TYPE get_var() const noexcept { return x; }
-    [[nodiscard]] utils::lin &get_lin() noexcept { return l; }
-    [[nodiscard]] const utils::lin &get_lin() const noexcept { return l; }
+  public:
+    lra_eq(lra_theory &th, const VARIABLE_TYPE x, const utils::lin &&l) noexcept : th(th), x(x), l(std::move(l)) {}
+
+#ifdef ENABLE_API
+    [[nodiscard]] friend json::json to_json(const lra_theory &th) noexcept;
+#endif
+
+    std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> unbounded_lb() const noexcept;
+    std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> unbounded_ub() const noexcept;
 
   private:
+    lra_theory &th;        // the theory..
     const VARIABLE_TYPE x; // the numeric variable..
     utils::lin l;          // the linear expression..
   };
@@ -61,6 +76,8 @@ namespace semitone
 
   class lra_theory final : public theory
   {
+    friend class lra_assertion;
+    friend class lra_eq;
 #ifdef BUILD_LISTENERS
     friend class lra_value_listener;
 #endif

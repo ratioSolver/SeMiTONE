@@ -40,6 +40,7 @@ namespace semitone
                 cnfl[j++] = p;
                 if (bt_level < sat->level[variable(p)])
                     bt_level = sat->level[variable(p)];
+                LOG_DEBUG(to_string(p) << " @ " << sat->level[variable(p)]);
             }
         cnfl.resize(j);
 

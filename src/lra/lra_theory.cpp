@@ -82,7 +82,7 @@ namespace semitone
         const utils::lit ctr_lit(ctr);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
-        v_asrts.emplace(ctr, std::make_unique<lra_assertion>(ctr_lit, x, op::leq, v));
+        v_asrts.emplace(ctr, std::make_unique<lra_assertion>(*this, ctr_lit, x, op::leq, v));
         return ctr_lit;
     }
     [[nodiscard]] utils::lit lra_theory::new_geq(const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept
@@ -102,7 +102,7 @@ namespace semitone
         const utils::lit ctr_lit(ctr);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
-        v_asrts.emplace(ctr, std::make_unique<lra_assertion>(ctr_lit, x, op::geq, v));
+        v_asrts.emplace(ctr, std::make_unique<lra_assertion>(*this, ctr_lit, x, op::geq, v));
         return ctr_lit;
     }
 
@@ -119,7 +119,7 @@ namespace semitone
             {
                 auto c = expr.vars.at(v);
                 expr.vars.erase(v);
-                expr += c * tableau.at(v)->get_lin();
+                expr += c * tableau.at(v)->l;
             }
 
         switch (expr.vars.size())
@@ -156,7 +156,7 @@ namespace semitone
             {
                 auto c = expr.vars.at(v);
                 expr.vars.erase(v);
-                expr += c * tableau.at(v)->get_lin();
+                expr += c * tableau.at(v)->l;
             }
 
         switch (expr.vars.size())
@@ -210,7 +210,7 @@ namespace semitone
         // the tableau rows containing `x_i` as a non-basic variable..
         for (const auto &c : t_watches[x_i])
         { // x_j = x_j + a_ji(v - x_i)..
-            vals[c] += tableau.at(c)->get_lin().vars.at(x_i) * (val - vals[x_i]);
+            vals[c] += tableau.at(c)->l.vars.at(x_i) * (val - vals[x_i]);
             FIRE_ON_VALUE_CHANGED(c);
         }
         // x_i = v..
@@ -220,11 +220,11 @@ namespace semitone
 
     void lra_theory::pivot_and_update(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j, const utils::inf_rational &v) noexcept
     {
-        assert(is_basic(x_i));                              // the variable must be basic..
-        assert(!is_basic(x_j));                             // the variable must not be basic..
-        assert(tableau.at(x_i)->get_lin().vars.count(x_j)); // the variable `x_j` must be in the row of `x_i`..
+        assert(is_basic(x_i));                      // the variable must be basic..
+        assert(!is_basic(x_j));                     // the variable must not be basic..
+        assert(tableau.at(x_i)->l.vars.count(x_j)); // the variable `x_j` must be in the row of `x_i`..
 
-        const utils::inf_rational theta = (v - vals[x_i]) / tableau.at(x_i)->get_lin().vars.at(x_j);
+        const utils::inf_rational theta = (v - vals[x_i]) / tableau.at(x_i)->l.vars.at(x_j);
         assert(!is_infinite(theta));
 
         // x_i = v
@@ -239,7 +239,7 @@ namespace semitone
         for (const auto &c : t_watches[x_j])
             if (c != x_i)
             { // x_k += a_kj * theta..
-                vals[c] += tableau.at(c)->get_lin().vars.at(x_j) * theta;
+                vals[c] += tableau.at(c)->l.vars.at(x_j) * theta;
                 FIRE_ON_VALUE_CHANGED(c);
             }
 
@@ -248,20 +248,20 @@ namespace semitone
 
     void lra_theory::pivot(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j) noexcept
     {
-        assert(is_basic(x_i));                              // the variable must be basic..
-        assert(!is_basic(x_j));                             // the variable must not be basic..
-        assert(tableau.at(x_i)->get_lin().vars.count(x_j)); // the variable `x_j` must be in the row of `x_i`..
-        assert(t_watches[x_i].empty());                     // the variable `x_i` must not be in any other row of the tableau..
+        assert(is_basic(x_i));                      // the variable must be basic..
+        assert(!is_basic(x_j));                     // the variable must not be basic..
+        assert(tableau.at(x_i)->l.vars.count(x_j)); // the variable `x_j` must be in the row of `x_i`..
+        assert(t_watches[x_i].empty());             // the variable `x_i` must not be in any other row of the tableau..
 
         // we remove the row from the watches
-        for ([[maybe_unused]] const auto &[v, c] : tableau[x_i]->get_lin().vars)
+        for ([[maybe_unused]] const auto &[v, c] : tableau[x_i]->l.vars)
         {
             assert(t_watches[v].count(x_i));
             t_watches[v].erase(x_i);
         }
 
         // we rewrite `x_i = ...` as `x_j = ...`
-        utils::lin l = std::move(tableau[x_i]->get_lin());
+        utils::lin l = std::move(tableau[x_i]->l);
         utils::rational cc = l.vars.at(x_j);
         l.vars.erase(x_j);
         l /= -cc;
@@ -271,7 +271,7 @@ namespace semitone
         // we update the rows that contain `x_j`
         for (auto &r : t_watches[x_j])
         {
-            auto &c_l = tableau[r]->get_lin();
+            auto &c_l = tableau[r]->l;
             assert(c_l.known_term == utils::rational::zero);
             cc = c_l.vars.at(x_j);
             c_l.vars.erase(x_j);
@@ -322,151 +322,27 @@ namespace semitone
 
             // unate propagation..
             for (const auto &c : a_watches[x_i])
-                switch (c.get().get_op())
-                {
-                case leq:
-                    if (val > c.get().get_val()) // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
-                        switch (get_sat().value(c.get().get_lit()))
-                        {
-                        case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(!c.get().get_lit());
-                            for (const auto &b : c_bounds[lb_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            set_theory_conflict(std::move(cnfl));
-                            return false;
-                        }
-                        case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> ![x <= v]..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(!c.get().get_lit());
-                            for (const auto &b : c_bounds[lb_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            record(std::move(cnfl));
-                            break;
-                        }
-                        }
-                    break;
-                case geq:
-                    if (val >= c.get().get_val()) // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
-                        switch (get_sat().value(c.get().get_lit()))
-                        {
-                        case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(c.get().get_lit());
-                            for (const auto &b : c_bounds[lb_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            set_theory_conflict(std::move(cnfl));
-                            return false;
-                        }
-                        case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> [x >= v]..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(c.get().get_lit());
-                            for (const auto &b : c_bounds[lb_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            record(std::move(cnfl));
-                            break;
-                        }
-                        }
-                    break;
-                }
-            // bound propagation..
-            for (const auto &c : t_watches[x_i])
-            {
-                utils::lin l_expr = tableau.at(c)->get_lin() - utils::lin(c, utils::rational(1));
-                utils::inf_rational b(l_expr.known_term); // the current lower bound of the linear expression..
-                VARIABLE_TYPE free_var = std::numeric_limits<VARIABLE_TYPE>::max();
-                std::vector<utils::lit> cnfl;
-                for (const auto &[c_v, c] : l_expr.vars)
-                    if (is_positive(c))
-                    {
-                        if (auto c_lb = lb(c_v); !is_infinite(c_lb))
-                        { // `c_v` has a lower bound that might be useful for the propagation..
-                            b += c_lb * c;
-                            for (const auto &w : c_bounds[lra_theory::lb_index(c_v)].reason)
-                                cnfl.push_back(!w);
-                        } // we have a free variable..
-                        else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
-                            free_var = c_v;
-                        else // we have more than one free variable..
-                            break;
-                    }
-                    else
-                    {
-                        if (auto c_ub = ub(c_v); !is_infinite(c_ub))
-                        { // `c_v` has an upper bound that might be useful for the propagation..
-                            b += c_ub * c;
-                            for (const auto &w : c_bounds[lra_theory::ub_index(c_v)].reason)
-                                cnfl.push_back(!w);
-                        } // we have a free variable..
-                        else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
-                            free_var = c_v;
-                        else // we have more than one free variable..
-                            break;
-                    }
+                if (!c.get().propagate_lb(val))
+                    return false;
 
-                for (const auto &c_asr : a_watches[c])
-                    switch (c_asr.get().get_op())
-                    {
-                    case leq:
-                        if (val > c_asr.get().get_val()) // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
-                            switch (get_sat().value(c_asr.get().get_lit()))
-                            {
-                            case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(!c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[lb_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                set_theory_conflict(std::move(cnfl));
-                                return false;
-                            }
-                            case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> ![x <= v]..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(!c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[lb_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                if (!layers.empty()) // we store the current bounds for backtracking..
-                                    layers.back().emplace(lb_index(c), bound{lb(c), c_bounds[lb_index(c)].reason});
-                                c_bounds[lb_index(c)] = {b, cnfl}; // we update the lower bound of the variable..
-                                record(std::move(cnfl));
-                                break;
-                            }
-                            }
-                        break;
-                    case geq:
-                        if (val >= c_asr.get().get_val()) // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
-                            switch (get_sat().value(c_asr.get().get_lit()))
-                            {
-                            case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[lb_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                set_theory_conflict(std::move(cnfl));
-                                return false;
-                            }
-                            case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> [x >= v]..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[lb_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                if (!layers.empty()) // we store the current bounds for backtracking..
-                                    layers.back().emplace(lb_index(c), bound{lb(c), c_bounds[lb_index(c)].reason});
-                                c_bounds[lb_index(c)] = {b, cnfl}; // we update the lower bound of the variable..
-                                record(std::move(cnfl));
-                                break;
-                            }
-                            }
-                        break;
-                    }
+            // bound propagation..
+            if (auto it = tableau.find(x_i); it != tableau.cend())
+            {
+                auto ulb = it->second->unbounded_lb();
+                if (ulb)
+                    for (const auto &c : a_watches[ulb->first])
+                        if (!c.get().propagate_lb(ulb->second))
+                            return false;
             }
+            else
+                for (const auto &c : t_watches[x_i])
+                {
+                    auto ulb = tableau.at(c)->unbounded_lb();
+                    if (ulb)
+                        for (const auto &c : a_watches[ulb->first])
+                            if (!c.get().propagate_lb(ulb->second))
+                                return false;
+                }
 
             return true;
         }
@@ -496,152 +372,23 @@ namespace semitone
                 update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
 
             // unate propagation..
-            for (const auto &c : a_watches[x_i])
-                switch (c.get().get_op())
-                {
-                case leq:
-                    if (val <= c.get().get_val()) // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
-                        switch (get_sat().value(c.get().get_lit()))
-                        {
-                        case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(!c.get().get_lit());
-                            for (const auto &b : c_bounds[ub_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            set_theory_conflict(std::move(cnfl));
-                            return false;
-                        }
-                        case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> [x <= v]..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(!c.get().get_lit());
-                            for (const auto &b : c_bounds[ub_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            record(std::move(cnfl));
-                            break;
-                        }
-                        }
-                    break;
-                case geq:
-                    if (val < c.get().get_val()) // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
-                        switch (get_sat().value(c.get().get_lit()))
-                        {
-                        case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(c.get().get_lit());
-                            for (const auto &b : c_bounds[ub_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            set_theory_conflict(std::move(cnfl));
-                            return false;
-                        }
-                        case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> ![x >= v]..
-                        {
-                            std::vector<utils::lit> cnfl;
-                            cnfl.push_back(c.get().get_lit());
-                            for (const auto &b : c_bounds[ub_index(x_i)].reason)
-                                cnfl.push_back(!b);
-                            record(std::move(cnfl));
-                            break;
-                        }
-                        }
-                    break;
-                }
-            // bound propagation..
-            for (const auto &c : t_watches[x_i])
+            if (auto it = tableau.find(x_i); it != tableau.cend())
             {
-                utils::lin l_expr = tableau.at(c)->get_lin() - utils::lin(c, utils::rational(1));
-                utils::inf_rational b(l_expr.known_term); // the current upper bound of the linear expression..
-                VARIABLE_TYPE free_var = std::numeric_limits<VARIABLE_TYPE>::max();
-                std::vector<utils::lit> cnfl;
-                for (const auto &[c_v, c] : l_expr.vars)
-                    if (is_positive(c))
-                    {
-                        if (auto c_ub = ub(c_v); !is_infinite(c_ub))
-                        { // `c_v` has an upper bound that might be useful for the propagation..
-                            b += c_ub * c;
-                            for (const auto &w : c_bounds[lra_theory::ub_index(c_v)].reason)
-                                cnfl.push_back(!w);
-                        } // we have a free variable..
-                        else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
-                            free_var = c_v;
-                        else // we have more than one free variable..
-                            break;
-                    }
-                    else
-                    {
-                        if (auto c_lb = lb(c_v); !is_infinite(c_lb))
-                        { // `c_v` has a lower bound that might be useful for the propagation..
-                            b += c_lb * c;
-                            for (const auto &w : c_bounds[lra_theory::lb_index(c_v)].reason)
-                                cnfl.push_back(!w);
-                        } // we have a free variable..
-                        else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
-                            free_var = c_v;
-                        else // we have more than one free variable..
-                            break;
-                    }
-
-                for (const auto &c_asr : a_watches[c])
-                    switch (c_asr.get().get_op())
-                    {
-                    case leq:
-                        if (val <= c_asr.get().get_val()) // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
-                            switch (get_sat().value(c_asr.get().get_lit()))
-                            {
-                            case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(!c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[ub_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                set_theory_conflict(std::move(cnfl));
-                                return false;
-                            }
-                            case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> [x <= v]..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(!c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[ub_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                if (!layers.empty()) // we store the current bounds for backtracking..
-                                    layers.back().emplace(ub_index(c), bound{ub(c), c_bounds[ub_index(c)].reason});
-                                c_bounds[ub_index(c)] = {b, cnfl}; // we update the upper bound of the variable..
-                                record(std::move(cnfl));
-                                break;
-                            }
-                            }
-                        break;
-                    case geq:
-                        if (val < c_asr.get().get_val()) // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
-                            switch (get_sat().value(c_asr.get().get_lit()))
-                            {
-                            case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[ub_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                set_theory_conflict(std::move(cnfl));
-                                return false;
-                            }
-                            case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> ![x >= v]..
-                            {
-                                std::vector<utils::lit> cnfl;
-                                cnfl.push_back(c_asr.get().get_lit());
-                                for (const auto &b : c_bounds[ub_index(c)].reason)
-                                    cnfl.push_back(!b);
-                                if (!layers.empty()) // we store the current bounds for backtracking..
-                                    layers.back().emplace(ub_index(c), bound{ub(c), c_bounds[ub_index(c)].reason});
-                                c_bounds[ub_index(c)] = {b, cnfl}; // we update the upper bound of the variable..
-                                record(std::move(cnfl));
-                                break;
-                            }
-                            }
-                        break;
-                    }
+                auto uub = it->second->unbounded_ub();
+                if (uub)
+                    for (const auto &c : a_watches[uub->first])
+                        if (!c.get().propagate_ub(uub->second))
+                            return false;
             }
+            else
+                for (const auto &c : t_watches[x_i])
+                {
+                    auto uub = tableau.at(c)->unbounded_ub();
+                    if (uub)
+                        for (const auto &c : a_watches[uub->first])
+                            if (!c.get().propagate_ub(uub->second))
+                                return false;
+                }
 
             return true;
         }
@@ -652,20 +399,20 @@ namespace semitone
         assert(tableau.find(x_i) == tableau.cend()); // the variable `x_i` must not be in the tableau..
         for (const auto &x : xpr.vars)
             t_watches[x.first].insert(x_i);
-        tableau.emplace(x_i, std::make_unique<lra_eq>(x_i, std::move(xpr)));
+        tableau.emplace(x_i, std::make_unique<lra_eq>(*this, x_i, std::move(xpr)));
     }
 
     bool lra_theory::propagate(const utils::lit &p) noexcept
     {
         const auto &a = v_asrts[variable(p)];
-        switch (get_sat().value(a->get_lit()))
+        switch (get_sat().value(a->b))
         {
         case utils::True: // direct assertion..
-            if (!((a->get_op() == leq) ? assert_upper(a->get_var(), a->get_val(), p) : assert_lower(a->get_var(), a->get_val(), p)))
+            if (!((a->o == leq) ? assert_upper(a->x, a->v, p) : assert_lower(a->x, a->v, p)))
                 return false;
             break;
         case utils::False: // negated assertion..
-            if (!((a->get_op() == leq) ? assert_lower(a->get_var(), a->get_val() + utils::inf_rational::epsilon, p) : assert_upper(a->get_var(), a->get_val() - utils::inf_rational::epsilon, p)))
+            if (!((a->o == leq) ? assert_lower(a->x, a->v + utils::inf_rational::epsilon, p) : assert_upper(a->x, a->v - utils::inf_rational::epsilon, p)))
                 return false;
             break;
         }
@@ -681,8 +428,8 @@ namespace semitone
             if (x_i_it == tableau.cend())
                 return true; // all the variables are within their bounds..
 
-            const auto x_i = x_i_it->first;            // we select the variable `x_i`..
-            const auto &l = x_i_it->second->get_lin(); // we select the linear expression `x_i = ...`..
+            const auto x_i = x_i_it->first;    // we select the variable `x_i`..
+            const auto &l = x_i_it->second->l; // we select the linear expression `x_i = ...`..
             if (value(x_i) < lb(x_i))
             { // the value of `x_i` is below its lower bound..
                 const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<VARIABLE_TYPE, utils::rational> &v)
@@ -735,5 +482,195 @@ namespace semitone
         for (const auto &[i, b] : layers.back())
             c_bounds[i] = b;
         layers.pop_back();
+    }
+
+    bool lra_assertion::propagate_lb(const utils::inf_rational &val) const noexcept
+    {
+        switch (o)
+        {
+        case leq:
+            if (auto c_b = th.get_sat().value(b); val > v && c_b != utils::False)
+            { // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
+                std::vector<utils::lit> cnfl;
+                cnfl.push_back(!b);
+                for (const auto &r : th.c_bounds[th.lb_index(x)].reason)
+                    cnfl.push_back(!r);
+                switch (c_b)
+                {
+                case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                {
+                    th.set_theory_conflict(std::move(cnfl));
+                    return false;
+                }
+                case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> ![x <= v]..
+                {
+                    if (!th.layers.empty()) // we store the current bounds for backtracking..
+                        th.layers.back().emplace(th.lb_index(x), lra_theory::bound{th.lb(x), th.c_bounds[th.lb_index(x)].reason});
+                    th.c_bounds[th.lb_index(x)] = {val, cnfl}; // we update the lower bound of the variable..
+                    th.record(std::move(cnfl));
+                    break;
+                }
+                }
+            }
+            break;
+        case geq:
+            if (auto c_b = th.get_sat().value(b); val >= v && c_b != utils::True)
+            { // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
+                std::vector<utils::lit> cnfl;
+                cnfl.push_back(b);
+                for (const auto &r : th.c_bounds[th.lb_index(x)].reason)
+                    cnfl.push_back(!r);
+                switch (c_b)
+                {
+                case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                {
+                    th.set_theory_conflict(std::move(cnfl));
+                    return false;
+                }
+                case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> [x >= v]..
+                {
+                    if (!th.layers.empty()) // we store the current bounds for backtracking..
+                        th.layers.back().emplace(th.lb_index(x), lra_theory::bound{th.lb(x), th.c_bounds[th.lb_index(x)].reason});
+                    th.c_bounds[th.lb_index(x)] = {val, cnfl}; // we update the lower bound of the variable..
+                    th.record(std::move(cnfl));
+                    break;
+                }
+                }
+            }
+            break;
+        }
+
+        return true;
+    }
+    bool lra_assertion::propagate_ub(const utils::inf_rational &val) const noexcept
+    {
+        switch (o)
+        {
+        case leq:
+            if (auto c_b = th.get_sat().value(b); val <= v && c_b != utils::False)
+            { // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
+                std::vector<utils::lit> cnfl;
+                cnfl.push_back(!b);
+                for (const auto &r : th.c_bounds[th.ub_index(x)].reason)
+                    cnfl.push_back(!r);
+                switch (c_b)
+                {
+                case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                {
+                    th.set_theory_conflict(std::move(cnfl));
+                    return false;
+                }
+                case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> [x <= v]..
+                {
+                    if (!th.layers.empty()) // we store the current bounds for backtracking..
+                        th.layers.back().emplace(th.ub_index(x), lra_theory::bound{th.ub(x), th.c_bounds[th.ub_index(x)].reason});
+                    th.c_bounds[th.ub_index(x)] = {val, cnfl}; // we update the upper bound of the variable..
+                    th.record(std::move(cnfl));
+                    break;
+                }
+                }
+            }
+            break;
+        case geq:
+            if (auto c_b = th.get_sat().value(b); val < v && c_b != utils::True)
+            { // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
+                std::vector<utils::lit> cnfl;
+                cnfl.push_back(b);
+                for (const auto &r : th.c_bounds[th.ub_index(x)].reason)
+                    cnfl.push_back(!r);
+                switch (c_b)
+                {
+                case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                {
+                    th.set_theory_conflict(std::move(cnfl));
+                    return false;
+                }
+                case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> ![x >= v]..
+                {
+                    if (!th.layers.empty()) // we store the current bounds for backtracking..
+                        th.layers.back().emplace(th.ub_index(x), lra_theory::bound{th.ub(x), th.c_bounds[th.ub_index(x)].reason});
+                    th.c_bounds[th.ub_index(x)] = {val, cnfl}; // we update the upper bound of the variable..
+                    th.record(std::move(cnfl));
+                    break;
+                }
+                }
+            }
+            break;
+        }
+
+        return true;
+    }
+
+    std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> lra_eq::unbounded_lb() const noexcept
+    {
+        utils::lin l_expr = l - utils::lin(x, utils::rational(1));
+        utils::inf_rational lb(l_expr.known_term); // the current lower bound of the linear expression..
+        VARIABLE_TYPE free_var = std::numeric_limits<VARIABLE_TYPE>::max();
+        std::vector<utils::lit> cnfl;
+        for (const auto &[c_v, c] : l_expr.vars)
+            if (is_positive(c))
+            {
+                if (auto c_lb = th.lb(c_v); !is_infinite(c_lb))
+                { // `c_v` has a lower bound that might be useful for the propagation..
+                    lb += c_lb * c;
+                    for (const auto &w : th.c_bounds[th.lb_index(c_v)].reason)
+                        cnfl.push_back(!w);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
+            }
+            else
+            {
+                if (auto c_ub = th.ub(c_v); !is_infinite(c_ub))
+                { // `c_v` has an upper bound that might be useful for the propagation..
+                    lb += c_ub * c;
+                    for (const auto &w : th.c_bounds[th.ub_index(c_v)].reason)
+                        cnfl.push_back(!w);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
+            }
+
+        return std::make_pair(free_var, lb);
+    }
+    std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> lra_eq::unbounded_ub() const noexcept
+    {
+        utils::lin l_expr = l - utils::lin(x, utils::rational(1));
+        utils::inf_rational ub(l_expr.known_term); // the current upper bound of the linear expression..
+        VARIABLE_TYPE free_var = std::numeric_limits<VARIABLE_TYPE>::max();
+        std::vector<utils::lit> cnfl;
+        for (const auto &[c_v, c] : l_expr.vars)
+            if (is_positive(c))
+            {
+                if (auto c_ub = th.ub(c_v); !is_infinite(c_ub))
+                { // `c_v` has an upper bound that might be useful for the propagation..
+                    ub += c_ub * c;
+                    for (const auto &w : th.c_bounds[th.ub_index(c_v)].reason)
+                        cnfl.push_back(!w);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
+            }
+            else
+            {
+                if (auto c_lb = th.lb(c_v); !is_infinite(c_lb))
+                { // `c_v` has a lower bound that might be useful for the propagation..
+                    ub += c_lb * c;
+                    for (const auto &w : th.c_bounds[th.lb_index(c_v)].reason)
+                        cnfl.push_back(!w);
+                } // we have a free variable..
+                else if (free_var == std::numeric_limits<VARIABLE_TYPE>::max())
+                    free_var = c_v;
+                else // we have more than one free variable..
+                    return std::nullopt;
+            }
+
+        return std::make_pair(free_var, ub);
     }
 } // namespace semitone

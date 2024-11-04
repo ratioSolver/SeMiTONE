@@ -28,8 +28,8 @@ namespace semitone
         for (const auto &c_asrts : rhs.v_asrts)
         {
             json::json j_asrt;
-            j_asrt["lit"] = to_string(c_asrts.second->get_lit());
-            switch (rhs.get_sat().value(c_asrts.second->get_lit()))
+            j_asrt["lit"] = to_string(c_asrts.second->b);
+            switch (rhs.get_sat().value(c_asrts.second->b))
             {
             case utils::True:
                 j_asrt["val"] = "T";
@@ -41,7 +41,7 @@ namespace semitone
                 j_asrt["val"] = "U";
                 break;
             }
-            j_asrt["constr"] = "x" + std::to_string(c_asrts.first) + (c_asrts.second->get_op() == geq ? " >= " : " <= ") + to_string(c_asrts.second->get_val());
+            j_asrt["constr"] = "x" + std::to_string(c_asrts.first) + (c_asrts.second->o == geq ? " >= " : " <= ") + to_string(c_asrts.second->v);
             j_asrts.push_back(std::move(j_asrt));
         }
         j_th["asrts"] = std::move(j_asrts);
@@ -51,7 +51,7 @@ namespace semitone
         {
             json::json j_row;
             j_row["var"] = "x" + std::to_string(it->first);
-            j_row["expr"] = to_string(it->second->get_lin());
+            j_row["expr"] = to_string(it->second->l);
         }
         j_th["tableau"] = std::move(j_tabl);
 
