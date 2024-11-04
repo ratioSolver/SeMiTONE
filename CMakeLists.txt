@@ -10,10 +10,10 @@ option(ENABLE_API "SeMiTONE API" OFF)
 
 set(SEMITONE_SOURCE )
 
-add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp src/ov/ov_theory.cpp src/lra/lra_theory.cpp src/dl/idl_theory.cpp src/dl/rdl_theory.cpp $<$<BOOL:${ENABLE_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/semitone_api.cpp>)
+add_library(SeMiTONE src/sat_core.cpp src/constr.cpp src/clause.cpp src/theory.cpp src/ov/ov_theory.cpp src/lra/lra_theory.cpp src/lra2/lra_theory2.cpp src/dl/idl_theory.cpp src/dl/rdl_theory.cpp $<$<BOOL:${ENABLE_API}>:${CMAKE_CURRENT_SOURCE_DIR}/src/semitone_api.cpp>)
 add_dependencies(SeMiTONE json)
 target_compile_features(SeMiTONE PUBLIC cxx_std_17)
-target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ov> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lra> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dl>)
+target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/ov> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lra> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/lra2> $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dl>)
 if(NOT TARGET json)
     add_subdirectory(extern/json)
     add_dependencies(SeMiTONE json)
