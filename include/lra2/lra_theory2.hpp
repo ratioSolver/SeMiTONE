@@ -153,6 +153,11 @@ namespace semitone
     void pivot(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j) noexcept;
     void new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept;
 
+    [[nodiscard]] bool propagate(const utils::lit &) noexcept override;
+    [[nodiscard]] bool check() noexcept override;
+    void push() noexcept override;
+    void pop() noexcept override;
+
   private:
     /**
      * Represents the bound of a variable and the reason for its existence.

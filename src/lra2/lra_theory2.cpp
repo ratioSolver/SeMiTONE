@@ -181,6 +181,25 @@ namespace semitone
         }
     }
 
+#ifdef BUILD_LISTENERS
+    void lra_theory2::add_listener(lra_value_listener2 &l) noexcept
+    {
+        l.th = this;
+        listeners.insert(&l);
+    }
+    void lra_theory2::remove_listener(lra_value_listener2 &l) noexcept
+    {
+        l.th = nullptr;
+        for (auto v : l.listening)
+        {
+            listening[v].erase(&l);
+            if (listening[v].empty())
+                listening.erase(v);
+        }
+        listeners.erase(&l);
+    }
+#endif
+
     [[nodiscard]] bool lra_theory2::assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
     {
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
@@ -335,5 +354,87 @@ namespace semitone
         for (const auto &x : xpr.vars)
             t_watches[x.first].insert(x_i);
         tableau.emplace(x_i, std::make_unique<lra_eq>(x_i, std::move(xpr)));
+    }
+
+    [[nodiscard]] bool lra_theory2::propagate(const utils::lit &p) noexcept
+    {
+        const auto &a = v_asrts[variable(p)];
+        switch (get_sat().value(a->b))
+        {
+        case utils::True: // direct assertion..
+            if (!((a->o == leq) ? assert_upper(a->x, a->v, {p}) : assert_lower(a->x, a->v, {p})))
+                return false;
+            break;
+        case utils::False: // negated assertion..
+            if (!((a->o == leq) ? assert_lower(a->x, a->v + utils::inf_rational::epsilon, {p}) : assert_upper(a->x, a->v - utils::inf_rational::epsilon, {p})))
+                return false;
+            break;
+        }
+        return true;
+    }
+    [[nodiscard]] bool lra_theory2::check() noexcept
+    {
+        while (true)
+        {
+            // we search for a variable whose value is not within its bounds..
+            const auto &x_i_it = std::find_if(tableau.cbegin(), tableau.cend(), [this](const auto &v)
+                                              { return value(v.first) < lb(v.first) || value(v.first) > ub(v.first); });
+            if (x_i_it == tableau.cend())
+                return true; // all the variables are within their bounds..
+
+            const auto x_i = x_i_it->first;    // we select the variable `x_i`..
+            const auto &l = x_i_it->second->l; // we select the linear expression `x_i = ...`..
+            if (value(x_i) < lb(x_i))
+            { // the value of `x_i` is below its lower bound..
+                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<VARIABLE_TYPE, utils::rational> &v)
+                                                  { return (is_positive(l.vars.at(v.first)) && value(v.first) < ub(v.first)) || (is_negative(l.vars.at(v.first)) && value(v.first) > lb(v.first)); });
+                if (x_j_it != l.vars.cend()) // var x_j can be used to increase the value of x_i..
+                    pivot_and_update(x_i, x_j_it->first, lb(x_i));
+                else
+                { // we generate an explanation for the conflict..
+                    std::vector<utils::lit> cnfl;
+                    for (const auto &[v, c] : l.vars)
+                        if (is_positive(c))
+                            for (const auto &w : c_bounds[lb_index(v)].reason)
+                                cnfl.push_back(!w);
+                        else if (is_negative(c))
+                            for (const auto &w : c_bounds[ub_index(v)].reason)
+                                cnfl.push_back(!w);
+                    for (const auto &w : c_bounds[lb_index(x_i)].reason)
+                        cnfl.push_back(!w);
+                    set_theory_conflict(std::move(cnfl));
+                    return false;
+                }
+            }
+            else if (value(x_i) > ub(x_i))
+            { // the value of `x_i` is above its upper bound..
+                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<VARIABLE_TYPE, utils::rational> &v)
+                                                  { return (is_positive(l.vars.at(v.first)) && value(v.first) > lb(v.first)) || (is_negative(l.vars.at(v.first)) && value(v.first) < ub(v.first)); });
+                if (x_j_it != l.vars.cend()) // var x_j can be used to decrease the value of x_i..
+                    pivot_and_update(x_i, x_j_it->first, ub(x_i));
+                else
+                { // we generate an explanation for the conflict..
+                    std::vector<utils::lit> cnfl;
+                    for (const auto &[v, c] : l.vars)
+                        if (is_positive(c))
+                            for (const auto &w : c_bounds[lb_index(v)].reason)
+                                cnfl.push_back(!w);
+                        else if (is_negative(c))
+                            for (const auto &w : c_bounds[ub_index(v)].reason)
+                                cnfl.push_back(!w);
+                    for (const auto &w : c_bounds[ub_index(x_i)].reason)
+                        cnfl.push_back(!w);
+                    set_theory_conflict(std::move(cnfl));
+                    return false;
+                }
+            }
+        }
+    }
+    void lra_theory2::push() noexcept { layers.emplace_back(); }
+    void lra_theory2::pop() noexcept
+    { // we restore the bounds of the variables to the previous state..
+        for (const auto &[i, b] : layers.back())
+            c_bounds[i] = b;
+        layers.pop_back();
     }
 } // namespace semitone
