@@ -1,6 +1,8 @@
 #include "theory.hpp"
 #include "sat_core.hpp"
 #include "clause.hpp"
+#include "logging.hpp"
+#include <algorithm>
 
 namespace semitone
 {
@@ -27,14 +29,29 @@ namespace semitone
 
     void theory::analyze_and_backjump() noexcept
     {
+        std::sort(cnfl.begin(), cnfl.end());
+        utils::lit p;
+        size_t j = 0;
+        size_t bt_level = 0;
+        for (auto it = cnfl.cbegin(); it != cnfl.cend(); ++it)
+            if (*it != p && sat->level[variable(*it)] > 0)
+            { // we include this literal in the clause..
+                p = *it;
+                cnfl[j++] = p;
+                if (bt_level < sat->level[variable(p)])
+                    bt_level = sat->level[variable(p)];
+            }
+        cnfl.resize(j);
+
+        // while (sat->decision_level() > bt_level)
+        //     sat->pop();
+
         // we create a conflict clause for the analysis..
         clause cnfl_cl(*sat, std::move(cnfl));
 
         // .. and we analyze the conflict..
         std::vector<utils::lit> no_good;
-        size_t bt_level;
         sat->analyze(cnfl_cl, no_good, bt_level);
-        cnfl.clear();
 
         // we backjump..
         while (sat->decision_level() > bt_level)
@@ -42,6 +59,8 @@ namespace semitone
         // .. and record the no-good..
         sat->record(no_good);
     }
+
+    void theory::set_theory_conflict(std::vector<utils::lit> &&cnfl) noexcept { this->cnfl = std::move(cnfl); }
 
     void theory::record(std::vector<utils::lit> &&clause) noexcept { sat->record(std::move(clause)); }
 } // namespace semitone

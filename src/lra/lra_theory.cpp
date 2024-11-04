@@ -29,8 +29,8 @@ namespace semitone
     {
         assert(lb < ub);
         auto var = vals.size();
-        c_bounds.emplace_back(bound{lb, {utils::TRUE_lit}});
-        c_bounds.emplace_back(bound{ub, {utils::TRUE_lit}});
+        c_bounds.emplace_back(bound{lb, {}});
+        c_bounds.emplace_back(bound{ub, {}});
         vals.push_back(utils::inf_rational(utils::rational::zero));
         exprs.emplace("x" + std::to_string(var), var);
         a_watches.emplace_back();

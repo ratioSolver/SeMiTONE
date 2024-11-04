@@ -67,7 +67,7 @@ namespace semitone
      *
      * @param cnfl A rvalue reference to a vector of literals representing the theory conflict.
      */
-    void set_theory_conflict(std::vector<utils::lit> &&cnfl) noexcept { this->cnfl = std::move(cnfl); }
+    void set_theory_conflict(std::vector<utils::lit> &&cnfl) noexcept;
 
     /**
      * @brief Backtracks to the proper decision level and analyzes the conflict.

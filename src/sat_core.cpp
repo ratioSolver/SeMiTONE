@@ -496,12 +496,12 @@ namespace semitone
         {
             // trace reason for `p`..
             for (const auto &q : p_reason) // the order in which these literals are visited is not relevant..
-                if (seen.insert(variable(q)).second)
+                if (level[variable(q)] > 0 && seen.insert(variable(q)).second)
                 {
                     assert(value(q) == utils::True); // this literal should have propagated the clause..
-                    if (level[variable(q)] == decision_level())
+                    if (level[variable(q)] >= decision_level())
                         counter++;
-                    else if (level[variable(q)] > 0) // exclude variables from decision level 0..
+                    else
                     {
                         out_learnt.push_back(!q); // this literal has been assigned in a previous decision level..
                         out_btlevel = std::max(out_btlevel, level[variable(q)]);
