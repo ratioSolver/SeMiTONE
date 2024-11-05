@@ -4,47 +4,35 @@
 #include "lit.hpp"
 #include "lin.hpp"
 #include "inf_rational.hpp"
-
-#include <optional>
-#include <queue>
-#include <vector>
 #include <set>
 #include <unordered_map>
-
+#include <queue>
 #ifdef ENABLE_API
 #include "json.hpp"
-#endif
-#ifdef BUILD_LISTENERS
-#include <set>
 #endif
 
 namespace semitone
 {
+  class lra_theory;
+
   enum op
   {
     leq,
     geq
   };
 
-  class lra_theory;
-
   class lra_assertion
   {
     friend class lra_theory;
 
   public:
-    lra_assertion(lra_theory &th, const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : th(th), b(b), x(x), o(o), v(v) {}
-
-  private:
-    bool propagate_lb(const utils::inf_rational &val) const noexcept;
-    bool propagate_ub(const utils::inf_rational &val) const noexcept;
+    lra_assertion(const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : b(b), x(x), o(o), v(v) {}
 
 #ifdef ENABLE_API
-    [[nodiscard]] friend json::json to_json(const lra_theory &th) noexcept;
+    friend json::json to_json(const lra_theory &rhs) noexcept;
 #endif
 
   private:
-    lra_theory &th;              // the theory..
     const utils::lit b;          // the literal associated to the assertion..
     const VARIABLE_TYPE x;       // the numeric variable..
     const op o;                  // the operator..
@@ -56,42 +44,23 @@ namespace semitone
     friend class lra_theory;
 
   public:
-    lra_eq(lra_theory &th, const VARIABLE_TYPE x, const utils::lin &&l) noexcept : th(th), x(x), l(std::move(l)) {}
+    lra_eq(const VARIABLE_TYPE x, const utils::lin &&l) noexcept : x(x), l(std::move(l)) {}
 
 #ifdef ENABLE_API
-    [[nodiscard]] friend json::json to_json(const lra_theory &th) noexcept;
+    friend json::json to_json(const lra_theory &rhs) noexcept;
 #endif
 
-    std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> unbounded_lb() const noexcept;
-    std::optional<std::pair<VARIABLE_TYPE, utils::inf_rational>> unbounded_ub() const noexcept;
-
   private:
-    lra_theory &th;        // the theory..
     const VARIABLE_TYPE x; // the numeric variable..
     utils::lin l;          // the linear expression..
-  };
-
-  class var_update
-  {
-    friend class lra_theory;
-
-  public:
-    var_update(const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : x(x), o(o), v(v) {}
-
-  private:
-    const VARIABLE_TYPE x;       // the numeric variable..
-    const op o;                  // the operator..
-    const utils::inf_rational v; // the constant..
   };
 
 #ifdef BUILD_LISTENERS
   class lra_value_listener;
 #endif
 
-  class lra_theory final : public theory
+  class lra_theory : public theory
   {
-    friend class lra_assertion;
-    friend class lra_eq;
 #ifdef BUILD_LISTENERS
     friend class lra_value_listener;
 #endif
@@ -178,6 +147,33 @@ namespace semitone
     [[nodiscard]] inline utils::inf_rational value(const VARIABLE_TYPE v) const noexcept { return vals[v]; }
 
     /**
+     * @brief Returns the current lower bound of linear expression `l`.
+     *
+     * @param l the linear expression to get the lower bound of.
+     * @return utils::inf_rational the current lower bound of linear expression `l`.
+     */
+    [[nodiscard]] inline utils::inf_rational lb(const utils::lin &l) const noexcept
+    {
+      utils::inf_rational b(l.known_term);
+      for (const auto &[v, c] : l.vars)
+        b += (is_positive(c) ? lb(v) : ub(v)) * c;
+      return b;
+    }
+    /**
+     * @brief Returns the current upper bound of linear expression `l`.
+     *
+     * @param l the linear expression to get the upper bound of.
+     * @return utils::inf_rational the current upper bound of linear expression `l`.
+     */
+    [[nodiscard]] inline utils::inf_rational ub(const utils::lin &l) const noexcept
+    {
+      utils::inf_rational b(l.known_term);
+      for (const auto &[v, c] : l.vars)
+        b += (is_positive(c) ? ub(v) : lb(v)) * c;
+      return b;
+    }
+
+    /**
      * @brief Returns the current value of linear expression `l`.
      *
      * @param l the linear expression to get the value of.
@@ -228,19 +224,19 @@ namespace semitone
      *
      * @param x_i the variable to set the lower bound of.
      * @param val the lower bound to set.
-     * @param p the literal that caused the change.
+     * @param r the literals that caused the change.
      * @return bool whether the propagation was successful.
      */
-    [[nodiscard]] bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    [[nodiscard]] bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept { return assert_lower(x_i, val, r) && propagate(); }
     /**
      * @brief Sets the upper bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
      *
      * @param x_i the variable to set the upper bound of.
      * @param val the upper bound to set.
-     * @param p the literal that caused the change.
+     * @param r the literals that caused the change.
      * @return bool whether the propagation was successful.
      */
-    [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
+    [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept { return assert_upper(x_i, val, r) && propagate(); }
 
 #ifdef BUILD_LISTENERS
     void add_listener(lra_value_listener &l) noexcept;
@@ -248,31 +244,19 @@ namespace semitone
 #endif
 
   private:
-    /**
-     * @brief Asserts that the lower bound of variable `x_i` is `val` and returns whether the assertion was successful.
-     *
-     * @param x_i the variable to assert the lower bound of.
-     * @param val the lower bound to assert.
-     * @param p the literal that caused the assertion.
-     * @return bool whether the assertion was successful.
-     */
-    [[nodiscard]] bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
-    /**
-     * @brief Asserts that the upper bound of variable `x_i` is `val` and returns whether the assertion was successful.
-     *
-     * @param x_i the variable to assert the upper bound of.
-     * @param val the upper bound to assert.
-     * @param p the literal that caused the assertion.
-     * @return bool whether the assertion was successful.
-     */
-    [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const utils::lit &p) noexcept;
-
-    [[nodiscard]] bool propagate();
+    [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> lb_and_reason(const utils::lin &l) const noexcept;
+    [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> ub_and_reason(const utils::lin &l) const noexcept;
 
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
-    bool is_basic(const VARIABLE_TYPE v) const noexcept { return tableau.count(v); }
+    [[nodiscard]] bool is_basic(const VARIABLE_TYPE v) const noexcept { return tableau.count(v); }
+
+    [[nodiscard]] bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
+    [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
+
+    bool propagate() noexcept;
+
     void update(const VARIABLE_TYPE x_i, const utils::inf_rational &v) noexcept;
     void pivot_and_update(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j, const utils::inf_rational &v) noexcept;
     void pivot(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j) noexcept;
@@ -295,6 +279,12 @@ namespace semitone
     {
       utils::inf_rational value;      // the value of the bound..
       std::vector<utils::lit> reason; // the reason for the value..
+    };
+
+    struct var_update
+    {
+      const VARIABLE_TYPE x; // the numeric variable..
+      const op o;            // the operator (leq for upper bound, geq for lower bound)..
     };
 
     std::queue<var_update> prop_queue;                                         // propagation queue..
