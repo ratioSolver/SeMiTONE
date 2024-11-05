@@ -135,12 +135,42 @@ namespace semitone
      */
     [[nodiscard]] inline utils::inf_rational value(const VARIABLE_TYPE v) const noexcept { return vals[v]; }
 
+    /**
+     * @brief Returns the current lower bound of linear expression `l`.
+     *
+     * @param l the linear expression to get the lower bound of.
+     * @return utils::inf_rational the current lower bound of linear expression `l`.
+     */
+    [[nodiscard]] inline utils::inf_rational lb(const utils::lin &l) const noexcept
+    {
+      utils::inf_rational b(l.known_term);
+      for (const auto &[v, c] : l.vars)
+        b += (is_positive(c) ? lb(v) : ub(v)) * c;
+      return b;
+    }
+    /**
+     * @brief Returns the current upper bound of linear expression `l`.
+     *
+     * @param l the linear expression to get the upper bound of.
+     * @return utils::inf_rational the current upper bound of linear expression `l`.
+     */
+    [[nodiscard]] inline utils::inf_rational ub(const utils::lin &l) const noexcept
+    {
+      utils::inf_rational b(l.known_term);
+      for (const auto &[v, c] : l.vars)
+        b += (is_positive(c) ? ub(v) : lb(v)) * c;
+      return b;
+    }
+
 #ifdef BUILD_LISTENERS
     void add_listener(lra_value_listener2 &l) noexcept;
     void remove_listener(lra_value_listener2 &l) noexcept;
 #endif
 
   private:
+    [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> lb_and_reason(const utils::lin &l) const noexcept;
+    [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> ub_and_reason(const utils::lin &l) const noexcept;
+
     [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 

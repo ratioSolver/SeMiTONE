@@ -200,6 +200,53 @@ namespace semitone
     }
 #endif
 
+    [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> lra_theory2::lb_and_reason(const utils::lin &l) const noexcept
+    {
+        utils::inf_rational b(l.known_term);
+        std::vector<utils::lit> cnfl;
+        for (const auto &[v, c] : l.vars)
+            if (is_positive(c))
+            {
+                b += lb(v) * c;
+                if (is_infinite(b))
+                    return {b, {}};
+                for (const auto &w : c_bounds[lb_index(v)].reason)
+                    cnfl.push_back(w);
+            }
+            else
+            {
+                b += ub(v) * c;
+                if (is_infinite(b))
+                    return {b, {}};
+                for (const auto &w : c_bounds[ub_index(v)].reason)
+                    cnfl.push_back(w);
+            }
+        return {b, cnfl};
+    }
+    [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> lra_theory2::ub_and_reason(const utils::lin &l) const noexcept
+    {
+        utils::inf_rational b(l.known_term);
+        std::vector<utils::lit> cnfl;
+        for (const auto &[v, c] : l.vars)
+            if (is_positive(c))
+            {
+                b += ub(v) * c;
+                if (is_infinite(b))
+                    return {b, {}};
+                for (const auto &w : c_bounds[ub_index(v)].reason)
+                    cnfl.push_back(w);
+            }
+            else
+            {
+                b += lb(v) * c;
+                if (is_infinite(b))
+                    return {b, {}};
+                for (const auto &w : c_bounds[lb_index(v)].reason)
+                    cnfl.push_back(w);
+            }
+        return {b, cnfl};
+    }
+
     [[nodiscard]] bool lra_theory2::assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
     {
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
@@ -309,6 +356,34 @@ namespace semitone
                         }
                         break;
                     }
+                if (tableau.find(x) != tableau.cend())
+                { // bound propagation for the basic variable `x`..
+                  // we look for tighter bounds..
+                    utils::lin l = utils::lin(x, utils::rational::one) - tableau.at(x)->l;
+                    for (const auto &[v, c] : l.vars)
+                    {
+                        utils::lin c_l = l / c;
+                        c_l.vars.erase(v);
+                        const auto [lb_v, r_lb] = lb_and_reason(c_l);
+                        if (lb_v > ub(v)) // we have a conflict: either the reason for the lower bound of `v` is false or the reason for the upper bound of `v` is false..
+                        {
+                            std::vector<utils::lit> cnfl;
+                            for (const auto &w : r_lb)
+                                cnfl.push_back(!w);
+                            for (const auto &w : c_bounds[ub_index(v)].reason)
+                                cnfl.push_back(!w);
+                            set_theory_conflict(std::move(cnfl));
+                            return false;
+                        }
+                        else if (lb_v > lb(v)) // we have a tighter lower bound for `v`..
+                        {
+                            if (!layers.empty()) // we store the current bounds for backtracking..
+                                layers.back().emplace(lb_index(v), bound{lb(v), c_bounds[lb_index(v)].reason});
+                            c_bounds[lb_index(v)] = {lb_v, r_lb}; // we update the lower bound of the variable..
+                            prop_queue.push(var_update{v, geq});
+                        }
+                    }
+                }
                 break;
             case geq: // a lower bound has been updated..
                       // unate propagation..
@@ -352,6 +427,34 @@ namespace semitone
                         }
                         break;
                     }
+                if (tableau.find(x) != tableau.cend())
+                { // bound propagation for the basic variable `x`..
+                  // we look for tighter bounds..
+                    utils::lin l = utils::lin(x, utils::rational::one) - tableau.at(x)->l;
+                    for (const auto &[v, c] : l.vars)
+                    {
+                        utils::lin c_l = l / c;
+                        c_l.vars.erase(v);
+                        const auto [ub_v, r_ub] = ub_and_reason(c_l);
+                        if (ub_v < lb(v)) // we have a conflict: either the reason for the upper bound of `v` is false or the reason for the lower bound of `v` is false..
+                        {
+                            std::vector<utils::lit> cnfl;
+                            for (const auto &w : r_ub)
+                                cnfl.push_back(!w);
+                            for (const auto &w : c_bounds[lb_index(v)].reason)
+                                cnfl.push_back(!w);
+                            set_theory_conflict(std::move(cnfl));
+                            return false;
+                        }
+                        else if (ub_v < ub(v)) // we have a tighter upper bound for `v`..
+                        {
+                            if (!layers.empty()) // we store the current bounds for backtracking..
+                                layers.back().emplace(ub_index(v), bound{ub(v), c_bounds[ub_index(v)].reason});
+                            c_bounds[ub_index(v)] = {ub_v, r_ub}; // we update the upper bound of the variable..
+                            prop_queue.push(var_update{v, leq});
+                        }
+                    }
+                }
                 break;
             }
         }
