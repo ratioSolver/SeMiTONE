@@ -1,5 +1,6 @@
 #include "sat_core.hpp"
 #include "lra_theory.hpp"
+#include "logging.hpp"
 #include <cassert>
 
 void test_lra()

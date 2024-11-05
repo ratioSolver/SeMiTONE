@@ -416,12 +416,12 @@ namespace semitone
         for (const auto &th : theories)
             if (!th->check()) // the theory is conflicting..
             {
-                assert(!root_level());
-                assert(!th->cnfl.empty());
+                assert(prop_queue.empty());
 
                 if (root_level()) // the problem is unsatisfiable..
                     return false;
 
+                assert(!th->cnfl.empty());
                 if (th->cnfl.size() == 1)
                 {
                     while (decision_level() > 0)
@@ -478,7 +478,6 @@ namespace semitone
             return val;
         assigns[variable(p)] = sign(p);
         level[variable(p)] = decision_level();
-        LOG_DEBUG("b" << variable(p) << " = " << value(p) << " @ " << level[variable(p)]);
         if (c)
             reason[variable(p)] = c;
         trail.push_back(p);
@@ -523,8 +522,6 @@ namespace semitone
             do
             { // select next literal to look at..
                 p = trail.back();
-                LOG_DEBUG("b" << variable(p) << " = " << value(p) << " @ " << level[variable(p)]);
-                LOG_DEBUG("Current decision level: " << decision_level());
                 assert(level[variable(p)] == decision_level()); // this variable must have been assigned at the current decision level..
                 if (reason[variable(p)])                        // `p` can be the asserting literal..
                     p_reason = reason[variable(p)]->get().get_reason(p);
