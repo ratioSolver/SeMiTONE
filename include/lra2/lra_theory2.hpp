@@ -6,6 +6,7 @@
 #include "inf_rational.hpp"
 #include <set>
 #include <unordered_map>
+#include <queue>
 
 namespace semitone
 {
@@ -148,6 +149,8 @@ namespace semitone
     [[nodiscard]] bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
     [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
 
+    bool propagate() noexcept;
+
     void update(const VARIABLE_TYPE x_i, const utils::inf_rational &v) noexcept;
     void pivot_and_update(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j, const utils::inf_rational &v) noexcept;
     void pivot(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j) noexcept;
@@ -168,6 +171,13 @@ namespace semitone
       std::vector<utils::lit> reason; // the reason for the value..
     };
 
+    struct var_update
+    {
+      const VARIABLE_TYPE x; // the numeric variable..
+      const op o;            // the operator (leq for upper bound, geq for lower bound)..
+    };
+
+    std::queue<var_update> prop_queue;                                         // propagation queue..
     std::vector<bound> c_bounds;                                               // the current bounds..
     std::vector<utils::inf_rational> vals;                                     // the current values..
     std::map<const VARIABLE_TYPE, std::unique_ptr<lra_assertion>> v_asrts;     // the assertions (literal to assertions) used for enforcing (negating) assertions..

@@ -225,7 +225,8 @@ namespace semitone
             if (vals[x_i] < val && !is_basic(x_i))
                 update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
 
-            return true;
+            prop_queue.push(var_update{x_i, geq});
+            return propagate(); // we propagate the new bounds..
         }
     }
     [[nodiscard]] bool lra_theory2::assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
@@ -253,8 +254,108 @@ namespace semitone
             if (vals[x_i] > val && !is_basic(x_i))
                 update(x_i, val); // we set the value of `x_i` to `val` and update all the basic variables which are related to `x_i` by the tableau..
 
-            return true;
+            prop_queue.push(var_update{x_i, leq});
+            return propagate(); // we propagate the new bounds..
         }
+    }
+
+    bool lra_theory2::propagate() noexcept
+    {
+        while (!prop_queue.empty())
+        {
+            const auto [x, o] = prop_queue.front();
+            prop_queue.pop();
+            switch (o)
+            {
+            case leq: // an upper bound has been updated..
+                      // unate propagation..
+                for (const auto &c : a_watches[x])
+                    switch (c.get().o)
+                    {
+                    case leq:
+                        if (auto c_b = get_sat().value(c.get().b); c_b != utils::False && c_bounds[ub_index(c.get().x)].value <= c.get().v)
+                        { // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
+                            std::vector<utils::lit> cnfl;
+                            cnfl.push_back(!c.get().b);
+                            for (const auto &w : c_bounds[ub_index(c.get().x)].reason)
+                                cnfl.push_back(!w);
+                            switch (c_b)
+                            {
+                            case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                                set_theory_conflict(std::move(cnfl));
+                                return false;
+                            case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> [x <= v]..
+                                record(std::move(cnfl));
+                                break;
+                            }
+                        }
+                        break;
+                    case geq:
+                        if (auto c_b = get_sat().value(c.get().b); c_b != utils::True && c_bounds[ub_index(c.get().x)].value < c.get().v)
+                        { // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
+                            std::vector<utils::lit> cnfl;
+                            cnfl.push_back(c.get().b);
+                            for (const auto &w : c_bounds[ub_index(c.get().x)].reason)
+                                cnfl.push_back(!w);
+                            switch (c_b)
+                            {
+                            case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                                set_theory_conflict(std::move(cnfl));
+                                return false;
+                            case utils::Undefined: // we propagate information to the sat core: [x <= ub(x)] -> ![x >= v]..
+                                record(std::move(cnfl));
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                break;
+            case geq: // a lower bound has been updated..
+                      // unate propagation..
+                for (const auto &c : a_watches[x])
+                    switch (c.get().o)
+                    {
+                    case leq:
+                        if (auto c_b = get_sat().value(c.get().b); c_b != utils::False && c_bounds[lb_index(c.get().x)].value >= c.get().v)
+                        { // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
+                            std::vector<utils::lit> cnfl;
+                            cnfl.push_back(!c.get().b);
+                            for (const auto &w : c_bounds[lb_index(c.get().x)].reason)
+                                cnfl.push_back(!w);
+                            switch (c_b)
+                            {
+                            case utils::True: // the assertion should be satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                                set_theory_conflict(std::move(cnfl));
+                                return false;
+                            case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> ![x <= v]..
+                                record(std::move(cnfl));
+                                break;
+                            }
+                        }
+                        break;
+                    case geq:
+                        if (auto c_b = get_sat().value(c.get().b); c_b != utils::True && c_bounds[lb_index(c.get().x)].value > c.get().v)
+                        { // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
+                            std::vector<utils::lit> cnfl;
+                            cnfl.push_back(c.get().b);
+                            for (const auto &w : c_bounds[lb_index(c.get().x)].reason)
+                                cnfl.push_back(!w);
+                            switch (c_b)
+                            {
+                            case utils::False: // the assertion should be not satisfied.. we have a propositional inconsistency (notice that this can happen in case some propositional literal has been assigned but the theory did not propagate yet)..
+                                set_theory_conflict(std::move(cnfl));
+                                return false;
+                            case utils::Undefined: // we propagate information to the sat core: [x >= lb(x)] -> [x >= v]..
+                                record(std::move(cnfl));
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                break;
+            }
+        }
+        return true;
     }
 
     void lra_theory2::update(const VARIABLE_TYPE x_i, const utils::inf_rational &v) noexcept
