@@ -80,6 +80,7 @@ namespace semitone
         // we create a new control variable..
         const auto ctr = get_sat().new_var();
         const utils::lit ctr_lit(ctr);
+        LOG_DEBUG(to_string(ctr_lit) << ": " << s_asrt);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
         v_asrts.emplace(ctr, std::make_unique<lra_assertion>(ctr_lit, x, op::leq, v));
@@ -100,6 +101,7 @@ namespace semitone
         // we create a new control variable..
         const auto ctr = get_sat().new_var();
         const utils::lit ctr_lit(ctr);
+        LOG_DEBUG(to_string(ctr_lit) << ": " << s_asrt);
         bind(ctr);
         s_asrts.emplace(s_asrt, ctr_lit);
         v_asrts.emplace(ctr, std::make_unique<lra_assertion>(ctr_lit, x, op::geq, v));
@@ -181,6 +183,9 @@ namespace semitone
         }
     }
 
+    [[nodiscard]] bool lra_theory::set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept { return assert_lower(x_i, val, r) ? propagate() && get_sat().propagate() : backtrack_analyze_and_backjump(); }
+    [[nodiscard]] bool lra_theory::set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept { return assert_upper(x_i, val, r) ? propagate() && get_sat().propagate() : backtrack_analyze_and_backjump(); }
+
 #ifdef BUILD_LISTENERS
     void lra_theory::add_listener(lra_value_listener &l) noexcept
     {
@@ -251,7 +256,8 @@ namespace semitone
     {
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
                            { return get_sat().value(lit) != utils::Undefined; })); // the literals must be assigned..
-        if (val <= lb(x_i))                                                        // the assertion is already satisfied..
+        LOG_DEBUG("x" + std::to_string(x_i) + " [" + to_string(lb(x_i)) + ", " + to_string(ub(x_i)) + "] >= " + to_string(val));
+        if (val <= lb(x_i)) // the assertion is already satisfied..
             return true;
         else if (val > ub(x_i))
         { // the assertion introduces a conflict..
@@ -280,7 +286,8 @@ namespace semitone
     {
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
                            { return get_sat().value(lit) != utils::Undefined; })); // the literals must be assigned..
-        if (val >= ub(x_i))                                                        // the assertion is already satisfied..
+        LOG_DEBUG("x" + std::to_string(x_i) + " [" + to_string(lb(x_i)) + ", " + to_string(ub(x_i)) + "] <= " + to_string(val));
+        if (val >= ub(x_i)) // the assertion is already satisfied..
             return true;
         else if (val < lb(x_i))
         { // the assertion introduces a conflict..
@@ -361,20 +368,22 @@ namespace semitone
                 { // bound propagation for the basic variable `x`..
                   // we look for tighter bounds..
                     utils::lin l = utils::lin(x, utils::rational::one) - tableau.at(x)->l;
-                    for (const auto &[v, c] : l.vars)
+                    LOG_DEBUG(to_string(l));
+                    for (const auto &[v, c] : tableau.at(x)->l.vars)
                     {
                         utils::lin c_l = l / c;
                         c_l.vars.erase(v);
+                        LOG_DEBUG("x" + std::to_string(v) + " [" + to_string(lb(v)) + ", " + to_string(ub(v)) + "] = " + to_string(c_l) + " [" + to_string(lb(c_l)) + ", " + to_string(ub(c_l)) + "]");
                         if (is_positive(c))
                         {
-                            const auto [lb_v, r_lb] = lb_and_reason(c_l);
-                            if (!assert_lower(v, lb_v, r_lb))
+                            const auto [ub_v, r_ub] = ub_and_reason(c_l);
+                            if (!assert_upper(v, ub_v, r_ub))
                                 return false;
                         }
                         else
                         {
-                            const auto [ub_v, r_ub] = ub_and_reason(c_l);
-                            if (!assert_upper(v, ub_v, r_ub))
+                            const auto [lb_v, r_lb] = lb_and_reason(c_l);
+                            if (!assert_lower(v, lb_v, r_lb))
                                 return false;
                         }
                     }
@@ -383,21 +392,23 @@ namespace semitone
                     for (const auto &c : t_watches[x])
                     { // we look for tighter bounds..
                         utils::lin l = utils::lin(c, utils::rational::one) - tableau.at(c)->l;
+                        LOG_DEBUG(to_string(l));
                         for (const auto &[v, c] : tableau.at(c)->l.vars)
                             if (v != x)
                             {
                                 utils::lin c_l = l / c;
                                 c_l.vars.erase(v);
+                                LOG_DEBUG("x" + std::to_string(v) + " [" + to_string(lb(v)) + ", " + to_string(ub(v)) + "] = " + to_string(c_l) + " [" + to_string(lb(c_l)) + ", " + to_string(ub(c_l)) + "]");
                                 if (is_positive(c))
                                 {
-                                    const auto [ub_v, r_ub] = ub_and_reason(c_l);
-                                    if (!assert_upper(v, ub_v, r_ub))
+                                    const auto [lb_v, r_lb] = lb_and_reason(c_l);
+                                    if (!assert_lower(v, lb_v, r_lb))
                                         return false;
                                 }
                                 else
                                 {
-                                    const auto [lb_v, r_lb] = lb_and_reason(c_l);
-                                    if (!assert_lower(v, lb_v, r_lb))
+                                    const auto [ub_v, r_ub] = ub_and_reason(c_l);
+                                    if (!assert_upper(v, ub_v, r_ub))
                                         return false;
                                 }
                             }
@@ -450,20 +461,22 @@ namespace semitone
                 { // bound propagation for the basic variable `x`..
                   // we look for tighter bounds..
                     utils::lin l = utils::lin(x, utils::rational::one) - tableau.at(x)->l;
-                    for (const auto &[v, c] : l.vars)
+                    LOG_DEBUG(to_string(l));
+                    for (const auto &[v, c] : tableau.at(x)->l.vars)
                     {
                         utils::lin c_l = l / c;
                         c_l.vars.erase(v);
+                        LOG_DEBUG("x" + std::to_string(v) + " [" + to_string(lb(v)) + ", " + to_string(ub(v)) + "] = " + to_string(c_l) + " [" + to_string(lb(c_l)) + ", " + to_string(ub(c_l)) + "]");
                         if (is_positive(c))
                         {
-                            const auto [ub_v, r_ub] = ub_and_reason(c_l);
-                            if (!assert_upper(v, ub_v, r_ub))
+                            const auto [lb_v, r_lb] = lb_and_reason(c_l);
+                            if (!assert_lower(v, lb_v, r_lb))
                                 return false;
                         }
                         else
                         {
-                            const auto [lb_v, r_lb] = lb_and_reason(c_l);
-                            if (!assert_lower(v, lb_v, r_lb))
+                            const auto [ub_v, r_ub] = ub_and_reason(c_l);
+                            if (!assert_upper(v, ub_v, r_ub))
                                 return false;
                         }
                     }
@@ -472,21 +485,23 @@ namespace semitone
                     for (const auto &c : t_watches[x])
                     { // we look for tighter bounds..
                         utils::lin l = utils::lin(c, utils::rational::one) - tableau.at(c)->l;
+                        LOG_DEBUG(to_string(l));
                         for (const auto &[v, c] : tableau.at(c)->l.vars)
                             if (v != x)
                             {
                                 utils::lin c_l = l / c;
                                 c_l.vars.erase(v);
+                                LOG_DEBUG("x" + std::to_string(v) + " [" + to_string(lb(v)) + ", " + to_string(ub(v)) + "] = " + to_string(c_l) + " [" + to_string(lb(c_l)) + ", " + to_string(ub(c_l)) + "]");
                                 if (is_positive(c))
                                 {
-                                    const auto [lb_v, r_lb] = lb_and_reason(c_l);
-                                    if (!assert_lower(v, lb_v, r_lb))
+                                    const auto [ub_v, r_ub] = ub_and_reason(c_l);
+                                    if (!assert_upper(v, ub_v, r_ub))
                                         return false;
                                 }
                                 else
                                 {
-                                    const auto [ub_v, r_ub] = ub_and_reason(c_l);
-                                    if (!assert_upper(v, ub_v, r_ub))
+                                    const auto [lb_v, r_lb] = lb_and_reason(c_l);
+                                    if (!assert_lower(v, lb_v, r_lb))
                                         return false;
                                 }
                             }
@@ -590,6 +605,7 @@ namespace semitone
     }
     void lra_theory::new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept
     {
+        LOG_DEBUG("x" + std::to_string(x_i) + " = " + to_string(xpr));
         assert(tableau.find(x_i) == tableau.cend()); // the variable `x_i` must not be in the tableau..
         for (const auto &x : xpr.vars)
             t_watches[x.first].insert(x_i);

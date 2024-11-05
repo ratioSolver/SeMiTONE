@@ -416,8 +416,20 @@ namespace semitone
         for (const auto &th : theories)
             if (!th->check()) // the theory is conflicting..
             {
+                assert(!root_level());
+                assert(!th->cnfl.empty());
+
                 if (root_level()) // the problem is unsatisfiable..
                     return false;
+
+                if (th->cnfl.size() == 1)
+                {
+                    while (decision_level() > 0)
+                        pop();
+                    if (!enqueue(th->cnfl[0]))
+                        return false;
+                    goto main_loop;
+                }
 
                 // we analyze the theory's conflict, create a no-good from the analysis and backjump..
                 th->analyze_and_backjump();
@@ -466,6 +478,7 @@ namespace semitone
             return val;
         assigns[variable(p)] = sign(p);
         level[variable(p)] = decision_level();
+        LOG_DEBUG("b" << variable(p) << " = " << value(p) << " @ " << level[variable(p)]);
         if (c)
             reason[variable(p)] = c;
         trail.push_back(p);

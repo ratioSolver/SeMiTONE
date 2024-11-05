@@ -3,6 +3,7 @@
 #include "clause.hpp"
 #include "logging.hpp"
 #include <algorithm>
+#include <cassert>
 
 namespace semitone
 {
@@ -10,8 +11,17 @@ namespace semitone
 
     bool theory::backtrack_analyze_and_backjump() noexcept
     {
-        // we backtrack to a level at which we can analyze the conflict..
         size_t bt_level = 0;
+        if (cnfl.size() == 1)
+        { // we can directly enqueue the literal..
+            while (sat->decision_level() > 0)
+                sat->pop();
+            if (!sat->enqueue(cnfl[0]))
+                return false;
+            return sat->propagate();
+        }
+
+        // we backtrack to a level at which we can analyze the conflict..
         for (const auto &l : cnfl)
             if (bt_level < sat->level[variable(l)])
                 bt_level = sat->level[variable(l)];

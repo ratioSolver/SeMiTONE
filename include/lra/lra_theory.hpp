@@ -227,7 +227,7 @@ namespace semitone
      * @param r the literals that caused the change.
      * @return bool whether the propagation was successful.
      */
-    [[nodiscard]] bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept { return assert_lower(x_i, val, r) && propagate(); }
+    [[nodiscard]] bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept;
     /**
      * @brief Sets the upper bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
      *
@@ -236,7 +236,7 @@ namespace semitone
      * @param r the literals that caused the change.
      * @return bool whether the propagation was successful.
      */
-    [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept { return assert_upper(x_i, val, r) && propagate(); }
+    [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept;
 
 #ifdef BUILD_LISTENERS
     void add_listener(lra_value_listener &l) noexcept;
