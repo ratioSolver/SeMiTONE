@@ -61,7 +61,7 @@ namespace semitone
         utils::lit p;
         size_t j = 0;
         for (auto it = cnfl.cbegin(); it != cnfl.cend(); ++it)
-            if (*it != p && sat->level[variable(*it)] > 0)
+            if (*it != p)
             { // we include this literal in the clause..
                 p = *it;
                 cnfl[j++] = p;

@@ -539,10 +539,10 @@ namespace semitone
                     std::vector<utils::lit> cnfl;
                     for (const auto &[v, c] : l.vars)
                         if (is_positive(c))
-                            for (const auto &w : c_bounds[lb_index(v)].reason)
+                            for (const auto &w : c_bounds[ub_index(v)].reason)
                                 cnfl.push_back(!w);
                         else if (is_negative(c))
-                            for (const auto &w : c_bounds[ub_index(v)].reason)
+                            for (const auto &w : c_bounds[lb_index(v)].reason)
                                 cnfl.push_back(!w);
                     for (const auto &w : c_bounds[lb_index(x_i)].reason)
                         cnfl.push_back(!w);
