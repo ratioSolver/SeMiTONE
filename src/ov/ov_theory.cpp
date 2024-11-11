@@ -39,7 +39,7 @@ namespace semitone
                 for (size_t i = 0; i < domain.size(); ++i)
                     for (size_t j = i + 1; j < domain.size(); ++j)
                     {
-                        auto nc = get_sat().new_clause({!domains[x].at(&domain[i].get()), !domains[x].at(&domain[j].get())});
+                        [[maybe_unused]] auto nc = get_sat().new_clause({!domains[x].at(&domain[i].get()), !domains[x].at(&domain[j].get())});
                         assert(nc);
                     }
 
@@ -47,7 +47,7 @@ namespace semitone
                 lits.reserve(domain.size());
                 for (const auto &v : domain)
                     lits.push_back(domains[x].at(&v.get()));
-                auto nc = get_sat().new_clause(std::move(lits));
+                [[maybe_unused]] auto nc = get_sat().new_clause(std::move(lits));
                 assert(nc);
             }
         }
