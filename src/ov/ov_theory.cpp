@@ -38,15 +38,17 @@ namespace semitone
             {
                 for (size_t i = 0; i < domain.size(); ++i)
                     for (size_t j = i + 1; j < domain.size(); ++j)
-                        if (!get_sat().new_clause({!domains[x].at(&domain[i].get()), !domains[x].at(&domain[j].get())}))
-                            return -1;
+                    {
+                        auto nc = get_sat().new_clause({!domains[x].at(&domain[i].get()), !domains[x].at(&domain[j].get())});
+                        assert(nc);
+                    }
 
                 std::vector<utils::lit> lits;
                 lits.reserve(domain.size());
                 for (const auto &v : domain)
                     lits.push_back(domains[x].at(&v.get()));
-                if (!get_sat().new_clause(std::move(lits)))
-                    return -1;
+                auto nc = get_sat().new_clause(std::move(lits));
+                assert(nc);
             }
         }
         return x;
