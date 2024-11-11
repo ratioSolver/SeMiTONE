@@ -17,7 +17,7 @@ namespace semitone
     }
 
   protected:
-    void listen_ov(std::size_t v) noexcept
+    void listen_ov(utils::var v) noexcept
     {
       listening.push_back(v);
       for (auto &d : th->domains[v])
@@ -26,9 +26,9 @@ namespace semitone
     }
 
   private:
-    virtual void on_ov_value_changed(std::size_t v) = 0;
+    virtual void on_ov_value_changed(utils::var v) = 0;
 
-    void on_sat_value_changed(std::size_t v) override
+    void on_sat_value_changed(utils::var v) override
     {
       for (auto &d : listening_map.at(v))
         on_ov_value_changed(d);
@@ -36,7 +36,7 @@ namespace semitone
 
   private:
     ov_theory *th{nullptr};
-    std::vector<std::size_t> listening;
-    std::unordered_map<std::size_t, std::vector<std::size_t>> listening_map;
+    std::vector<utils::var> listening;
+    std::unordered_map<utils::var, std::vector<utils::var>> listening_map;
   };
 } // namespace semitone

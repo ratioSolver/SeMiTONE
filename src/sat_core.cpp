@@ -31,7 +31,7 @@ namespace semitone
 {
     sat_core::sat_core() noexcept
     {
-        [[maybe_unused]] std::size_t c_false = new_var(); // the false constant..
+        [[maybe_unused]] utils::var c_false = new_var(); // the false constant..
         assert(c_false == utils::FALSE_var);
         assigns[utils::FALSE_var] = utils::False;
         level[utils::FALSE_var] = 0;
@@ -76,7 +76,7 @@ namespace semitone
 #endif
     }
 
-    std::size_t sat_core::new_var() noexcept
+    utils::var sat_core::new_var() noexcept
     {
         const auto x = assigns.size();
         assigns.push_back(utils::Undefined);
@@ -498,7 +498,7 @@ namespace semitone
 
     void sat_core::analyze(constr &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
     {
-        std::set<std::size_t> seen;
+        std::set<utils::var> seen;
         int counter = 0; // this is the number of variables of the current decision level that have already been seen..
         utils::lit p;
         std::vector<utils::lit> p_reason = cnfl.get_reason(p);

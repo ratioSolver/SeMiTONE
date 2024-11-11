@@ -20,7 +20,7 @@ namespace semitone
 #endif
     }
 
-    std::size_t ov_theory::new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one) noexcept
+    utils::var ov_theory::new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one) noexcept
     {
         assert(!domain.empty());
         const auto x = domains.size();
@@ -52,7 +52,7 @@ namespace semitone
         return x;
     }
 
-    std::size_t ov_theory::new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>> &&domain) noexcept
+    utils::var ov_theory::new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>> &&domain) noexcept
     {
         assert(!domain.empty());
         const auto x = domains.size();
@@ -62,7 +62,7 @@ namespace semitone
         return x;
     }
 
-    utils::lit ov_theory::new_eq(const std::size_t left, const std::size_t right) noexcept
+    utils::lit ov_theory::new_eq(const utils::var left, const utils::var right) noexcept
     {
         if (left == right)
             return utils::TRUE_lit;
@@ -96,7 +96,7 @@ namespace semitone
         return ctr;
     }
 
-    std::vector<std::reference_wrapper<utils::enum_val>> ov_theory::domain(const std::size_t var) const noexcept
+    std::vector<std::reference_wrapper<utils::enum_val>> ov_theory::domain(const utils::var var) const noexcept
     {
         std::vector<std::reference_wrapper<utils::enum_val>> d;
         for (const auto &v : domains[var])
@@ -105,17 +105,17 @@ namespace semitone
         return d;
     }
 
-    utils::lit ov_theory::allows(const std::size_t var, utils::enum_val &val) const noexcept
+    utils::lit ov_theory::allows(const utils::var var, utils::enum_val &val) const noexcept
     {
         if (const auto it = domains[var].find(&val); it != domains[var].end())
             return it->second;
         return utils::FALSE_lit;
     }
 
-    bool ov_theory::assign(const std::size_t var, utils::enum_val &val) noexcept { return get_sat().assume(domains[var].at(&val)); }
-    bool ov_theory::forbid(const std::size_t var, utils::enum_val &val) noexcept { return get_sat().assume(!domains[var].at(&val)); }
+    bool ov_theory::assign(const utils::var var, utils::enum_val &val) noexcept { return get_sat().assume(domains[var].at(&val)); }
+    bool ov_theory::forbid(const utils::var var, utils::enum_val &val) noexcept { return get_sat().assume(!domains[var].at(&val)); }
 
-    bool ov_theory::matches(const std::size_t v0, const std::size_t v1)
+    bool ov_theory::matches(const utils::var v0, const utils::var v1)
     {
         if (v0 == v1)
             return true;

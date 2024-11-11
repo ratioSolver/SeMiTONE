@@ -7,7 +7,7 @@
 
 namespace semitone
 {
-    void theory::bind(std::size_t v) noexcept { sat->bind(v, *this); }
+    void theory::bind(utils::var v) noexcept { sat->bind(v, *this); }
 
     bool theory::backtrack_analyze_and_backjump() noexcept
     {

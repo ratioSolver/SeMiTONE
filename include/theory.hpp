@@ -53,7 +53,7 @@ namespace semitone
     /**
      * @brief Binds the theory to a propositional variable.
      */
-    void bind(std::size_t v) noexcept;
+    void bind(utils::var v) noexcept;
     /**
      * @brief Records a new clause which might be inferred by the theory.
      */

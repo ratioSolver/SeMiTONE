@@ -16,7 +16,7 @@ namespace semitone
     }
 
   protected:
-    void listen_idl(std::size_t v) noexcept
+    void listen_idl(utils::var v) noexcept
     {
       if (th->lb(v) != th->ub(v))
       { // the variable is not yet assigned
@@ -26,10 +26,10 @@ namespace semitone
     }
 
   private:
-    virtual void on_idl_value_changed(std::size_t v) = 0;
+    virtual void on_idl_value_changed(utils::var v) = 0;
 
   private:
     idl_theory *th{nullptr};
-    std::vector<std::size_t> listening;
+    std::vector<utils::var> listening;
   };
 } // namespace semitone

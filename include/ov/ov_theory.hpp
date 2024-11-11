@@ -30,18 +30,18 @@ namespace semitone
      *
      * @param domain the initial domain of the variable.
      * @param enforce_exct_one if true, the variable must take exactly one value from the domain.
-     * @return std::size_t the new variable.
+     * @return utils::var the new variable.
      */
-    [[nodiscard]] std::size_t new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one = true) noexcept;
+    [[nodiscard]] utils::var new_var(std::vector<std::reference_wrapper<utils::enum_val>> &&domain, const bool enforce_exct_one = true) noexcept;
     /**
      * @brief Create a new variable with the given domain.
      *
      * The presence of the values into the domain is controlled by the given literals.
      *
      * @param domain the initial domain of the variable and the literals that control the presence of the values.
-     * @return std::size_t the new variable.
+     * @return utils::var the new variable.
      */
-    [[nodiscard]] std::size_t new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>> &&domain) noexcept;
+    [[nodiscard]] utils::var new_var(std::vector<std::pair<std::reference_wrapper<utils::enum_val>, utils::lit>> &&domain) noexcept;
 
     /**
      * @brief Create a new equality constraint.
@@ -50,14 +50,14 @@ namespace semitone
      * @param right the right-hand side of the equality.
      * @return lit the reified equality.
      */
-    [[nodiscard]] utils::lit new_eq(const std::size_t left, const std::size_t right) noexcept;
+    [[nodiscard]] utils::lit new_eq(const utils::var left, const utils::var right) noexcept;
 
     /**
      * @brief Return the current domain of the `var` variable.
      *
      * @return The current domain of the `var` variable.
      */
-    [[nodiscard]] std::vector<std::reference_wrapper<utils::enum_val>> domain(const std::size_t var) const noexcept;
+    [[nodiscard]] std::vector<std::reference_wrapper<utils::enum_val>> domain(const utils::var var) const noexcept;
 
     /**
      * @brief Check if the given value is allowed to the variable.
@@ -66,7 +66,7 @@ namespace semitone
      * @param val the value to check.
      * @return lit the literal that represents the presence of the value in the domain.
      */
-    [[nodiscard]] utils::lit allows(const std::size_t var, utils::enum_val &val) const noexcept;
+    [[nodiscard]] utils::lit allows(const utils::var var, utils::enum_val &val) const noexcept;
 
     /**
      * @brief Assign the given value to the variable.
@@ -75,7 +75,7 @@ namespace semitone
      * @param val the value to assign.
      * @return true if the assignment is successful, false otherwise.
      */
-    [[nodiscard]] bool assign(const std::size_t var, utils::enum_val &val) noexcept;
+    [[nodiscard]] bool assign(const utils::var var, utils::enum_val &val) noexcept;
 
     /**
      * @brief Forbid the given value to the variable.
@@ -84,7 +84,7 @@ namespace semitone
      * @param val the value to forbid.
      * @return true if the forbidding is successful, false otherwise.
      */
-    [[nodiscard]] bool forbid(const std::size_t var, utils::enum_val &val) noexcept;
+    [[nodiscard]] bool forbid(const utils::var var, utils::enum_val &val) noexcept;
 
     /**
      * @brief Checks if the given variables match.
@@ -96,7 +96,7 @@ namespace semitone
      * @return true if the variables match.
      * @return false otherwise.
      */
-    [[nodiscard]] bool matches(const std::size_t v0, const std::size_t v1);
+    [[nodiscard]] bool matches(const utils::var v0, const utils::var v1);
 
 #ifdef BUILD_LISTENERS
     void add_listener(ov_value_listener &l) noexcept;
@@ -113,8 +113,8 @@ namespace semitone
     std::vector<std::unordered_map<utils::enum_val *, utils::lit>> domains;
 #ifdef BUILD_LISTENERS
   private:
-    std::unordered_map<std::size_t, std::set<ov_value_listener *>> listening; // for each variable, the listeners listening to it..
-    std::set<ov_value_listener *> listeners;                                    // the collection of listeners..
+    std::unordered_map<utils::var, std::set<ov_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::set<ov_value_listener *> listeners;                                 // the collection of listeners..
 #endif
   };
 } // namespace semitone

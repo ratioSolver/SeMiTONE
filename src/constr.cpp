@@ -7,7 +7,7 @@ namespace semitone
 {
     bool constr::enqueue(const utils::lit &p) noexcept { return sat.enqueue(p, *this); }
 
-    utils::lbool constr::value(const std::size_t &x) const noexcept { return sat.value(x); }
+    utils::lbool constr::value(const utils::var &x) const noexcept { return sat.value(x); }
     utils::lbool constr::value(const utils::lit &p) const noexcept { return sat.value(p); }
 
     void constr::watch(const utils::lit &p) noexcept { sat.watches[index(p)].emplace_back(*this); }
@@ -23,7 +23,7 @@ namespace semitone
                  ws.end());
     }
 
-    void constr::remove_constr_from_reason(const std::size_t &x) noexcept
+    void constr::remove_constr_from_reason(const utils::var &x) noexcept
     {
         if (sat.reason[x].has_value() && &sat.reason[x]->get() == this)
             sat.reason[x].reset();

@@ -17,13 +17,13 @@
 
 namespace semitone
 {
-    idl_theory::idl_theory(const size_t &size) noexcept : dists(size, std::vector<INT_TYPE>(size, utils::inf())), preds(size, std::vector<std::size_t>(size))
+    idl_theory::idl_theory(const size_t &size) noexcept : dists(size, std::vector<INT_TYPE>(size, utils::inf())), preds(size, std::vector<utils::var>(size))
     {
         assert(size > 1);
         for (size_t i = 0; i < size; ++i)
         {
             dists[i][i] = 0;
-            std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<std::size_t>::max());
+            std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<utils::var>::max());
             preds[i][i] = i;
         }
     }
@@ -46,7 +46,7 @@ namespace semitone
 #endif
     }
 
-    std::size_t idl_theory::new_var() noexcept
+    utils::var idl_theory::new_var() noexcept
     {
         auto var = n_vars++;
         if (var >= dists.size())
@@ -54,7 +54,7 @@ namespace semitone
         return var;
     }
 
-    utils::lit idl_theory::new_distance(std::size_t from, std::size_t to, INT_TYPE dist) noexcept
+    utils::lit idl_theory::new_distance(utils::var from, utils::var to, INT_TYPE dist) noexcept
     {
         if (dists[to][from] < -dist)
             return utils::FALSE_lit; // the constraint is inconsistent
@@ -69,7 +69,7 @@ namespace semitone
         var_dists.emplace(variable(ctr), std::move(constr));
         return ctr;
     }
-    utils::lit idl_theory::new_distance(std::size_t from, std::size_t to, INT_TYPE min, INT_TYPE max) noexcept { return get_sat().new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
+    utils::lit idl_theory::new_distance(utils::var from, utils::var to, INT_TYPE min, INT_TYPE max) noexcept { return get_sat().new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
     utils::lit idl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
@@ -382,7 +382,7 @@ namespace semitone
             { // the constraint is inconsistent, we have a conflict..
                 std::vector<utils::lit> cnfl;
                 cnfl.emplace_back(!constr.get_lit());
-                std::size_t c_to = constr.get_from();
+                utils::var c_to = constr.get_from();
                 while (c_to != constr.get_to())
                 {
                     const auto &c_d = dist_constr.find({preds[constr.get_to()][c_to], c_to})->second.get();
@@ -418,7 +418,7 @@ namespace semitone
             { // the constraint is inconsistent, we have a conflict..
                 std::vector<utils::lit> cnfl;
                 cnfl.emplace_back(constr.get_lit());
-                std::size_t c_to = constr.get_to();
+                utils::var c_to = constr.get_to();
                 while (c_to != constr.get_from())
                 {
                     const auto &c_d = dist_constr.find({preds[constr.get_from()][c_to], c_to})->second.get();
@@ -452,14 +452,14 @@ namespace semitone
         return true;
     }
 
-    void idl_theory::propagate(std::size_t from, std::size_t to, INT_TYPE dist) noexcept
+    void idl_theory::propagate(utils::var from, utils::var to, INT_TYPE dist) noexcept
     {
         assert(std::abs(dist) < utils::inf());
         set_dist(from, to, dist);
         set_pred(from, to, from);
-        std::vector<std::size_t> set_i;
-        std::vector<std::size_t> set_j;
-        std::vector<std::pair<std::size_t, std::size_t>> c_updates;
+        std::vector<utils::var> set_i;
+        std::vector<utils::var> set_j;
+        std::vector<std::pair<utils::var, utils::var>> c_updates;
         c_updates.emplace_back(from, to);
         c_updates.emplace_back(to, from);
 
@@ -504,7 +504,7 @@ namespace semitone
                         { // the constraint is inconsistent..
                             std::vector<utils::lit> cnfl;
                             cnfl.emplace_back(!c_dist.get().get_lit());
-                            std::size_t c_to = c_dist.get().get_from();
+                            utils::var c_to = c_dist.get().get_from();
                             while (c_to != c_dist.get().get_to())
                             {
                                 const auto &c_d = dist_constr.find({preds[c_dist.get().get_to()][c_to], c_to})->second.get();
@@ -526,7 +526,7 @@ namespace semitone
                         { // the constraint is redundant..
                             std::vector<utils::lit> cnfl;
                             cnfl.emplace_back(c_dist.get().get_lit());
-                            std::size_t c_to = c_dist.get().get_to();
+                            utils::var c_to = c_dist.get().get_to();
                             while (c_to != c_dist.get().get_from())
                             {
                                 const auto &c_d = dist_constr.find({preds[c_dist.get().get_from()][c_to], c_to})->second.get();
@@ -563,7 +563,7 @@ namespace semitone
         layers.pop_back();
     }
 
-    void idl_theory::set_dist(std::size_t from, std::size_t to, INT_TYPE dist) noexcept
+    void idl_theory::set_dist(utils::var from, utils::var to, INT_TYPE dist) noexcept
     {
         assert(dists[from][to] > dist);                                                 // we should never increase the distance
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
@@ -579,7 +579,7 @@ namespace semitone
         }
     }
 
-    void idl_theory::set_pred(std::size_t from, std::size_t to, std::size_t pred) noexcept
+    void idl_theory::set_pred(utils::var from, utils::var to, utils::var pred) noexcept
     {
         assert(dist_constr.find({pred, to}) != dist_constr.end());
         assert(preds[from][to] != pred);                                                // we should never set the same predecessor
@@ -597,7 +597,7 @@ namespace semitone
             preds[i].resize(size, std::numeric_limits<INT_TYPE>::max());
         }
         dists.resize(size, std::vector<INT_TYPE>(size, utils::inf()));
-        preds.resize(size, std::vector<std::size_t>(size, std::numeric_limits<INT_TYPE>::max()));
+        preds.resize(size, std::vector<utils::var>(size, std::numeric_limits<INT_TYPE>::max()));
         for (size_t i = c_size; i < size; ++i)
         {
             dists[i][i] = 0;

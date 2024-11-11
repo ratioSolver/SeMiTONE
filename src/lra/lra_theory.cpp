@@ -25,7 +25,7 @@ namespace semitone
 #endif
     }
 
-    std::size_t lra_theory::new_var(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept
+    utils::var lra_theory::new_var(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept
     {
         assert(lb < ub);
         auto var = vals.size();
@@ -37,7 +37,7 @@ namespace semitone
         t_watches.emplace_back();
         return var;
     }
-    std::size_t lra_theory::new_var(const utils::lin &&l) noexcept
+    utils::var lra_theory::new_var(const utils::lin &&l) noexcept
     {
         assert(get_sat().root_level());
         const auto s_expr = to_string(l);
@@ -65,7 +65,7 @@ namespace semitone
         return slack;
     }
 
-    [[nodiscard]] utils::lit lra_theory::new_leq(const std::size_t x, const utils::inf_rational &v) noexcept
+    [[nodiscard]] utils::lit lra_theory::new_leq(const utils::var x, const utils::inf_rational &v) noexcept
     {
         assert(get_sat().root_level());
         if (ub(x) <= v)
@@ -85,7 +85,7 @@ namespace semitone
         v_asrts.emplace(ctr, std::make_unique<lra_assertion>(ctr_lit, x, op::leq, v));
         return ctr_lit;
     }
-    [[nodiscard]] utils::lit lra_theory::new_geq(const std::size_t x, const utils::inf_rational &v) noexcept
+    [[nodiscard]] utils::lit lra_theory::new_geq(const utils::var x, const utils::inf_rational &v) noexcept
     {
         assert(get_sat().root_level());
         if (lb(x) >= v)
@@ -110,7 +110,7 @@ namespace semitone
     {
         utils::lin expr = left - right;
         // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
-        std::vector<std::size_t> vars;
+        std::vector<utils::var> vars;
         vars.reserve(expr.vars.size());
         for ([[maybe_unused]] const auto &[v, c] : expr.vars)
             vars.push_back(v);
@@ -147,7 +147,7 @@ namespace semitone
     {
         utils::lin expr = left - right;
         // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
-        std::vector<std::size_t> vars;
+        std::vector<utils::var> vars;
         vars.reserve(expr.vars.size());
         for ([[maybe_unused]] const auto &[v, c] : expr.vars)
             vars.push_back(v);
@@ -181,8 +181,8 @@ namespace semitone
         }
     }
 
-    [[nodiscard]] bool lra_theory::set_lb(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept { return assert_lower(x_i, val, r) ? get_sat().propagate() : backtrack_analyze_and_backjump(); }
-    [[nodiscard]] bool lra_theory::set_ub(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept { return assert_upper(x_i, val, r) ? get_sat().propagate() : backtrack_analyze_and_backjump(); }
+    [[nodiscard]] bool lra_theory::set_lb(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept { return assert_lower(x_i, val, r) ? get_sat().propagate() : backtrack_analyze_and_backjump(); }
+    [[nodiscard]] bool lra_theory::set_ub(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept { return assert_upper(x_i, val, r) ? get_sat().propagate() : backtrack_analyze_and_backjump(); }
 
 #ifdef BUILD_LISTENERS
     void lra_theory::add_listener(lra_value_listener &l) noexcept
@@ -250,7 +250,7 @@ namespace semitone
         return {b, cnfl};
     }
 
-    [[nodiscard]] bool lra_theory::assert_lower(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
+    [[nodiscard]] bool lra_theory::assert_lower(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
     {
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
                            { return get_sat().value(lit) != utils::Undefined; })); // the literals must be assigned..
@@ -327,7 +327,7 @@ namespace semitone
             return true;
         }
     }
-    [[nodiscard]] bool lra_theory::assert_upper(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
+    [[nodiscard]] bool lra_theory::assert_upper(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
     {
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
                            { return get_sat().value(lit) != utils::Undefined; })); // the literals must be assigned..
@@ -405,7 +405,7 @@ namespace semitone
         }
     }
 
-    void lra_theory::update(const std::size_t x_i, const utils::inf_rational &v) noexcept
+    void lra_theory::update(const utils::var x_i, const utils::inf_rational &v) noexcept
     {
         assert(!is_basic(x_i)); // the variable must not be basic..
 
@@ -419,7 +419,7 @@ namespace semitone
         vals[x_i] = v;
         FIRE_ON_VALUE_CHANGED(x_i);
     }
-    void lra_theory::pivot_and_update(const std::size_t x_i, const std::size_t x_j, const utils::inf_rational &v) noexcept
+    void lra_theory::pivot_and_update(const utils::var x_i, const utils::var x_j, const utils::inf_rational &v) noexcept
     {
         assert(is_basic(x_i));                      // the variable must be basic..
         assert(!is_basic(x_j));                     // the variable must not be basic..
@@ -446,7 +446,7 @@ namespace semitone
 
         pivot(x_i, x_j);
     }
-    void lra_theory::pivot(const std::size_t x_i, const std::size_t x_j) noexcept
+    void lra_theory::pivot(const utils::var x_i, const utils::var x_j) noexcept
     {
         assert(is_basic(x_i));                      // the variable must be basic..
         assert(!is_basic(x_j));                     // the variable must not be basic..
@@ -496,7 +496,7 @@ namespace semitone
         // we add the new row `x_j = ...`
         new_row(x_j, std::move(l));
     }
-    void lra_theory::new_row(const std::size_t x_i, const utils::lin &&xpr) noexcept
+    void lra_theory::new_row(const utils::var x_i, const utils::lin &&xpr) noexcept
     {
         assert(tableau.find(x_i) == tableau.cend()); // the variable `x_i` must not be in the tableau..
         for (const auto &x : xpr.vars)
@@ -530,7 +530,7 @@ namespace semitone
             const auto &l = x_i_it->second->l; // we select the linear expression `x_i = ...`..
             if (value(x_i) < lb(x_i))
             { // the value of `x_i` is below its lower bound..
-                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<std::size_t, utils::rational> &v)
+                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<utils::var, utils::rational> &v)
                                                   { return (is_positive(l.vars.at(v.first)) && value(v.first) < ub(v.first)) || (is_negative(l.vars.at(v.first)) && value(v.first) > lb(v.first)); });
                 if (x_j_it != l.vars.cend()) // var x_j can be used to increase the value of x_i..
                     pivot_and_update(x_i, x_j_it->first, lb(x_i));
@@ -552,7 +552,7 @@ namespace semitone
             }
             else if (value(x_i) > ub(x_i))
             { // the value of `x_i` is above its upper bound..
-                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<std::size_t, utils::rational> &v)
+                const auto &x_j_it = std::find_if(l.vars.cbegin(), l.vars.cend(), [l, this](const std::pair<utils::var, utils::rational> &v)
                                                   { return (is_positive(l.vars.at(v.first)) && value(v.first) > lb(v.first)) || (is_negative(l.vars.at(v.first)) && value(v.first) < ub(v.first)); });
                 if (x_j_it != l.vars.cend()) // var x_j can be used to decrease the value of x_i..
                     pivot_and_update(x_i, x_j_it->first, ub(x_i));
