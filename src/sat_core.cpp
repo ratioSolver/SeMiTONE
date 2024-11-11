@@ -65,7 +65,7 @@ namespace semitone
 #endif
     }
 
-    sat_core::~sat_core()
+    sat_core::~sat_core() noexcept
     {
         LOG_TRACE("Destroying the SAT core");
         theories.clear();

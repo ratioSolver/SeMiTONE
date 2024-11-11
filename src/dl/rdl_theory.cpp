@@ -164,6 +164,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit rdl_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept
@@ -198,6 +199,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit rdl_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept
@@ -246,6 +248,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit rdl_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
@@ -294,6 +297,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
 
@@ -325,6 +329,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return {utils::inf_rational(utils::rational::negative_infinite), utils::inf_rational(utils::rational::positive_infinite)};
         }
     }
 

@@ -119,6 +119,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit idl_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
@@ -169,6 +170,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit idl_theory::new_eq(const utils::lin &left, const utils::lin &right) noexcept
@@ -204,6 +206,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit idl_theory::new_geq(const utils::lin &left, const utils::lin &right) noexcept
@@ -254,6 +257,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit idl_theory::new_gt(const utils::lin &left, const utils::lin &right) noexcept
@@ -304,6 +308,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
 
@@ -338,6 +343,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return {-utils::inf(), utils::inf()};
         }
     }
 
