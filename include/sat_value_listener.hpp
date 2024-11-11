@@ -25,7 +25,7 @@ namespace semitone
     }
 
   protected:
-    void listen_sat(VARIABLE_TYPE v) noexcept
+    void listen_sat(std::size_t v) noexcept
     {
       if (sat->value(v) == utils::Undefined)
       { // the variable is not yet assigned
@@ -35,10 +35,10 @@ namespace semitone
     }
 
   private:
-    virtual void on_sat_value_changed(VARIABLE_TYPE v) = 0;
+    virtual void on_sat_value_changed(std::size_t v) = 0;
 
   private:
     sat_core *sat{nullptr};
-    std::vector<VARIABLE_TYPE> listening;
+    std::vector<std::size_t> listening;
   };
 } // namespace semitone

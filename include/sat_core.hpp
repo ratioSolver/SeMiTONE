@@ -46,7 +46,7 @@ namespace semitone
      *
      * @return The new variable.
      */
-    [[nodiscard]] VARIABLE_TYPE new_var() noexcept;
+    [[nodiscard]] std::size_t new_var() noexcept;
 
     /**
      * @brief Add a new constraint to the problem.
@@ -112,7 +112,7 @@ namespace semitone
      * @param x The variable.
      * @return The value of the variable.
      */
-    [[nodiscard]] utils::lbool value(const VARIABLE_TYPE &x) const noexcept { return assigns.at(x); }
+    [[nodiscard]] utils::lbool value(const std::size_t &x) const noexcept { return assigns.at(x); }
     /**
      * @brief Return the value of a literal.
      *
@@ -255,7 +255,7 @@ namespace semitone
     void record(std::vector<utils::lit> lits) noexcept;
 
   private:
-    void bind(VARIABLE_TYPE v, theory &th) noexcept { binds[v].insert(&th); }
+    void bind(std::size_t v, theory &th) noexcept { binds[v].insert(&th); }
 
   private:
     std::vector<std::unique_ptr<constr>> constrs;                      // the collection of problem constraints..
@@ -270,11 +270,11 @@ namespace semitone
     std::vector<utils::lit> decisions; // the list of decisions in chronological order..
 
     std::vector<std::unique_ptr<theory>> theories;               // all the theories..
-    std::unordered_map<VARIABLE_TYPE, std::set<theory *>> binds; // for each variable, the theories that depend on it..
+    std::unordered_map<std::size_t, std::set<theory *>> binds; // for each variable, the theories that depend on it..
 
 #ifdef BUILD_LISTENERS
   private:
-    std::unordered_map<VARIABLE_TYPE, std::set<sat_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::unordered_map<std::size_t, std::set<sat_value_listener *>> listening; // for each variable, the listeners listening to it..
     std::set<sat_value_listener *> listeners;                                    // the collection of listeners..
 #endif
   };

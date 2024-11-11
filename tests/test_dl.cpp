@@ -4,7 +4,7 @@
 #include "logging.hpp"
 #include <cassert>
 
-VARIABLE_TYPE new_var(semitone::idl_theory &dl, VARIABLE_TYPE horizon)
+std::size_t new_var(semitone::idl_theory &dl, std::size_t horizon)
 {
     auto var = dl.new_var();
     bool nc = dl.get_sat().new_clause({dl.new_distance(var, 0, 0)}) && dl.get_sat().new_clause({dl.new_distance(horizon, var, 0)});
@@ -14,7 +14,7 @@ VARIABLE_TYPE new_var(semitone::idl_theory &dl, VARIABLE_TYPE horizon)
     return var;
 }
 
-VARIABLE_TYPE new_var(semitone::rdl_theory &dl, VARIABLE_TYPE horizon)
+std::size_t new_var(semitone::rdl_theory &dl, std::size_t horizon)
 {
     auto var = dl.new_var();
     bool nc = dl.get_sat().new_clause({dl.new_distance(var, 0, utils::inf_rational::zero)}) && dl.get_sat().new_clause({dl.new_distance(horizon, var, utils::inf_rational::zero)});
@@ -36,9 +36,9 @@ void test_idl()
     bool prop = sat.propagate();
     assert(prop);
 
-    VARIABLE_TYPE tp0 = new_var(dl, horizon);
-    VARIABLE_TYPE tp1 = new_var(dl, horizon);
-    VARIABLE_TYPE tp2 = new_var(dl, horizon);
+    std::size_t tp0 = new_var(dl, horizon);
+    std::size_t tp1 = new_var(dl, horizon);
+    std::size_t tp2 = new_var(dl, horizon);
 
     nc = sat.new_clause({dl.new_distance(tp0, tp1, 0, 10)});
     assert(nc);
@@ -82,9 +82,9 @@ void test_rdl()
     bool prop = sat.propagate();
     assert(prop);
 
-    VARIABLE_TYPE tp0 = new_var(dl, horizon);
-    VARIABLE_TYPE tp1 = new_var(dl, horizon);
-    VARIABLE_TYPE tp2 = new_var(dl, horizon);
+    std::size_t tp0 = new_var(dl, horizon);
+    std::size_t tp1 = new_var(dl, horizon);
+    std::size_t tp2 = new_var(dl, horizon);
 
     nc = sat.new_clause({dl.new_distance(tp0, tp1, utils::inf_rational::zero, utils::inf_rational(10))});
     assert(nc);

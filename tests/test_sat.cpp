@@ -6,9 +6,9 @@ using namespace semitone;
 void test_basic_core_0()
 {
     sat_core core;
-    VARIABLE_TYPE b0 = core.new_var();
-    VARIABLE_TYPE b1 = core.new_var();
-    VARIABLE_TYPE b2 = core.new_var();
+    std::size_t b0 = core.new_var();
+    std::size_t b1 = core.new_var();
+    std::size_t b2 = core.new_var();
 
     bool nc = core.new_clause({utils::lit(b0, false), !utils::lit(b1), utils::lit(b2)});
     assert(nc);
@@ -34,8 +34,8 @@ void test_basic_core_0()
 void test_eq()
 {
     sat_core core;
-    VARIABLE_TYPE b0 = core.new_var();
-    VARIABLE_TYPE b1 = core.new_var();
+    std::size_t b0 = core.new_var();
+    std::size_t b1 = core.new_var();
 
     auto eq = core.new_eq(utils::lit(b0), utils::lit(b1));
     assert(core.value(b0) == utils::Undefined);
@@ -58,9 +58,9 @@ void test_eq()
 void test_conj()
 {
     sat_core core;
-    VARIABLE_TYPE b0 = core.new_var();
-    VARIABLE_TYPE b1 = core.new_var();
-    VARIABLE_TYPE b2 = core.new_var();
+    std::size_t b0 = core.new_var();
+    std::size_t b1 = core.new_var();
+    std::size_t b2 = core.new_var();
 
     auto conj = core.new_conj({utils::lit(b0), utils::lit(b1), utils::lit(b2, false)});
     assert(core.value(b0) == utils::Undefined);
@@ -102,9 +102,9 @@ void test_conj()
 void test_disj()
 {
     sat_core core;
-    VARIABLE_TYPE b0 = core.new_var();
-    VARIABLE_TYPE b1 = core.new_var();
-    VARIABLE_TYPE b2 = core.new_var();
+    std::size_t b0 = core.new_var();
+    std::size_t b1 = core.new_var();
+    std::size_t b2 = core.new_var();
 
     auto disj = core.new_disj({utils::lit(b0), utils::lit(b1), utils::lit(b2, false)});
     assert(core.value(b0) == utils::Undefined);
@@ -146,9 +146,9 @@ void test_disj()
 void test_exact_one()
 {
     sat_core core;
-    VARIABLE_TYPE b0 = core.new_var();
-    VARIABLE_TYPE b1 = core.new_var();
-    VARIABLE_TYPE b2 = core.new_var();
+    std::size_t b0 = core.new_var();
+    std::size_t b1 = core.new_var();
+    std::size_t b2 = core.new_var();
 
     auto exact_one = core.new_exact_one({utils::lit(b0), utils::lit(b1), utils::lit(b2)});
     assert(core.value(b0) == utils::Undefined);
@@ -224,9 +224,9 @@ void test_exact_one()
 void test_core_copy()
 {
     sat_core core;
-    VARIABLE_TYPE b0 = core.new_var();
-    VARIABLE_TYPE b1 = core.new_var();
-    VARIABLE_TYPE b2 = core.new_var();
+    std::size_t b0 = core.new_var();
+    std::size_t b1 = core.new_var();
+    std::size_t b2 = core.new_var();
 
     sat_core core2(core);
     assert(core2.value(b0) == core.value(b0));

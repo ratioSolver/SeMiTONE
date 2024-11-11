@@ -76,7 +76,7 @@ namespace semitone
      * @param x The variable.
      * @return The value of the variable.
      */
-    [[nodiscard]] utils::lbool value(const VARIABLE_TYPE &x) const noexcept;
+    [[nodiscard]] utils::lbool value(const std::size_t &x) const noexcept;
     /**
      * @brief Compute the value of a literal.
      *
@@ -114,7 +114,7 @@ namespace semitone
      *
      * @param x The variable whose associated constraint is to be removed.
      */
-    void remove_constr_from_reason(const VARIABLE_TYPE &x) noexcept;
+    void remove_constr_from_reason(const std::size_t &x) noexcept;
 
 #ifdef ENABLE_API
   private:

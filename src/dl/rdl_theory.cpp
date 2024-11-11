@@ -16,13 +16,13 @@
 
 namespace semitone
 {
-    rdl_theory::rdl_theory(const size_t &size) noexcept : dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<VARIABLE_TYPE>(size))
+    rdl_theory::rdl_theory(const size_t &size) noexcept : dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<std::size_t>(size))
     {
         assert(size > 1);
         for (size_t i = 0; i < size; ++i)
         {
             dists[i][i] = utils::inf_rational(utils::rational::zero);
-            std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<VARIABLE_TYPE>::max());
+            std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<std::size_t>::max());
             preds[i][i] = i;
         }
     }
@@ -45,7 +45,7 @@ namespace semitone
 #endif
     }
 
-    VARIABLE_TYPE rdl_theory::new_var() noexcept
+    std::size_t rdl_theory::new_var() noexcept
     {
         auto var = n_vars++;
         if (var >= dists.size())
@@ -53,7 +53,7 @@ namespace semitone
         return var;
     }
 
-    utils::lit rdl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept
+    utils::lit rdl_theory::new_distance(std::size_t from, std::size_t to, const utils::inf_rational &dist) noexcept
     {
         if (dists[to][from] < -dist)
             return utils::FALSE_lit; // the constraint is inconsistent
@@ -68,7 +68,7 @@ namespace semitone
         var_dists.emplace(variable(ctr), std::move(constr));
         return ctr;
     }
-    utils::lit rdl_theory::new_distance(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept { return get_sat().new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
+    utils::lit rdl_theory::new_distance(std::size_t from, std::size_t to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept { return get_sat().new_conj({new_distance(to, from, -min), new_distance(from, to, max)}); }
 
     utils::lit rdl_theory::new_lt(const utils::lin &left, const utils::lin &right) noexcept
     {
@@ -368,7 +368,7 @@ namespace semitone
             { // the constraint is inconsistent, we have a conflict..
                 std::vector<utils::lit> cnfl;
                 cnfl.emplace_back(!constr.get_lit());
-                VARIABLE_TYPE c_to = constr.get_from();
+                std::size_t c_to = constr.get_from();
                 while (c_to != constr.get_to())
                 {
                     const auto &c_d = dist_constr.find({preds[constr.get_to()][c_to], c_to})->second.get();
@@ -404,7 +404,7 @@ namespace semitone
             { // the constraint is inconsistent, we have a conflict..
                 std::vector<utils::lit> cnfl;
                 cnfl.emplace_back(constr.get_lit());
-                VARIABLE_TYPE c_to = constr.get_to();
+                std::size_t c_to = constr.get_to();
                 while (c_to != constr.get_from())
                 {
                     const auto &c_d = dist_constr.find({preds[constr.get_from()][c_to], c_to})->second.get();
@@ -438,14 +438,14 @@ namespace semitone
         return true;
     }
 
-    void rdl_theory::propagate(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept
+    void rdl_theory::propagate(std::size_t from, std::size_t to, const utils::inf_rational &dist) noexcept
     {
         assert(!is_infinite(dist));
         set_dist(from, to, dist);
         set_pred(from, to, from);
-        std::vector<VARIABLE_TYPE> set_i;
-        std::vector<VARIABLE_TYPE> set_j;
-        std::vector<std::pair<VARIABLE_TYPE, VARIABLE_TYPE>> c_updates;
+        std::vector<std::size_t> set_i;
+        std::vector<std::size_t> set_j;
+        std::vector<std::pair<std::size_t, std::size_t>> c_updates;
         c_updates.emplace_back(from, to);
         c_updates.emplace_back(to, from);
 
@@ -490,7 +490,7 @@ namespace semitone
                         { // the constraint is inconsistent..
                             std::vector<utils::lit> cnfl;
                             cnfl.emplace_back(!c_dist.get().get_lit());
-                            VARIABLE_TYPE c_to = c_dist.get().get_from();
+                            std::size_t c_to = c_dist.get().get_from();
                             while (c_to != c_dist.get().get_to())
                             {
                                 const auto &c_d = dist_constr.find({preds[c_dist.get().get_to()][c_to], c_to})->second.get();
@@ -512,7 +512,7 @@ namespace semitone
                         { // the constraint is redundant..
                             std::vector<utils::lit> cnfl;
                             cnfl.emplace_back(c_dist.get().get_lit());
-                            VARIABLE_TYPE c_to = c_dist.get().get_to();
+                            std::size_t c_to = c_dist.get().get_to();
                             while (c_to != c_dist.get().get_from())
                             {
                                 const auto &c_d = dist_constr.find({preds[c_dist.get().get_from()][c_to], c_to})->second.get();
@@ -549,7 +549,7 @@ namespace semitone
         layers.pop_back();
     }
 
-    void rdl_theory::set_dist(VARIABLE_TYPE from, VARIABLE_TYPE to, const utils::inf_rational &dist) noexcept
+    void rdl_theory::set_dist(std::size_t from, std::size_t to, const utils::inf_rational &dist) noexcept
     {
         assert(dists[from][to] > dist);                                                 // we should never increase the distance
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
@@ -565,7 +565,7 @@ namespace semitone
         }
     }
 
-    void rdl_theory::set_pred(VARIABLE_TYPE from, VARIABLE_TYPE to, VARIABLE_TYPE pred) noexcept
+    void rdl_theory::set_pred(std::size_t from, std::size_t to, std::size_t pred) noexcept
     {
         assert(dist_constr.find({pred, to}) != dist_constr.end());
         assert(preds[from][to] != pred);                                                // we should never set the same predecessor
@@ -583,7 +583,7 @@ namespace semitone
             preds[i].resize(size, std::numeric_limits<INT_TYPE>::max());
         }
         dists.resize(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite)));
-        preds.resize(size, std::vector<VARIABLE_TYPE>(size, std::numeric_limits<INT_TYPE>::max()));
+        preds.resize(size, std::vector<std::size_t>(size, std::numeric_limits<INT_TYPE>::max()));
         for (size_t i = c_size; i < size; ++i)
         {
             dists[i][i] = utils::inf_rational(utils::rational::zero);

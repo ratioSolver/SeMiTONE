@@ -25,7 +25,7 @@ namespace semitone
     friend class lra_theory;
 
   public:
-    lra_assertion(const utils::lit b, const VARIABLE_TYPE x, const op o, const utils::inf_rational &v) noexcept : b(b), x(x), o(o), v(v) {}
+    lra_assertion(const utils::lit b, const std::size_t x, const op o, const utils::inf_rational &v) noexcept : b(b), x(x), o(o), v(v) {}
 
 #ifdef ENABLE_API
     friend json::json to_json(const lra_theory &rhs) noexcept;
@@ -33,7 +33,7 @@ namespace semitone
 
   private:
     const utils::lit b;          // the literal associated to the assertion..
-    const VARIABLE_TYPE x;       // the numeric variable..
+    const std::size_t x;       // the numeric variable..
     const op o;                  // the operator..
     const utils::inf_rational v; // the constant..
   };
@@ -43,14 +43,14 @@ namespace semitone
     friend class lra_theory;
 
   public:
-    lra_eq(const VARIABLE_TYPE x, const utils::lin &&l) noexcept : x(x), l(std::move(l)) {}
+    lra_eq(const std::size_t x, const utils::lin &&l) noexcept : x(x), l(std::move(l)) {}
 
 #ifdef ENABLE_API
     friend json::json to_json(const lra_theory &rhs) noexcept;
 #endif
 
   private:
-    const VARIABLE_TYPE x; // the numeric variable..
+    const std::size_t x; // the numeric variable..
     utils::lin l;          // the linear expression..
   };
 
@@ -72,17 +72,17 @@ namespace semitone
      *
      * @param lb the lower bound of the new variable.
      * @param ub the upper bound of the new variable.
-     * @return VARIABLE_TYPE the new variable.
+     * @return std::size_t the new variable.
      */
-    [[nodiscard]] VARIABLE_TYPE new_var(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    [[nodiscard]] std::size_t new_var(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
 
     /**
      * @brief Create a new linear real arithmetic variable and make it equal to the given linear expression.
      *
      * @param l the linear expression to make the new variable equal to.
-     * @return VARIABLE_TYPE the new variable.
+     * @return std::size_t the new variable.
      */
-    [[nodiscard]] VARIABLE_TYPE new_var(const utils::lin &&l) noexcept;
+    [[nodiscard]] std::size_t new_var(const utils::lin &&l) noexcept;
 
     /**
      * @brief Creates a new less-than-or-equal-to literal.
@@ -93,7 +93,7 @@ namespace semitone
      * @param v The value to compare the variable against, represented as an inf_rational.
      * @return A utils::lit object representing the inequality x <= v.
      */
-    [[nodiscard]] utils::lit new_leq(const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept;
+    [[nodiscard]] utils::lit new_leq(const std::size_t x, const utils::inf_rational &v) noexcept;
 
     /**
      * @brief Creates a new greater-than-or-equal-to literal.
@@ -104,7 +104,7 @@ namespace semitone
      * @param v The inf_rational value to compare against.
      * @return A utils::lit object representing the inequality x >= v.
      */
-    [[nodiscard]] utils::lit new_geq(const VARIABLE_TYPE x, const utils::inf_rational &v) noexcept;
+    [[nodiscard]] utils::lit new_geq(const std::size_t x, const utils::inf_rational &v) noexcept;
 
     /**
      * @brief Creates a new lower then constraint between the given linear expressions and returns the corresponding literal.
@@ -129,21 +129,21 @@ namespace semitone
      * @param v the variable to get the lower bound of.
      * @return utils::inf_rational the current lower bound of variable `v`.
      */
-    [[nodiscard]] inline utils::inf_rational lb(const VARIABLE_TYPE v) const noexcept { return c_bounds[lb_index(v)].value; }
+    [[nodiscard]] inline utils::inf_rational lb(const std::size_t v) const noexcept { return c_bounds[lb_index(v)].value; }
     /**
      * @brief Returns the current upper bound of variable `v`.
      *
      * @param v the variable to get the upper bound of.
      * @return utils::inf_rational the current upper bound of variable `v`.
      */
-    [[nodiscard]] inline utils::inf_rational ub(const VARIABLE_TYPE v) const noexcept { return c_bounds[ub_index(v)].value; }
+    [[nodiscard]] inline utils::inf_rational ub(const std::size_t v) const noexcept { return c_bounds[ub_index(v)].value; }
     /**
      * @brief Returns the current value of variable `v`.
      *
      * @param v the variable to get the value of.
      * @return utils::inf_rational the current value of variable `v`.
      */
-    [[nodiscard]] inline utils::inf_rational value(const VARIABLE_TYPE v) const noexcept { return vals[v]; }
+    [[nodiscard]] inline utils::inf_rational value(const std::size_t v) const noexcept { return vals[v]; }
 
     /**
      * @brief Returns the current lower bound of linear expression `l`.
@@ -226,7 +226,7 @@ namespace semitone
      * @param r the literals that caused the change.
      * @return bool whether the propagation was successful.
      */
-    [[nodiscard]] bool set_lb(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept;
+    [[nodiscard]] bool set_lb(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept;
     /**
      * @brief Sets the upper bound of variable `x_i` to `val` and propagates the change, returning whether the propagation was successful.
      *
@@ -235,7 +235,7 @@ namespace semitone
      * @param r the literals that caused the change.
      * @return bool whether the propagation was successful.
      */
-    [[nodiscard]] bool set_ub(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept;
+    [[nodiscard]] bool set_ub(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept;
 
 #ifdef BUILD_LISTENERS
     void add_listener(lra_value_listener &l) noexcept;
@@ -246,18 +246,18 @@ namespace semitone
     [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> lb_and_reason(const utils::lin &l) const noexcept;
     [[nodiscard]] std::pair<utils::inf_rational, std::vector<utils::lit>> ub_and_reason(const utils::lin &l) const noexcept;
 
-    [[nodiscard]] inline static size_t lb_index(const VARIABLE_TYPE v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
-    [[nodiscard]] inline static size_t ub_index(const VARIABLE_TYPE v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
+    [[nodiscard]] inline static size_t lb_index(const std::size_t v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
+    [[nodiscard]] inline static size_t ub_index(const std::size_t v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
-    [[nodiscard]] bool is_basic(const VARIABLE_TYPE v) const noexcept { return tableau.count(v); }
+    [[nodiscard]] bool is_basic(const std::size_t v) const noexcept { return tableau.count(v); }
 
-    [[nodiscard]] bool assert_lower(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
-    [[nodiscard]] bool assert_upper(const VARIABLE_TYPE x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
+    [[nodiscard]] bool assert_lower(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
+    [[nodiscard]] bool assert_upper(const std::size_t x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
 
-    void update(const VARIABLE_TYPE x_i, const utils::inf_rational &v) noexcept;
-    void pivot_and_update(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j, const utils::inf_rational &v) noexcept;
-    void pivot(const VARIABLE_TYPE x_i, const VARIABLE_TYPE x_j) noexcept;
-    void new_row(const VARIABLE_TYPE x_i, const utils::lin &&xpr) noexcept;
+    void update(const std::size_t x_i, const utils::inf_rational &v) noexcept;
+    void pivot_and_update(const std::size_t x_i, const std::size_t x_j, const utils::inf_rational &v) noexcept;
+    void pivot(const std::size_t x_i, const std::size_t x_j) noexcept;
+    void new_row(const std::size_t x_i, const utils::lin &&xpr) noexcept;
 
     [[nodiscard]] bool propagate(const utils::lit &) noexcept override;
     [[nodiscard]] bool check() noexcept override;
@@ -280,16 +280,16 @@ namespace semitone
 
     std::vector<bound> c_bounds;                                               // the current bounds..
     std::vector<utils::inf_rational> vals;                                     // the current values..
-    std::map<const VARIABLE_TYPE, std::unique_ptr<lra_assertion>> v_asrts;     // the assertions (literal to assertions) used for enforcing (negating) assertions..
-    std::map<const VARIABLE_TYPE, std::unique_ptr<lra_eq>> tableau;            // the tableau..
+    std::map<const std::size_t, std::unique_ptr<lra_assertion>> v_asrts;     // the assertions (literal to assertions) used for enforcing (negating) assertions..
+    std::map<const std::size_t, std::unique_ptr<lra_eq>> tableau;            // the tableau..
     std::vector<std::vector<std::reference_wrapper<lra_assertion>>> a_watches; // for each variable `v`, a list of assertions watching `v`..
-    std::vector<std::set<VARIABLE_TYPE>> t_watches;                            // for each variable `v`, a list of tableau rows watching `v`..
-    std::unordered_map<std::string, VARIABLE_TYPE> exprs;                      // the expressions (string to numeric variable) for which already exist slack variables..
+    std::vector<std::set<std::size_t>> t_watches;                            // for each variable `v`, a list of tableau rows watching `v`..
+    std::unordered_map<std::string, std::size_t> exprs;                      // the expressions (string to numeric variable) for which already exist slack variables..
     std::unordered_map<std::string, utils::lit> s_asrts;                       // the assertions (string to literal) used for reducing the number of boolean variables..
     std::vector<std::unordered_map<size_t, bound>> layers;                     // we store the updated bounds..
 #ifdef BUILD_LISTENERS
   private:
-    std::unordered_map<VARIABLE_TYPE, std::set<lra_value_listener *>> listening; // for each variable, the listeners listening to it..
+    std::unordered_map<std::size_t, std::set<lra_value_listener *>> listening; // for each variable, the listeners listening to it..
     std::set<lra_value_listener *> listeners;                                    // the collection of listeners..
 #endif
   };
