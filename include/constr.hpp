@@ -119,7 +119,7 @@ namespace semitone
 #ifdef ENABLE_API
   private:
     [[nodiscard]] virtual json::json to_json() const noexcept { return json::json(); }
-    [[nodiscard]] friend json::json to_json(const constr &rhs) noexcept;
+    friend json::json to_json(const constr &rhs) noexcept;
 #endif
 
   protected:
