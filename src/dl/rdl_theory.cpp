@@ -116,6 +116,7 @@ namespace semitone
         }
         default:
             assert(false);
+            return utils::FALSE_lit;
         }
     }
     utils::lit rdl_theory::new_leq(const utils::lin &left, const utils::lin &right) noexcept
