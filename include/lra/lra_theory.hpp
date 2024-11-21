@@ -237,6 +237,19 @@ namespace semitone
      */
     [[nodiscard]] bool set_ub(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept;
 
+    /**
+     * @brief Sets the value of a variable by setting both its lower and upper bounds.
+     *
+     * This function sets the value of the specified variable by setting both its lower bound (LB)
+     * and upper bound (UB) to the given value. It returns true if both bounds are successfully set.
+     *
+     * @param x_i The variable to set the value for.
+     * @param val The value to set for the variable.
+     * @param r An optional vector of literals associated with the bounds (default is an empty vector).
+     * @return true if both the lower and upper bounds are successfully set, false otherwise.
+     */
+    [[nodiscard]] bool set_value(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r = {}) noexcept { return set_lb(x_i, val, r) && set_ub(x_i, val, r); }
+
 #ifdef BUILD_LISTENERS
     void add_listener(lra_value_listener &l) noexcept;
     void remove_listener(lra_value_listener &l) noexcept;
