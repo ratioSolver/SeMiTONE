@@ -397,6 +397,7 @@ namespace semitone
                     }
                     c_to = preds[constr.get_to()][c_to];
                 }
+                set_theory_conflict(std::move(cnfl));
                 return false;
             }
             else if (dists[constr.get_from()][constr.get_to()] > constr.get_dist())
@@ -433,6 +434,7 @@ namespace semitone
                     }
                     c_to = preds[constr.get_from()][c_to];
                 }
+                set_theory_conflict(std::move(cnfl));
                 return false;
             }
             else if (dists[constr.get_to()][constr.get_from()] >= -constr.get_dist())
