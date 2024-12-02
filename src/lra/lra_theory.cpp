@@ -38,8 +38,8 @@ namespace semitone
         return var;
     }
     utils::var lra_theory::new_var(const utils::lin &&l) noexcept
-    {
-        assert(get_sat().root_level());
+    { // we create, if needed, a new arithmetic variable which is equal to the given linear expression..
+        assert(!l.vars.empty());
         const auto s_expr = to_string(l);
         if (const auto it = exprs.find(s_expr); it != exprs.cend())
             return it->second;
