@@ -70,6 +70,34 @@ namespace semitone
 
     utils::integer int_var::val() const noexcept { return value; }
 
+    int_sum::int_sum(const context &ctx, std::vector<int_expr> &&args) : int_var(ctx), arguments(std::move(args)) {}
+
+    const std::vector<int_expr> &int_sum::args() const noexcept { return arguments; }
+
+    utils::integer int_sum::lb() const noexcept
+    {
+        utils::integer sum = utils::integer::zero;
+        for (const auto &arg : arguments)
+            sum += arg->lb();
+        return sum;
+    }
+
+    utils::integer int_sum::ub() const noexcept
+    {
+        utils::integer sum = utils::integer::zero;
+        for (const auto &arg : arguments)
+            sum += arg->ub();
+        return sum;
+    }
+
+    utils::integer int_sum::val() const noexcept
+    {
+        utils::integer sum = utils::integer::zero;
+        for (const auto &arg : arguments)
+            sum += arg->val();
+        return sum;
+    }
+
     real_var::real_var(const context &ctx) : var(ctx), value(utils::rational::zero), lower_bound(utils::rational::negative_infinite), upper_bound(utils::rational::positive_infinite) {}
     real_var::real_var(const context &ctx, utils::rational val) : var(ctx), value(val), lower_bound(val), upper_bound(val) {}
     real_var::real_var(const context &ctx, utils::rational val, utils::rational lb, utils::rational ub) : var(ctx), value(val), lower_bound(lb), upper_bound(ub) { assert(lb <= val && val <= ub); }

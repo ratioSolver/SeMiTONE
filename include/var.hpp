@@ -86,16 +86,32 @@ namespace semitone
     int_var(const context &ctx, utils::integer val, utils::integer lb, utils::integer ub);
     virtual ~int_var() = default;
 
-    [[nodiscard]] utils::integer lb() const noexcept;
-    [[nodiscard]] utils::integer ub() const noexcept;
+    [[nodiscard]] virtual utils::integer lb() const noexcept;
+    [[nodiscard]] virtual utils::integer ub() const noexcept;
 
-    [[nodiscard]] utils::integer val() const noexcept;
+    [[nodiscard]] virtual utils::integer val() const noexcept;
 
   private:
     utils::integer value, lower_bound, upper_bound;
   };
 
   using int_expr = std::shared_ptr<int_var>;
+
+  class int_sum final : public int_var
+  {
+  public:
+    int_sum(const context &ctx, std::vector<int_expr> &&args);
+
+    [[nodiscard]] const std::vector<int_expr> &args() const noexcept;
+
+    [[nodiscard]] utils::integer lb() const noexcept override;
+    [[nodiscard]] utils::integer ub() const noexcept override;
+
+    [[nodiscard]] utils::integer val() const noexcept override;
+
+  private:
+    std::vector<int_expr> arguments;
+  };
 
   class real_var : public var
   {
