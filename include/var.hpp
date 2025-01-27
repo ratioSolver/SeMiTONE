@@ -3,7 +3,7 @@
 #include "bool.hpp"
 #include "integer.hpp"
 #include "rational.hpp"
-#include <memory>
+#include "memory.hpp"
 #include <vector>
 
 namespace semitone
@@ -22,7 +22,7 @@ namespace semitone
     const context &ctx;
   };
 
-  using expr = std::shared_ptr<var>;
+  using expr = utils::s_ptr<var>;
 
   class bool_var : public var
   {
@@ -37,7 +37,7 @@ namespace semitone
     utils::lbool value;
   };
 
-  using bool_expr = std::shared_ptr<bool_var>;
+  using bool_expr = utils::s_ptr<bool_var>;
 
   class and_expr final : public bool_var
   {
@@ -95,7 +95,7 @@ namespace semitone
     utils::integer value, lower_bound, upper_bound;
   };
 
-  using int_expr = std::shared_ptr<int_var>;
+  using int_expr = utils::s_ptr<int_var>;
 
   class int_sum final : public int_var
   {
@@ -130,7 +130,7 @@ namespace semitone
     utils::rational value, lower_bound, upper_bound;
   };
 
-  using real_expr = std::shared_ptr<real_var>;
+  using real_expr = utils::s_ptr<real_var>;
 
   class string_var : public var
   {
@@ -145,5 +145,5 @@ namespace semitone
     std::string value;
   };
 
-  using string_expr = std::shared_ptr<string_var>;
+  using string_expr = utils::s_ptr<string_var>;
 } // namespace semitone
