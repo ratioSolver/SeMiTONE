@@ -1,6 +1,12 @@
 #include "context.hpp"
 #include <cassert>
 
+// for coverage purposes
+template class utils::s_ptr<semitone::var>;
+template class utils::s_ptr<semitone::bool_var>;
+template class utils::s_ptr<semitone::int_var>;
+template class utils::s_ptr<semitone::real_var>;
+
 void test_bools()
 {
     semitone::context ctx;
