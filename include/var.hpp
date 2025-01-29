@@ -184,6 +184,61 @@ namespace semitone
     std::vector<int_expr> arguments;
   };
 
+  class int_lt final : public bool_var
+  {
+  public:
+    int_lt(const context &ctx, int_expr lhs, int_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    int_expr left, right;
+  };
+
+  class int_le final : public bool_var
+  {
+  public:
+    int_le(const context &ctx, int_expr lhs, int_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    int_expr left, right;
+  };
+
+  class int_eq final : public bool_var
+  {
+  public:
+    int_eq(const context &ctx, int_expr lhs, int_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    int_expr left, right;
+  };
+
+  class int_ge final : public bool_var
+  {
+  public:
+    int_ge(const context &ctx, int_expr lhs, int_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    int_expr left, right;
+  };
+
+  class int_gt final : public bool_var
+  {
+  public:
+    int_gt(const context &ctx, int_expr lhs, int_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    int_expr left, right;
+  };
+
   class real_var : public var
   {
   public:
@@ -280,6 +335,61 @@ namespace semitone
 
   private:
     std::vector<real_expr> arguments;
+  };
+
+  class real_lt final : public bool_var
+  {
+  public:
+    real_lt(const context &ctx, real_expr lhs, real_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    real_expr left, right;
+  };
+
+  class real_le final : public bool_var
+  {
+  public:
+    real_le(const context &ctx, real_expr lhs, real_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    real_expr left, right;
+  };
+
+  class real_eq final : public bool_var
+  {
+  public:
+    real_eq(const context &ctx, real_expr lhs, real_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    real_expr left, right;
+  };
+
+  class real_ge final : public bool_var
+  {
+  public:
+    real_ge(const context &ctx, real_expr lhs, real_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    real_expr left, right;
+  };
+
+  class real_gt final : public bool_var
+  {
+  public:
+    real_gt(const context &ctx, real_expr lhs, real_expr rhs);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    real_expr left, right;
   };
 
   class string_var : public var

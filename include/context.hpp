@@ -24,6 +24,12 @@ namespace semitone
     int_expr mk_mul(std::vector<int_expr> &&args);
     int_expr mk_div(std::vector<int_expr> &&args);
 
+    bool_expr mk_lt(int_expr lhs, int_expr rhs);
+    bool_expr mk_le(int_expr lhs, int_expr rhs);
+    bool_expr mk_eq(int_expr lhs, int_expr rhs);
+    bool_expr mk_ge(int_expr lhs, int_expr rhs);
+    bool_expr mk_gt(int_expr lhs, int_expr rhs);
+
     real_expr mk_real_var(std::string_view name);
     real_expr mk_real_var(std::string_view name, const utils::rational &lb, const utils::rational &ub);
     real_expr mk_real_const(const utils::rational &value);
@@ -32,5 +38,11 @@ namespace semitone
     real_expr mk_sub(std::vector<real_expr> &&args);
     real_expr mk_mul(std::vector<real_expr> &&args);
     real_expr mk_div(std::vector<real_expr> &&args);
+
+    bool_expr mk_lt(real_expr lhs, real_expr rhs);
+    bool_expr mk_le(real_expr lhs, real_expr rhs);
+    bool_expr mk_eq(real_expr lhs, real_expr rhs);
+    bool_expr mk_ge(real_expr lhs, real_expr rhs);
+    bool_expr mk_gt(real_expr lhs, real_expr rhs);
   };
 } // namespace semitone

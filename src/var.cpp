@@ -76,12 +76,9 @@ namespace semitone
     int_var::int_var(const context &ctx, std::string_view name) : var(ctx, name), value(utils::integer::zero), lower_bound(utils::integer::negative_infinite), upper_bound(utils::integer::positive_infinite) {}
     int_var::int_var(const context &ctx, std::string_view name, const utils::integer &lb, const utils::integer &ub) : var(ctx, name), value(get_val(lb, ub)), lower_bound(lb), upper_bound(ub) {}
     int_var::int_var(const context &ctx, const utils::integer &val) : var(ctx, to_string(val)), value(val), lower_bound(val), upper_bound(val) { assert(!is_infinite(val)); }
-
     utils::integer int_var::lb() const noexcept { return lower_bound; }
     utils::integer int_var::ub() const noexcept { return upper_bound; }
-
     utils::integer int_var::val() const noexcept { return value; }
-
     utils::integer int_var::get_val(const utils::integer &lb, const utils::integer &ub)
     {
         assert(lb <= ub);
@@ -222,6 +219,56 @@ namespace semitone
         name.pop_back();
         name.push_back(')');
         return name;
+    }
+
+    int_lt::int_lt(const context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(< " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool int_lt::val() const noexcept
+    {
+        if (left->ub() < right->lb())
+            return utils::True;
+        if (left->lb() >= right->ub())
+            return utils::False;
+        return utils::Undefined;
+    }
+
+    int_le::int_le(const context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(<= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool int_le::val() const noexcept
+    {
+        if (left->ub() <= right->lb())
+            return utils::True;
+        if (left->lb() > right->ub())
+            return utils::False;
+        return utils::Undefined;
+    }
+
+    int_eq::int_eq(const context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool int_eq::val() const noexcept
+    {
+        if (left->ub() < right->lb() || left->lb() > right->ub())
+            return utils::False;
+        if (left->lb() == right->lb() && left->ub() == right->ub() && left->lb() == right->ub())
+            return utils::True;
+        return utils::Undefined;
+    }
+
+    int_ge::int_ge(const context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(>= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool int_ge::val() const noexcept
+    {
+        if (left->lb() >= right->ub())
+            return utils::True;
+        if (left->ub() < right->lb())
+            return utils::False;
+        return utils::Undefined;
+    }
+
+    int_gt::int_gt(const context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(> " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool int_gt::val() const noexcept
+    {
+        if (left->lb() > right->ub())
+            return utils::True;
+        if (left->ub() <= right->lb())
+            return utils::False;
+        return utils::Undefined;
     }
 
     real_var::real_var(const context &ctx, std::string_view name) : var(ctx, name), value(utils::rational::zero), lower_bound(utils::rational::negative_infinite), upper_bound(utils::rational::positive_infinite) {}
@@ -370,6 +417,56 @@ namespace semitone
         name.pop_back();
         name.push_back(')');
         return name;
+    }
+
+    real_lt::real_lt(const context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(< " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool real_lt::val() const noexcept
+    {
+        if (left->ub() < right->lb())
+            return utils::True;
+        if (left->lb() >= right->ub())
+            return utils::False;
+        return utils::Undefined;
+    }
+
+    real_le::real_le(const context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(<= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool real_le::val() const noexcept
+    {
+        if (left->ub() <= right->lb())
+            return utils::True;
+        if (left->lb() > right->ub())
+            return utils::False;
+        return utils::Undefined;
+    }
+
+    real_eq::real_eq(const context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool real_eq::val() const noexcept
+    {
+        if (left->ub() < right->lb() || left->lb() > right->ub())
+            return utils::False;
+        if (left->lb() == right->lb() && left->ub() == right->ub() && left->lb() == right->ub())
+            return utils::True;
+        return utils::Undefined;
+    }
+
+    real_ge::real_ge(const context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(>= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool real_ge::val() const noexcept
+    {
+        if (left->lb() >= right->ub())
+            return utils::True;
+        if (left->ub() < right->lb())
+            return utils::False;
+        return utils::Undefined;
+    }
+
+    real_gt::real_gt(const context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(> " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    utils::lbool real_gt::val() const noexcept
+    {
+        if (left->lb() > right->ub())
+            return utils::True;
+        if (left->ub() <= right->lb())
+            return utils::False;
+        return utils::Undefined;
     }
 
     string_var::string_var(const context &ctx, std::string val) : var(ctx, val) {}
