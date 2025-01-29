@@ -5,6 +5,7 @@ namespace semitone
   class context
   {
   public:
+    context() = default;
     context(const context &) = delete;
     context(context &&) = default;
 

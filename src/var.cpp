@@ -4,12 +4,11 @@
 namespace semitone
 {
     var::var(const context &ctx, std::string_view name) : ctx(ctx), name(name) {}
-
     const context &var::get_ctx() const noexcept { return ctx; }
+    const std::string &var::get_name() const noexcept { return name; }
 
     bool_var::bool_var(const context &ctx, std::string_view name) : var(ctx, name), value(utils::Undefined) {}
     bool_var::bool_var(const context &ctx, utils::lbool val) : var(ctx, val == utils::True ? "true" : "false"), value(val) { assert(!is_undefined(val)); }
-
     utils::lbool bool_var::val() const noexcept { return value; }
 
     and_expr::and_expr(const context &ctx, std::vector<bool_expr> &&args) : bool_var(ctx, get_name(args)), arguments(std::move(args)) {}
@@ -126,24 +125,24 @@ namespace semitone
     const std::vector<int_expr> &int_sub::args() const noexcept { return arguments; }
     utils::integer int_sub::lb() const noexcept
     {
-        utils::integer sum = utils::integer::zero;
-        for (const auto &arg : arguments)
-            sum -= arg->ub();
-        return sum;
+        utils::integer sub = arguments[0]->lb();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            sub -= arguments[i]->ub();
+        return sub;
     }
     utils::integer int_sub::ub() const noexcept
     {
-        utils::integer sum = utils::integer::zero;
-        for (const auto &arg : arguments)
-            sum -= arg->lb();
-        return sum;
+        utils::integer sub = arguments[0]->ub();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            sub -= arguments[i]->lb();
+        return sub;
     }
     utils::integer int_sub::val() const noexcept
     {
-        utils::integer sum = utils::integer::zero;
-        for (const auto &arg : arguments)
-            sum -= arg->val();
-        return sum;
+        utils::integer sub = arguments[0]->val();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            sub -= arguments[i]->val();
+        return sub;
     }
     std::string int_sub::get_name(const std::vector<int_expr> &args)
     {
@@ -159,24 +158,24 @@ namespace semitone
     const std::vector<int_expr> &int_mul::args() const noexcept { return arguments; }
     utils::integer int_mul::lb() const noexcept
     {
-        utils::integer sum = utils::integer::one;
+        utils::integer mul = utils::integer::one;
         for (const auto &arg : arguments)
-            sum *= arg->lb();
-        return sum;
+            mul *= arg->lb();
+        return mul;
     }
     utils::integer int_mul::ub() const noexcept
     {
-        utils::integer sum = utils::integer::one;
+        utils::integer mul = utils::integer::one;
         for (const auto &arg : arguments)
-            sum *= arg->ub();
-        return sum;
+            mul *= arg->ub();
+        return mul;
     }
     utils::integer int_mul::val() const noexcept
     {
-        utils::integer sum = utils::integer::one;
+        utils::integer mul = utils::integer::one;
         for (const auto &arg : arguments)
-            sum *= arg->val();
-        return sum;
+            mul *= arg->val();
+        return mul;
     }
     std::string int_mul::get_name(const std::vector<int_expr> &args)
     {
@@ -192,24 +191,29 @@ namespace semitone
     const std::vector<int_expr> &int_div::args() const noexcept { return arguments; }
     utils::integer int_div::lb() const noexcept
     {
-        utils::integer sum = utils::integer::one;
-        for (const auto &arg : arguments)
-            sum /= arg->ub();
-        return sum;
+        utils::integer div = arguments[0]->lb();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            if (arguments[i]->lb() > 0)
+                div /= arguments[i]->ub();
+            else if (arguments[i]->ub() < 0)
+                div /= arguments[i]->lb();
+            else
+                div /= utils::integer::zero;
+        return div;
     }
     utils::integer int_div::ub() const noexcept
     {
-        utils::integer sum = utils::integer::one;
-        for (const auto &arg : arguments)
-            sum /= arg->lb();
-        return sum;
+        utils::integer div = arguments[0]->ub();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            div /= arguments[i]->lb();
+        return div;
     }
     utils::integer int_div::val() const noexcept
     {
-        utils::integer sum = utils::integer::one;
-        for (const auto &arg : arguments)
-            sum /= arg->val();
-        return sum;
+        utils::integer div = arguments[0]->val();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            div /= arguments[i]->val();
+        return div;
     }
     std::string int_div::get_name(const std::vector<int_expr> &args)
     {
@@ -324,24 +328,24 @@ namespace semitone
     const std::vector<real_expr> &real_sub::args() const noexcept { return arguments; }
     utils::rational real_sub::lb() const noexcept
     {
-        utils::rational sum = utils::rational::zero;
-        for (const auto &arg : arguments)
-            sum -= arg->ub();
-        return sum;
+        utils::rational sub = arguments[0]->lb();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            sub -= arguments[i]->ub();
+        return sub;
     }
     utils::rational real_sub::ub() const noexcept
     {
-        utils::rational sum = utils::rational::zero;
-        for (const auto &arg : arguments)
-            sum -= arg->lb();
-        return sum;
+        utils::rational sub = arguments[0]->ub();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            sub -= arguments[i]->lb();
+        return sub;
     }
     utils::rational real_sub::val() const noexcept
     {
-        utils::rational sum = utils::rational::zero;
-        for (const auto &arg : arguments)
-            sum -= arg->val();
-        return sum;
+        utils::rational sub = arguments[0]->val();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            sub -= arguments[i]->val();
+        return sub;
     }
     std::string real_sub::get_name(const std::vector<real_expr> &args)
     {
@@ -357,24 +361,24 @@ namespace semitone
     const std::vector<real_expr> &real_mul::args() const noexcept { return arguments; }
     utils::rational real_mul::lb() const noexcept
     {
-        utils::rational sum = utils::rational::one;
+        utils::rational mul = utils::rational::one;
         for (const auto &arg : arguments)
-            sum *= arg->lb();
-        return sum;
+            mul *= arg->lb();
+        return mul;
     }
     utils::rational real_mul::ub() const noexcept
     {
-        utils::rational sum = utils::rational::one;
+        utils::rational mul = utils::rational::one;
         for (const auto &arg : arguments)
-            sum *= arg->ub();
-        return sum;
+            mul *= arg->ub();
+        return mul;
     }
     utils::rational real_mul::val() const noexcept
     {
-        utils::rational sum = utils::rational::one;
+        utils::rational mul = utils::rational::one;
         for (const auto &arg : arguments)
-            sum *= arg->val();
-        return sum;
+            mul *= arg->val();
+        return mul;
     }
     std::string real_mul::get_name(const std::vector<real_expr> &args)
     {
@@ -390,24 +394,24 @@ namespace semitone
     const std::vector<real_expr> &real_div::args() const noexcept { return arguments; }
     utils::rational real_div::lb() const noexcept
     {
-        utils::rational sum = utils::rational::one;
-        for (const auto &arg : arguments)
-            sum /= arg->ub();
-        return sum;
+        utils::rational div = arguments[0]->lb();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            div /= arguments[i]->ub();
+        return div;
     }
     utils::rational real_div::ub() const noexcept
     {
-        utils::rational sum = utils::rational::one;
-        for (const auto &arg : arguments)
-            sum /= arg->lb();
-        return sum;
+        utils::rational div = arguments[0]->ub();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            div /= arguments[i]->lb();
+        return div;
     }
     utils::rational real_div::val() const noexcept
     {
-        utils::rational sum = utils::rational::one;
-        for (const auto &arg : arguments)
-            sum /= arg->val();
-        return sum;
+        utils::rational div = arguments[0]->val();
+        for (size_t i = 1; i < arguments.size(); ++i)
+            div /= arguments[i]->val();
+        return div;
     }
     std::string real_div::get_name(const std::vector<real_expr> &args)
     {
