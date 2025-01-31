@@ -27,24 +27,33 @@ namespace semitone
 
   using expr = utils::s_ptr<var>;
 
-  class bool_var : public var
+  class b_var : public var
+  {
+    friend class solver;
+
+  public:
+    b_var(context &ctx, std::string_view name);
+
+    [[nodiscard]] virtual utils::lbool val() const noexcept = 0;
+  };
+
+  using bool_expr = utils::s_ptr<b_var>;
+
+  class bool_var final : public b_var
   {
     friend class solver;
 
   public:
     bool_var(context &ctx, std::string_view name);
     bool_var(context &ctx, utils::lbool val);
-    virtual ~bool_var() = default;
 
-    [[nodiscard]] virtual utils::lbool val() const noexcept;
+    [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
     utils::lbool value;
   };
 
-  using bool_expr = utils::s_ptr<bool_var>;
-
-  class and_expr final : public bool_var
+  class and_expr final : public b_var
   {
   public:
     and_expr(context &ctx, std::vector<bool_expr> &&args);
@@ -60,7 +69,7 @@ namespace semitone
     std::vector<bool_expr> arguments;
   };
 
-  class or_expr final : public bool_var
+  class or_expr final : public b_var
   {
   public:
     or_expr(context &ctx, std::vector<bool_expr> &&args);
@@ -76,7 +85,7 @@ namespace semitone
     std::vector<bool_expr> arguments;
   };
 
-  class not_expr final : public bool_var
+  class not_expr final : public b_var
   {
   public:
     not_expr(context &ctx, bool_expr arg);
@@ -89,7 +98,22 @@ namespace semitone
     bool_expr argument;
   };
 
-  class int_var : public var
+  class int_v : public var
+  {
+    friend class solver;
+
+  public:
+    int_v(context &ctx, std::string_view name);
+
+    [[nodiscard]] virtual utils::integer lb() const noexcept = 0;
+    [[nodiscard]] virtual utils::integer ub() const noexcept = 0;
+
+    [[nodiscard]] virtual utils::integer val() const noexcept = 0;
+  };
+
+  using int_expr = utils::s_ptr<int_v>;
+
+  class int_var final : public int_v
   {
     friend class solver;
 
@@ -97,12 +121,11 @@ namespace semitone
     int_var(context &ctx, std::string_view name);
     int_var(context &ctx, std::string_view name, const utils::integer &lb, const utils::integer &ub);
     int_var(context &ctx, const utils::integer &val);
-    virtual ~int_var() = default;
 
-    [[nodiscard]] virtual utils::integer lb() const noexcept;
-    [[nodiscard]] virtual utils::integer ub() const noexcept;
+    [[nodiscard]] utils::integer lb() const noexcept override;
+    [[nodiscard]] utils::integer ub() const noexcept override;
 
-    [[nodiscard]] virtual utils::integer val() const noexcept;
+    [[nodiscard]] utils::integer val() const noexcept override;
 
   private:
     static utils::integer get_val(const utils::integer &lb, const utils::integer &ub);
@@ -111,9 +134,7 @@ namespace semitone
     utils::integer value, lower_bound, upper_bound;
   };
 
-  using int_expr = utils::s_ptr<int_var>;
-
-  class int_sum final : public int_var
+  class int_sum final : public int_v
   {
   public:
     int_sum(context &ctx, std::vector<int_expr> &&args);
@@ -132,7 +153,7 @@ namespace semitone
     std::vector<int_expr> arguments;
   };
 
-  class int_sub final : public int_var
+  class int_sub final : public int_v
   {
   public:
     int_sub(context &ctx, std::vector<int_expr> &&args);
@@ -151,7 +172,7 @@ namespace semitone
     std::vector<int_expr> arguments;
   };
 
-  class int_mul final : public int_var
+  class int_mul final : public int_v
   {
   public:
     int_mul(context &ctx, std::vector<int_expr> &&args);
@@ -170,7 +191,7 @@ namespace semitone
     std::vector<int_expr> arguments;
   };
 
-  class int_div final : public int_var
+  class int_div final : public int_v
   {
   public:
     int_div(context &ctx, std::vector<int_expr> &&args);
@@ -189,7 +210,7 @@ namespace semitone
     std::vector<int_expr> arguments;
   };
 
-  class int_lt final : public bool_var
+  class int_lt final : public b_var
   {
   public:
     int_lt(context &ctx, int_expr lhs, int_expr rhs);
@@ -200,7 +221,7 @@ namespace semitone
     int_expr left, right;
   };
 
-  class int_le final : public bool_var
+  class int_le final : public b_var
   {
   public:
     int_le(context &ctx, int_expr lhs, int_expr rhs);
@@ -211,7 +232,7 @@ namespace semitone
     int_expr left, right;
   };
 
-  class int_eq final : public bool_var
+  class int_eq final : public b_var
   {
   public:
     int_eq(context &ctx, int_expr lhs, int_expr rhs);
@@ -222,7 +243,7 @@ namespace semitone
     int_expr left, right;
   };
 
-  class int_ge final : public bool_var
+  class int_ge final : public b_var
   {
   public:
     int_ge(context &ctx, int_expr lhs, int_expr rhs);
@@ -233,7 +254,7 @@ namespace semitone
     int_expr left, right;
   };
 
-  class int_gt final : public bool_var
+  class int_gt final : public b_var
   {
   public:
     int_gt(context &ctx, int_expr lhs, int_expr rhs);
@@ -244,7 +265,22 @@ namespace semitone
     int_expr left, right;
   };
 
-  class real_var : public var
+  class real_v : public var
+  {
+    friend class solver;
+
+  public:
+    real_v(context &ctx, std::string_view name);
+
+    [[nodiscard]] virtual utils::rational lb() const noexcept = 0;
+    [[nodiscard]] virtual utils::rational ub() const noexcept = 0;
+
+    [[nodiscard]] virtual utils::rational val() const noexcept = 0;
+  };
+
+  using real_expr = utils::s_ptr<real_v>;
+
+  class real_var final : public real_v
   {
     friend class solver;
 
@@ -252,12 +288,11 @@ namespace semitone
     real_var(context &ctx, std::string_view name);
     real_var(context &ctx, std::string_view name, const utils::rational &lb, const utils::rational &ub);
     real_var(context &ctx, const utils::rational &val);
-    virtual ~real_var() = default;
 
-    [[nodiscard]] virtual utils::rational lb() const noexcept;
-    [[nodiscard]] virtual utils::rational ub() const noexcept;
+    [[nodiscard]] utils::rational lb() const noexcept override;
+    [[nodiscard]] utils::rational ub() const noexcept override;
 
-    [[nodiscard]] virtual utils::rational val() const noexcept;
+    [[nodiscard]] utils::rational val() const noexcept override;
 
   private:
     static utils::rational get_val(const utils::rational &lb, const utils::rational &ub);
@@ -266,9 +301,7 @@ namespace semitone
     utils::rational value, lower_bound, upper_bound;
   };
 
-  using real_expr = utils::s_ptr<real_var>;
-
-  class real_sum final : public real_var
+  class real_sum final : public real_v
   {
   public:
     real_sum(context &ctx, std::vector<real_expr> &&args);
@@ -287,7 +320,7 @@ namespace semitone
     std::vector<real_expr> arguments;
   };
 
-  class real_sub final : public real_var
+  class real_sub final : public real_v
   {
   public:
     real_sub(context &ctx, std::vector<real_expr> &&args);
@@ -306,7 +339,7 @@ namespace semitone
     std::vector<real_expr> arguments;
   };
 
-  class real_mul final : public real_var
+  class real_mul final : public real_v
   {
   public:
     real_mul(context &ctx, std::vector<real_expr> &&args);
@@ -325,7 +358,7 @@ namespace semitone
     std::vector<real_expr> arguments;
   };
 
-  class real_div final : public real_var
+  class real_div final : public real_v
   {
   public:
     real_div(context &ctx, std::vector<real_expr> &&args);
@@ -344,7 +377,7 @@ namespace semitone
     std::vector<real_expr> arguments;
   };
 
-  class real_lt final : public bool_var
+  class real_lt final : public b_var
   {
   public:
     real_lt(context &ctx, real_expr lhs, real_expr rhs);
@@ -355,7 +388,7 @@ namespace semitone
     real_expr left, right;
   };
 
-  class real_le final : public bool_var
+  class real_le final : public b_var
   {
   public:
     real_le(context &ctx, real_expr lhs, real_expr rhs);
@@ -366,7 +399,7 @@ namespace semitone
     real_expr left, right;
   };
 
-  class real_eq final : public bool_var
+  class real_eq final : public b_var
   {
   public:
     real_eq(context &ctx, real_expr lhs, real_expr rhs);
@@ -377,7 +410,7 @@ namespace semitone
     real_expr left, right;
   };
 
-  class real_ge final : public bool_var
+  class real_ge final : public b_var
   {
   public:
     real_ge(context &ctx, real_expr lhs, real_expr rhs);
@@ -388,7 +421,7 @@ namespace semitone
     real_expr left, right;
   };
 
-  class real_gt final : public bool_var
+  class real_gt final : public b_var
   {
   public:
     real_gt(context &ctx, real_expr lhs, real_expr rhs);
@@ -403,7 +436,6 @@ namespace semitone
   {
   public:
     string_var(context &ctx, std::string val);
-    virtual ~string_var() = default;
 
     [[nodiscard]] std::string val() const noexcept;
   };

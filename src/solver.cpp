@@ -58,7 +58,7 @@ namespace semitone
         else if (auto not_xpr = utils::s_ptr_cast<not_expr>(xpr))
             eval(not_xpr->arg());
         else if (auto bool_xpr = utils::s_ptr_cast<bool_var>(xpr))
-            bool_xpr->value = value(bool_xpr->val());
+            bool_xpr->value = value(var_map.at(bool_xpr->get_name()));
     }
 
     bool_expr solver::to_cnf(bool_expr expr) { return distribute(push_negations(expr)); }

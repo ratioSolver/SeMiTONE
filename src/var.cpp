@@ -7,11 +7,13 @@ namespace semitone
     context &var::get_ctx() noexcept { return ctx; }
     const std::string &var::get_name() const noexcept { return name; }
 
-    bool_var::bool_var(context &ctx, std::string_view name) : var(ctx, name), value(utils::Undefined) {}
-    bool_var::bool_var(context &ctx, utils::lbool val) : var(ctx, val == utils::True ? "true" : "false"), value(val) { assert(!is_undefined(val)); }
+    b_var::b_var(context &ctx, std::string_view name) : var(ctx, name) {}
+
+    bool_var::bool_var(context &ctx, std::string_view name) : b_var(ctx, name), value(utils::Undefined) {}
+    bool_var::bool_var(context &ctx, utils::lbool val) : b_var(ctx, val == utils::True ? "true" : "false"), value(val) { assert(!is_undefined(val)); }
     utils::lbool bool_var::val() const noexcept { return value; }
 
-    and_expr::and_expr(context &ctx, std::vector<bool_expr> &&args) : bool_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    and_expr::and_expr(context &ctx, std::vector<bool_expr> &&args) : b_var(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<bool_expr> &and_expr::args() const noexcept { return arguments; }
     utils::lbool and_expr::val() const noexcept
     {
@@ -34,7 +36,7 @@ namespace semitone
         return name;
     }
 
-    or_expr::or_expr(context &ctx, std::vector<bool_expr> &&args) : bool_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    or_expr::or_expr(context &ctx, std::vector<bool_expr> &&args) : b_var(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<bool_expr> &or_expr::args() const noexcept { return arguments; }
     utils::lbool or_expr::val() const noexcept
     {
@@ -57,7 +59,7 @@ namespace semitone
         return name;
     }
 
-    not_expr::not_expr(context &ctx, bool_expr arg) : bool_var(ctx, "(not " + arg->get_name() + ")"), argument(std::move(arg)) {}
+    not_expr::not_expr(context &ctx, bool_expr arg) : b_var(ctx, "(not " + arg->get_name() + ")"), argument(std::move(arg)) {}
     bool_expr not_expr::arg() const noexcept { return argument; }
     utils::lbool not_expr::val() const noexcept
     {
@@ -72,9 +74,11 @@ namespace semitone
         }
     }
 
-    int_var::int_var(context &ctx, std::string_view name) : var(ctx, name), value(utils::integer::zero), lower_bound(utils::integer::negative_infinite), upper_bound(utils::integer::positive_infinite) {}
-    int_var::int_var(context &ctx, std::string_view name, const utils::integer &lb, const utils::integer &ub) : var(ctx, name), value(get_val(lb, ub)), lower_bound(lb), upper_bound(ub) {}
-    int_var::int_var(context &ctx, const utils::integer &val) : var(ctx, to_string(val)), value(val), lower_bound(val), upper_bound(val) { assert(!is_infinite(val)); }
+    int_v::int_v(context &ctx, std::string_view name) : var(ctx, name) {}
+
+    int_var::int_var(context &ctx, std::string_view name) : int_v(ctx, name), value(utils::integer::zero), lower_bound(utils::integer::negative_infinite), upper_bound(utils::integer::positive_infinite) {}
+    int_var::int_var(context &ctx, std::string_view name, const utils::integer &lb, const utils::integer &ub) : int_v(ctx, name), value(get_val(lb, ub)), lower_bound(lb), upper_bound(ub) {}
+    int_var::int_var(context &ctx, const utils::integer &val) : int_v(ctx, to_string(val)), value(val), lower_bound(val), upper_bound(val) { assert(!is_infinite(val)); }
     utils::integer int_var::lb() const noexcept { return lower_bound; }
     utils::integer int_var::ub() const noexcept { return upper_bound; }
     utils::integer int_var::val() const noexcept { return value; }
@@ -88,7 +92,7 @@ namespace semitone
         return utils::integer::zero;
     }
 
-    int_sum::int_sum(context &ctx, std::vector<int_expr> &&args) : int_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    int_sum::int_sum(context &ctx, std::vector<int_expr> &&args) : int_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<int_expr> &int_sum::args() const noexcept { return arguments; }
     utils::integer int_sum::lb() const noexcept
     {
@@ -121,7 +125,7 @@ namespace semitone
         return name;
     }
 
-    int_sub::int_sub(context &ctx, std::vector<int_expr> &&args) : int_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    int_sub::int_sub(context &ctx, std::vector<int_expr> &&args) : int_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<int_expr> &int_sub::args() const noexcept { return arguments; }
     utils::integer int_sub::lb() const noexcept
     {
@@ -154,7 +158,7 @@ namespace semitone
         return name;
     }
 
-    int_mul::int_mul(context &ctx, std::vector<int_expr> &&args) : int_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    int_mul::int_mul(context &ctx, std::vector<int_expr> &&args) : int_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<int_expr> &int_mul::args() const noexcept { return arguments; }
     utils::integer int_mul::lb() const noexcept
     {
@@ -187,7 +191,7 @@ namespace semitone
         return name;
     }
 
-    int_div::int_div(context &ctx, std::vector<int_expr> &&args) : int_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    int_div::int_div(context &ctx, std::vector<int_expr> &&args) : int_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<int_expr> &int_div::args() const noexcept { return arguments; }
     utils::integer int_div::lb() const noexcept
     {
@@ -225,7 +229,7 @@ namespace semitone
         return name;
     }
 
-    int_lt::int_lt(context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(< " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    int_lt::int_lt(context &ctx, int_expr lhs, int_expr rhs) : b_var(ctx, "(< " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool int_lt::val() const noexcept
     {
         if (left->ub() < right->lb())
@@ -235,7 +239,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    int_le::int_le(context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(<= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    int_le::int_le(context &ctx, int_expr lhs, int_expr rhs) : b_var(ctx, "(<= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool int_le::val() const noexcept
     {
         if (left->ub() <= right->lb())
@@ -245,7 +249,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    int_eq::int_eq(context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    int_eq::int_eq(context &ctx, int_expr lhs, int_expr rhs) : b_var(ctx, "(= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool int_eq::val() const noexcept
     {
         if (left->ub() < right->lb() || left->lb() > right->ub())
@@ -255,7 +259,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    int_ge::int_ge(context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(>= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    int_ge::int_ge(context &ctx, int_expr lhs, int_expr rhs) : b_var(ctx, "(>= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool int_ge::val() const noexcept
     {
         if (left->lb() >= right->ub())
@@ -265,7 +269,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    int_gt::int_gt(context &ctx, int_expr lhs, int_expr rhs) : bool_var(ctx, "(> " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    int_gt::int_gt(context &ctx, int_expr lhs, int_expr rhs) : b_var(ctx, "(> " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool int_gt::val() const noexcept
     {
         if (left->lb() > right->ub())
@@ -275,9 +279,11 @@ namespace semitone
         return utils::Undefined;
     }
 
-    real_var::real_var(context &ctx, std::string_view name) : var(ctx, name), value(utils::rational::zero), lower_bound(utils::rational::negative_infinite), upper_bound(utils::rational::positive_infinite) {}
-    real_var::real_var(context &ctx, std::string_view name, const utils::rational &lb, const utils::rational &ub) : var(ctx, name), value(get_val(lb, ub)), lower_bound(lb), upper_bound(ub) {}
-    real_var::real_var(context &ctx, const utils::rational &val) : var(ctx, to_string(val)), value(val), lower_bound(val), upper_bound(val) { assert(!is_infinite(val)); }
+    real_v::real_v(context &ctx, std::string_view name) : var(ctx, name) {}
+
+    real_var::real_var(context &ctx, std::string_view name) : real_v(ctx, name), value(utils::rational::zero), lower_bound(utils::rational::negative_infinite), upper_bound(utils::rational::positive_infinite) {}
+    real_var::real_var(context &ctx, std::string_view name, const utils::rational &lb, const utils::rational &ub) : real_v(ctx, name), value(get_val(lb, ub)), lower_bound(lb), upper_bound(ub) {}
+    real_var::real_var(context &ctx, const utils::rational &val) : real_v(ctx, to_string(val)), value(val), lower_bound(val), upper_bound(val) { assert(!is_infinite(val)); }
     utils::rational real_var::lb() const noexcept { return lower_bound; }
     utils::rational real_var::ub() const noexcept { return upper_bound; }
     utils::rational real_var::val() const noexcept { return value; }
@@ -291,7 +297,7 @@ namespace semitone
         return utils::rational::zero;
     }
 
-    real_sum::real_sum(context &ctx, std::vector<real_expr> &&args) : real_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    real_sum::real_sum(context &ctx, std::vector<real_expr> &&args) : real_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<real_expr> &real_sum::args() const noexcept { return arguments; }
     utils::rational real_sum::lb() const noexcept
     {
@@ -324,7 +330,7 @@ namespace semitone
         return name;
     }
 
-    real_sub::real_sub(context &ctx, std::vector<real_expr> &&args) : real_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    real_sub::real_sub(context &ctx, std::vector<real_expr> &&args) : real_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<real_expr> &real_sub::args() const noexcept { return arguments; }
     utils::rational real_sub::lb() const noexcept
     {
@@ -357,7 +363,7 @@ namespace semitone
         return name;
     }
 
-    real_mul::real_mul(context &ctx, std::vector<real_expr> &&args) : real_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    real_mul::real_mul(context &ctx, std::vector<real_expr> &&args) : real_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<real_expr> &real_mul::args() const noexcept { return arguments; }
     utils::rational real_mul::lb() const noexcept
     {
@@ -390,7 +396,7 @@ namespace semitone
         return name;
     }
 
-    real_div::real_div(context &ctx, std::vector<real_expr> &&args) : real_var(ctx, get_name(args)), arguments(std::move(args)) {}
+    real_div::real_div(context &ctx, std::vector<real_expr> &&args) : real_v(ctx, get_name(args)), arguments(std::move(args)) {}
     const std::vector<real_expr> &real_div::args() const noexcept { return arguments; }
     utils::rational real_div::lb() const noexcept
     {
@@ -423,7 +429,7 @@ namespace semitone
         return name;
     }
 
-    real_lt::real_lt(context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(< " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    real_lt::real_lt(context &ctx, real_expr lhs, real_expr rhs) : b_var(ctx, "(< " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool real_lt::val() const noexcept
     {
         if (left->ub() < right->lb())
@@ -433,7 +439,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    real_le::real_le(context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(<= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    real_le::real_le(context &ctx, real_expr lhs, real_expr rhs) : b_var(ctx, "(<= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool real_le::val() const noexcept
     {
         if (left->ub() <= right->lb())
@@ -443,7 +449,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    real_eq::real_eq(context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    real_eq::real_eq(context &ctx, real_expr lhs, real_expr rhs) : b_var(ctx, "(= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool real_eq::val() const noexcept
     {
         if (left->ub() < right->lb() || left->lb() > right->ub())
@@ -453,7 +459,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    real_ge::real_ge(context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(>= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    real_ge::real_ge(context &ctx, real_expr lhs, real_expr rhs) : b_var(ctx, "(>= " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool real_ge::val() const noexcept
     {
         if (left->lb() >= right->ub())
@@ -463,7 +469,7 @@ namespace semitone
         return utils::Undefined;
     }
 
-    real_gt::real_gt(context &ctx, real_expr lhs, real_expr rhs) : bool_var(ctx, "(> " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
+    real_gt::real_gt(context &ctx, real_expr lhs, real_expr rhs) : b_var(ctx, "(> " + lhs->get_name() + " " + rhs->get_name() + ")"), left(std::move(lhs)), right(std::move(rhs)) {}
     utils::lbool real_gt::val() const noexcept
     {
         if (left->lb() > right->ub())
