@@ -9,18 +9,19 @@
 namespace semitone
 {
   class context;
+  class solver;
 
   class var
   {
   public:
-    var(const context &ctx, std::string_view name);
+    var(context &ctx, std::string_view name);
     virtual ~var() = default;
 
-    [[nodiscard]] const context &get_ctx() const noexcept;
+    [[nodiscard]] context &get_ctx() noexcept;
     [[nodiscard]] const std::string &get_name() const noexcept;
 
   private:
-    const context &ctx;
+    context &ctx;
     const std::string name;
   };
 
@@ -28,9 +29,11 @@ namespace semitone
 
   class bool_var : public var
   {
+    friend class solver;
+
   public:
-    bool_var(const context &ctx, std::string_view name);
-    bool_var(const context &ctx, utils::lbool val);
+    bool_var(context &ctx, std::string_view name);
+    bool_var(context &ctx, utils::lbool val);
     virtual ~bool_var() = default;
 
     [[nodiscard]] virtual utils::lbool val() const noexcept;
@@ -44,7 +47,7 @@ namespace semitone
   class and_expr final : public bool_var
   {
   public:
-    and_expr(const context &ctx, std::vector<bool_expr> &&args);
+    and_expr(context &ctx, std::vector<bool_expr> &&args);
 
     [[nodiscard]] const std::vector<bool_expr> &args() const noexcept;
 
@@ -60,7 +63,7 @@ namespace semitone
   class or_expr final : public bool_var
   {
   public:
-    or_expr(const context &ctx, std::vector<bool_expr> &&args);
+    or_expr(context &ctx, std::vector<bool_expr> &&args);
 
     [[nodiscard]] const std::vector<bool_expr> &args() const noexcept;
 
@@ -76,7 +79,7 @@ namespace semitone
   class not_expr final : public bool_var
   {
   public:
-    not_expr(const context &ctx, bool_expr arg);
+    not_expr(context &ctx, bool_expr arg);
 
     [[nodiscard]] bool_expr arg() const noexcept;
 
@@ -88,10 +91,12 @@ namespace semitone
 
   class int_var : public var
   {
+    friend class solver;
+
   public:
-    int_var(const context &ctx, std::string_view name);
-    int_var(const context &ctx, std::string_view name, const utils::integer &lb, const utils::integer &ub);
-    int_var(const context &ctx, const utils::integer &val);
+    int_var(context &ctx, std::string_view name);
+    int_var(context &ctx, std::string_view name, const utils::integer &lb, const utils::integer &ub);
+    int_var(context &ctx, const utils::integer &val);
     virtual ~int_var() = default;
 
     [[nodiscard]] virtual utils::integer lb() const noexcept;
@@ -111,7 +116,7 @@ namespace semitone
   class int_sum final : public int_var
   {
   public:
-    int_sum(const context &ctx, std::vector<int_expr> &&args);
+    int_sum(context &ctx, std::vector<int_expr> &&args);
 
     [[nodiscard]] const std::vector<int_expr> &args() const noexcept;
 
@@ -130,7 +135,7 @@ namespace semitone
   class int_sub final : public int_var
   {
   public:
-    int_sub(const context &ctx, std::vector<int_expr> &&args);
+    int_sub(context &ctx, std::vector<int_expr> &&args);
 
     [[nodiscard]] const std::vector<int_expr> &args() const noexcept;
 
@@ -149,7 +154,7 @@ namespace semitone
   class int_mul final : public int_var
   {
   public:
-    int_mul(const context &ctx, std::vector<int_expr> &&args);
+    int_mul(context &ctx, std::vector<int_expr> &&args);
 
     [[nodiscard]] const std::vector<int_expr> &args() const noexcept;
 
@@ -168,7 +173,7 @@ namespace semitone
   class int_div final : public int_var
   {
   public:
-    int_div(const context &ctx, std::vector<int_expr> &&args);
+    int_div(context &ctx, std::vector<int_expr> &&args);
 
     [[nodiscard]] const std::vector<int_expr> &args() const noexcept;
 
@@ -187,7 +192,7 @@ namespace semitone
   class int_lt final : public bool_var
   {
   public:
-    int_lt(const context &ctx, int_expr lhs, int_expr rhs);
+    int_lt(context &ctx, int_expr lhs, int_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -198,7 +203,7 @@ namespace semitone
   class int_le final : public bool_var
   {
   public:
-    int_le(const context &ctx, int_expr lhs, int_expr rhs);
+    int_le(context &ctx, int_expr lhs, int_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -209,7 +214,7 @@ namespace semitone
   class int_eq final : public bool_var
   {
   public:
-    int_eq(const context &ctx, int_expr lhs, int_expr rhs);
+    int_eq(context &ctx, int_expr lhs, int_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -220,7 +225,7 @@ namespace semitone
   class int_ge final : public bool_var
   {
   public:
-    int_ge(const context &ctx, int_expr lhs, int_expr rhs);
+    int_ge(context &ctx, int_expr lhs, int_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -231,7 +236,7 @@ namespace semitone
   class int_gt final : public bool_var
   {
   public:
-    int_gt(const context &ctx, int_expr lhs, int_expr rhs);
+    int_gt(context &ctx, int_expr lhs, int_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -241,10 +246,12 @@ namespace semitone
 
   class real_var : public var
   {
+    friend class solver;
+
   public:
-    real_var(const context &ctx, std::string_view name);
-    real_var(const context &ctx, std::string_view name, const utils::rational &lb, const utils::rational &ub);
-    real_var(const context &ctx, const utils::rational &val);
+    real_var(context &ctx, std::string_view name);
+    real_var(context &ctx, std::string_view name, const utils::rational &lb, const utils::rational &ub);
+    real_var(context &ctx, const utils::rational &val);
     virtual ~real_var() = default;
 
     [[nodiscard]] virtual utils::rational lb() const noexcept;
@@ -264,7 +271,7 @@ namespace semitone
   class real_sum final : public real_var
   {
   public:
-    real_sum(const context &ctx, std::vector<real_expr> &&args);
+    real_sum(context &ctx, std::vector<real_expr> &&args);
 
     [[nodiscard]] const std::vector<real_expr> &args() const noexcept;
 
@@ -283,7 +290,7 @@ namespace semitone
   class real_sub final : public real_var
   {
   public:
-    real_sub(const context &ctx, std::vector<real_expr> &&args);
+    real_sub(context &ctx, std::vector<real_expr> &&args);
 
     [[nodiscard]] const std::vector<real_expr> &args() const noexcept;
 
@@ -302,7 +309,7 @@ namespace semitone
   class real_mul final : public real_var
   {
   public:
-    real_mul(const context &ctx, std::vector<real_expr> &&args);
+    real_mul(context &ctx, std::vector<real_expr> &&args);
 
     [[nodiscard]] const std::vector<real_expr> &args() const noexcept;
 
@@ -321,7 +328,7 @@ namespace semitone
   class real_div final : public real_var
   {
   public:
-    real_div(const context &ctx, std::vector<real_expr> &&args);
+    real_div(context &ctx, std::vector<real_expr> &&args);
 
     [[nodiscard]] const std::vector<real_expr> &args() const noexcept;
 
@@ -340,7 +347,7 @@ namespace semitone
   class real_lt final : public bool_var
   {
   public:
-    real_lt(const context &ctx, real_expr lhs, real_expr rhs);
+    real_lt(context &ctx, real_expr lhs, real_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -351,7 +358,7 @@ namespace semitone
   class real_le final : public bool_var
   {
   public:
-    real_le(const context &ctx, real_expr lhs, real_expr rhs);
+    real_le(context &ctx, real_expr lhs, real_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -362,7 +369,7 @@ namespace semitone
   class real_eq final : public bool_var
   {
   public:
-    real_eq(const context &ctx, real_expr lhs, real_expr rhs);
+    real_eq(context &ctx, real_expr lhs, real_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -373,7 +380,7 @@ namespace semitone
   class real_ge final : public bool_var
   {
   public:
-    real_ge(const context &ctx, real_expr lhs, real_expr rhs);
+    real_ge(context &ctx, real_expr lhs, real_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -384,7 +391,7 @@ namespace semitone
   class real_gt final : public bool_var
   {
   public:
-    real_gt(const context &ctx, real_expr lhs, real_expr rhs);
+    real_gt(context &ctx, real_expr lhs, real_expr rhs);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
@@ -395,7 +402,7 @@ namespace semitone
   class string_var : public var
   {
   public:
-    string_var(const context &ctx, std::string val);
+    string_var(context &ctx, std::string val);
     virtual ~string_var() = default;
 
     [[nodiscard]] std::string val() const noexcept;

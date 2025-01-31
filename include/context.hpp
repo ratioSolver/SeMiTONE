@@ -46,4 +46,6 @@ namespace semitone
     bool_expr mk_ge(real_expr lhs, real_expr rhs);
     bool_expr mk_gt(real_expr lhs, real_expr rhs);
   };
+
+  bool_expr operator!(bool_expr arg) noexcept;
 } // namespace semitone

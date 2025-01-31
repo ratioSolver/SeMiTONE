@@ -59,4 +59,6 @@ namespace semitone
     bool_expr context::mk_eq(real_expr lhs, real_expr rhs) { return utils::make_s_ptr<real_eq>(*this, lhs, rhs); }
     bool_expr context::mk_ge(real_expr lhs, real_expr rhs) { return utils::make_s_ptr<real_ge>(*this, lhs, rhs); }
     bool_expr context::mk_gt(real_expr lhs, real_expr rhs) { return utils::make_s_ptr<real_gt>(*this, lhs, rhs); }
+
+    bool_expr operator!(bool_expr arg) noexcept { return arg->get_ctx().mk_not(arg); }
 } // namespace semitone
