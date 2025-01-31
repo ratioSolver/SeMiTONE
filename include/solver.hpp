@@ -28,6 +28,18 @@ namespace semitone
     void add(bool_expr expr);
 
     /**
+     * @brief Propagates constraints in the solver.
+     *
+     * This function attempts to propagate constraints within the solver.
+     * It ensures that all constraints are satisfied and updates the internal
+     * state accordingly.
+     *
+     * @return true if propagation was successful and all constraints are satisfied.
+     * @return false if propagation failed or if any constraint is violated.
+     */
+    bool propagate() noexcept;
+
+    /**
      * @brief Assume a boolean expression.
      *
      * This function assumes a boolean expression to be true. It adds the expression
@@ -51,7 +63,7 @@ namespace semitone
      *
      * @param xpr The expression to be evaluated.
      */
-    void eval(expr xpr);
+    utils::lbool eval(bool_expr xpr);
 
   private:
     [[nodiscard]] bool_expr to_cnf(bool_expr expr);
@@ -102,18 +114,6 @@ namespace semitone
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
     [[nodiscard]] bool enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c = std::nullopt) noexcept;
-
-    /**
-     * @brief Propagates constraints in the solver.
-     *
-     * This function attempts to propagate constraints within the solver.
-     * It ensures that all constraints are satisfied and updates the internal
-     * state accordingly.
-     *
-     * @return true if propagation was successful and all constraints are satisfied.
-     * @return false if propagation failed or if any constraint is violated.
-     */
-    bool propagate() noexcept;
 
     /**
      * @brief Analyze the conflict `cnfl` and return the learnt clause in `out_learnt` and the backtracking level in `out_btlevel`.

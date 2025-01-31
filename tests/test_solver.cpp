@@ -4,20 +4,24 @@
 void test_solver0()
 {
     semitone::context ctx;
-    auto x = ctx.mk_bool_var("x");
-    auto y = ctx.mk_bool_var("y");
-    auto z = ctx.mk_bool_var("z");
-    auto and_xpr = ctx.mk_and({!x, y});
-    auto or_xpr = ctx.mk_or({x, y, z});
+    auto a = ctx.mk_bool_var("a");
+    auto b = ctx.mk_bool_var("b");
+    auto c = ctx.mk_bool_var("c");
+    auto d = ctx.mk_bool_var("d");
+    auto and_xpr = ctx.mk_and({!a, b});
+    auto or_xpr = ctx.mk_or({a, c});
 
     semitone::solver slv(ctx);
     slv.add(and_xpr);
     slv.add(or_xpr);
 
-    slv.eval(and_xpr);
-    assert(x->val() == utils::False);
-    assert(y->val() == utils::True);
-    assert(z->val() == utils::Undefined);
+    bool sat = slv.propagate();
+    assert(sat);
+
+    assert(slv.eval(a) == utils::False);
+    assert(slv.eval(b) == utils::True);
+    assert(slv.eval(c) == utils::True);
+    assert(slv.eval(d) == utils::Undefined);
 }
 
 int main()

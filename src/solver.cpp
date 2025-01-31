@@ -19,6 +19,43 @@ namespace semitone
             add_clause(cnf_expr);
     }
 
+    bool solver::propagate() noexcept
+    {
+        utils::lit p;
+    main_loop:
+        while (!prop_queue.empty())
+        { // we first propagate clauses..
+            p = prop_queue.front();
+            prop_queue.pop();
+            std::vector<utils::ref_wrapper<clause>> ws;
+            std::swap(watches[index(p)], ws);
+            for (size_t i = 0; i < ws.size(); ++i)
+                if (!ws[i]->propagate(p))
+                { // the clause is not propagating..
+                    for (size_t j = i + 1; j < ws.size(); ++j)
+                        watches[index(p)].push_back(ws[j]); // we re-add the remaining watches..
+                    while (!prop_queue.empty())
+                        prop_queue.pop(); // we clear the propagation queue..
+
+                    if (decision_level() == 0)
+                        return false; // the problem is unsatisfiable..
+
+                    // we analyze the conflict..
+                    std::vector<utils::lit> no_good;
+                    size_t bt_level;
+                    analyze(*ws[i], no_good, bt_level);
+                    while (decision_level() > bt_level)
+                        pop();
+                    // we record the no-good..
+                    record(no_good);
+
+                    goto main_loop;
+                }
+        }
+
+        return true;
+    }
+
     bool solver::assume(bool_expr expr) noexcept
     {
         utils::lit p;
@@ -47,18 +84,33 @@ namespace semitone
         //     th->pop();
     }
 
-    void solver::eval(expr xpr)
+    utils::lbool solver::eval(bool_expr xpr)
     {
-        if (auto and_xpr = utils::s_ptr_cast<and_expr>(xpr))
+        if (auto bool_xpr = utils::s_ptr_cast<bool_var>(xpr))
+        { // we evaluate the variable..
+            if (auto it = var_map.find(bool_xpr->get_name()); it != var_map.end())
+                return value(it->second);
+            else
+                return bool_xpr->val();
+        }
+        else if (auto not_xpr = utils::s_ptr_cast<not_expr>(xpr))
+        { // we evaluate the expression recursively..
+            eval(not_xpr->arg());
+            return not_xpr->val();
+        }
+        else if (auto and_xpr = utils::s_ptr_cast<and_expr>(xpr))
+        { // we evaluate the expression recursively..
             for (const auto &arg : and_xpr->args())
                 eval(arg);
+            return and_xpr->val();
+        }
         else if (auto or_xpr = utils::s_ptr_cast<or_expr>(xpr))
+        { // we evaluate the expression recursively..
             for (const auto &arg : or_xpr->args())
                 eval(arg);
-        else if (auto not_xpr = utils::s_ptr_cast<not_expr>(xpr))
-            eval(not_xpr->arg());
-        else if (auto bool_xpr = utils::s_ptr_cast<bool_var>(xpr))
-            bool_xpr->value = value(var_map.at(bool_xpr->get_name()));
+            return or_xpr->val();
+        }
+        throw std::runtime_error("unexpected expression type");
     }
 
     bool_expr solver::to_cnf(bool_expr expr) { return distribute(push_negations(expr)); }
@@ -206,43 +258,6 @@ namespace semitone
             reason[variable(p)] = c;
         trail.push_back(p);
         prop_queue.push(p);
-        return true;
-    }
-
-    bool solver::propagate() noexcept
-    {
-        utils::lit p;
-    main_loop:
-        while (!prop_queue.empty())
-        { // we first propagate clauses..
-            p = prop_queue.front();
-            prop_queue.pop();
-            std::vector<utils::ref_wrapper<clause>> ws;
-            std::swap(watches[index(p)], ws);
-            for (size_t i = 0; i < ws.size(); ++i)
-                if (!ws[i]->propagate(p))
-                { // the clause is not propagating..
-                    for (size_t j = i + 1; j < ws.size(); ++j)
-                        watches[index(p)].push_back(ws[j]); // we re-add the remaining watches..
-                    while (!prop_queue.empty())
-                        prop_queue.pop(); // we clear the propagation queue..
-
-                    if (decision_level() == 0)
-                        return false; // the problem is unsatisfiable..
-
-                    // we analyze the conflict..
-                    std::vector<utils::lit> no_good;
-                    size_t bt_level;
-                    analyze(*ws[i], no_good, bt_level);
-                    while (decision_level() > bt_level)
-                        pop();
-                    // we record the no-good..
-                    record(no_good);
-
-                    goto main_loop;
-                }
-        }
-
         return true;
     }
 
