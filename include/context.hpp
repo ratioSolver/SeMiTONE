@@ -1,4 +1,4 @@
-#include "var.hpp"
+#include "term.hpp"
 
 namespace semitone
 {
