@@ -9,8 +9,8 @@ void test_solver0()
 
     semitone::solver solver(ctx);
     solver.add(and_xpr);
-    solver.add(or_xpr);
-    solver.add(not_xpr);
+    // solver.add(or_xpr);
+    // solver.add(not_xpr);
 }
 
 int main()

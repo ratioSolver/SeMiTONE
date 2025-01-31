@@ -70,17 +70,11 @@ namespace semitone
                 args.push_back(distribute(arg));
             std::vector<bool_expr> new_args;
             for (const auto &arg : args)
-            {
                 if (auto and_xpr = utils::s_ptr_cast<and_expr>(arg))
-                {
                     for (const auto &and_arg : and_xpr->args())
                         new_args.push_back(and_arg);
-                }
                 else
-                {
                     new_args.push_back(arg);
-                }
-            }
             return ctx.mk_or(std::move(new_args));
         }
         else if (auto and_xpr = utils::s_ptr_cast<and_expr>(expr))
