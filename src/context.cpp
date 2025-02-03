@@ -60,6 +60,76 @@ namespace semitone
     bool_expr context::mk_ge(real_expr lhs, real_expr rhs) { return utils::make_s_ptr<real_ge>(*this, lhs, rhs); }
     bool_expr context::mk_gt(real_expr lhs, real_expr rhs) { return utils::make_s_ptr<real_gt>(*this, lhs, rhs); }
 
+    bool_expr context::to_cnf(bool_expr expr) { return distribute(push_negations(expr)); }
+
+    bool_expr context::push_negations(bool_expr expr)
+    {
+        if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr))
+        {
+            if (auto not_xpr_xpr = utils::s_ptr_cast<not_expr>(not_xpr->arg()))
+                return push_negations(not_xpr_xpr->arg());
+            else if (auto and_xpr = utils::s_ptr_cast<and_expr>(not_xpr->arg()))
+            {
+                std::vector<bool_expr> args;
+                for (const auto &arg : and_xpr->args())
+                    args.push_back(push_negations(mk_not(arg)));
+                return mk_or(std::move(args));
+            }
+            else if (auto or_xpr = utils::s_ptr_cast<or_expr>(not_xpr->arg()))
+            {
+                std::vector<bool_expr> args;
+                for (const auto &arg : or_xpr->args())
+                    args.push_back(push_negations(mk_not(arg)));
+                return mk_and(std::move(args));
+            }
+            else
+                return expr;
+        }
+        else if (auto and_xpr = utils::s_ptr_cast<and_expr>(expr))
+        {
+            std::vector<bool_expr> args;
+            for (const auto &arg : and_xpr->args())
+                args.push_back(push_negations(arg));
+            return mk_and(std::move(args));
+        }
+        else if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
+        {
+            std::vector<bool_expr> args;
+            for (const auto &arg : or_xpr->args())
+                args.push_back(push_negations(arg));
+            return mk_or(std::move(args));
+        }
+        else
+            return expr;
+    }
+
+    bool_expr context::distribute(bool_expr expr)
+    {
+        if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
+        {
+            std::vector<bool_expr> args;
+            for (const auto &arg : or_xpr->args())
+                args.push_back(distribute(arg));
+            std::vector<bool_expr> new_args;
+            for (const auto &arg : args)
+                if (auto and_xpr = utils::s_ptr_cast<and_expr>(arg))
+                    for (const auto &and_arg : and_xpr->args())
+                        new_args.push_back(and_arg);
+                else
+                    new_args.push_back(arg);
+            return mk_or(std::move(new_args));
+        }
+        else if (auto and_xpr = utils::s_ptr_cast<and_expr>(expr))
+        {
+            std::vector<bool_expr> args;
+            for (const auto &arg : and_xpr->args())
+                args.push_back(distribute(arg));
+            return mk_and(std::move(args));
+        }
+        else
+            return expr;
+    }
+
     bool_expr operator&&(bool_expr lhs, bool_expr rhs) noexcept { return lhs->get_ctx().mk_and({lhs, rhs}); }
     bool_expr operator&&(bool_expr lhs, bool rhs) noexcept { return lhs->get_ctx().mk_and({lhs, lhs->get_ctx().mk_bool_const(rhs)}); }
     bool_expr operator&&(bool lhs, bool_expr rhs) noexcept { return rhs->get_ctx().mk_and({rhs->get_ctx().mk_bool_const(lhs), rhs}); }

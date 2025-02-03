@@ -47,6 +47,11 @@ namespace semitone
     [[nodiscard]] bool_expr mk_eq(real_expr lhs, real_expr rhs);
     [[nodiscard]] bool_expr mk_ge(real_expr lhs, real_expr rhs);
     [[nodiscard]] bool_expr mk_gt(real_expr lhs, real_expr rhs);
+
+  private:
+    [[nodiscard]] bool_expr to_cnf(bool_expr expr);
+    [[nodiscard]] bool_expr push_negations(bool_expr expr);
+    [[nodiscard]] bool_expr distribute(bool_expr expr);
   };
 
   [[nodiscard]] bool_expr operator&&(bool_expr lhs, bool_expr rhs) noexcept;
