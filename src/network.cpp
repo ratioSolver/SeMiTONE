@@ -1,5 +1,5 @@
 #include "network.hpp"
-#include "lit.hpp"
+#include "lra_theory.hpp"
 #include "logging.hpp"
 #include <algorithm>
 #include <set>
@@ -7,7 +7,7 @@
 
 namespace semitone
 {
-    network::network(context &ctx) : ctx(ctx) {}
+    network::network(context &ctx) : ctx(ctx), lra(new_theory<lra_theory>(*this)) {}
 
     void network::add(bool_expr expr)
     {
@@ -202,62 +202,24 @@ namespace semitone
         }
     }
 
-    size_t network::add_int_var(std::string_view name, const utils::integer &lb, const utils::integer &ub)
-    {
-        if (auto it = int_var_map.find(name.data()); it != int_var_map.end())
-            return it->second;
-        else
-        {
-            size_t id = int_var_map.size();
-            int_var_map.emplace(name.data(), id);
-            c_bounds.push_back({utils::inf_rational(is_infinite(lb) ? utils::rational::negative_infinite : utils::rational(lb.value())), {}});
-            c_bounds.push_back({utils::inf_rational(is_infinite(ub) ? utils::rational::positive_infinite : utils::rational(ub.value())), {}});
-            return id;
-        }
-    }
-
-    size_t network::add_real_var(std::string_view name, const utils::rational &lb, const utils::rational &ub)
-    {
-        if (auto it = real_var_map.find(name.data()); it != real_var_map.end())
-            return it->second;
-        else
-        {
-            size_t id = real_var_map.size();
-            real_var_map.emplace(name.data(), id);
-            c_bounds.push_back({utils::inf_rational(is_infinite(lb) ? lb : utils::rational::negative_infinite), {}});
-            c_bounds.push_back({utils::inf_rational(is_infinite(ub) ? ub : utils::rational::positive_infinite), {}});
-            return id;
-        }
-    }
-
     void network::add_term(bool_expr expr)
     {
-        if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
-            add_clause(or_xpr);
+        if (auto bool_xpr = utils::s_ptr_cast<bool_var>(expr))
+            add_clause(bool_xpr); // we have a unit clause..
         else if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr))
-            add_clause(not_xpr);
-        else if (auto bool_xpr = utils::s_ptr_cast<bool_var>(expr))
-            add_clause(bool_xpr);
-        else if (auto int_lt_xpr = utils::s_ptr_cast<int_lt>(expr))
-            add_int_constraint(int_lt_xpr);
-        else if (auto int_le_xpr = utils::s_ptr_cast<int_le>(expr))
-            add_int_constraint(int_le_xpr);
-        else if (auto int_eq_xpr = utils::s_ptr_cast<int_eq>(expr))
-            add_int_constraint(int_eq_xpr);
-        else if (auto int_ge_xpr = utils::s_ptr_cast<int_ge>(expr))
-            add_int_constraint(int_ge_xpr);
-        else if (auto int_gt_xpr = utils::s_ptr_cast<int_gt>(expr))
-            add_int_constraint(int_gt_xpr);
+            add_clause(not_xpr); // we have a unit clause..
+        else if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
+            add_clause(or_xpr); // we have a clause..
         else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-            add_real_constraint(real_lt_xpr);
+            lra.add_constraint(real_lt_xpr); // we have an integer constraint..
         else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-            add_real_constraint(real_le_xpr);
+            lra.add_constraint(real_le_xpr); // we have an integer constraint..
         else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-            add_real_constraint(real_eq_xpr);
+            lra.add_constraint(real_eq_xpr); // we have an integer constraint..
         else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-            add_real_constraint(real_ge_xpr);
+            lra.add_constraint(real_ge_xpr); // we have an integer constraint..
         else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-            add_real_constraint(real_gt_xpr);
+            lra.add_constraint(real_gt_xpr); // we have an integer constraint..
         else
             throw std::runtime_error("unexpected expression type");
     }
@@ -265,16 +227,26 @@ namespace semitone
     void network::add_clause(bool_expr expr)
     {
         std::vector<utils::lit> lits;
-        if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
-        { // we have a clause..
+        if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr)) // we have a clause..
             for (const auto &arg : or_xpr->args())
             {
-                if (auto not_xpr = utils::s_ptr_cast<not_expr>(arg))
-                    lits.push_back(utils::lit(add_var(not_xpr->arg()->get_name()), false));
-                else
+                if (auto bool_xpr = utils::s_ptr_cast<bool_var>(arg))
                     lits.push_back(utils::lit(add_var(arg->get_name()), true));
+                else if (auto not_xpr = utils::s_ptr_cast<not_expr>(arg))
+                    lits.push_back(utils::lit(add_var(not_xpr->arg()->get_name()), false));
+                else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
+                    lits.push_back(lra.add_constraint(real_lt_xpr, true));
+                else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
+                    lits.push_back(lra.add_constraint(real_le_xpr, true));
+                else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
+                    lits.push_back(lra.add_constraint(real_eq_xpr, true));
+                else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
+                    lits.push_back(lra.add_constraint(real_ge_xpr, true));
+                else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
+                    lits.push_back(lra.add_constraint(real_gt_xpr, true));
+                else
+                    throw std::runtime_error("unexpected expression type");
             }
-        }
         else if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr)) // we have a unit clause..
             lits.push_back(utils::lit(add_var(not_xpr->arg()->get_name()), false));
         else // we have a unit clause..
@@ -306,152 +278,6 @@ namespace semitone
         default: // we need to create a new clause..
             clauses.push_back(new clause(*this, std::move(lits)));
         }
-    }
-
-    void network::add_int_constraint(bool_expr expr)
-    {
-        utils::lin l;
-        if (auto int_lt_xpr = utils::s_ptr_cast<int_lt>(expr))
-            l = linearize(int_lt_xpr->left()) - linearize(int_lt_xpr->right());
-        else if (auto int_le_xpr = utils::s_ptr_cast<int_le>(expr))
-            l = linearize(int_le_xpr->left()) - linearize(int_le_xpr->right());
-        else if (auto int_eq_xpr = utils::s_ptr_cast<int_eq>(expr))
-            l = linearize(int_eq_xpr->left()) - linearize(int_eq_xpr->right());
-        else if (auto int_ge_xpr = utils::s_ptr_cast<int_ge>(expr))
-            l = linearize(int_ge_xpr->right()) - linearize(int_ge_xpr->left());
-        else if (auto int_gt_xpr = utils::s_ptr_cast<int_gt>(expr))
-            l = linearize(int_gt_xpr->right()) - linearize(int_gt_xpr->left());
-        else
-            throw std::runtime_error("unexpected expression type");
-    }
-
-    utils::lin network::linearize(int_expr expr)
-    {
-        if (auto iv = utils::s_ptr_cast<int_var>(expr))
-            return utils::lin(add_int_var(iv->get_name(), iv->lb(), iv->ub()), utils::rational::one);
-        else if (auto ic = utils::s_ptr_cast<int_const>(expr))
-            return utils::lin(utils::rational(ic->val().value()));
-        else if (auto is = utils::s_ptr_cast<int_sum>(expr))
-        {
-            utils::lin l;
-            for (const auto &arg : is->args())
-                l += linearize(arg);
-            return l;
-        }
-        else if (auto is = utils::s_ptr_cast<int_sub>(expr))
-        {
-            utils::lin l;
-            for (const auto &arg : is->args())
-                l -= linearize(arg);
-            return l;
-        }
-        else if (auto is = utils::s_ptr_cast<int_mul>(expr))
-        {
-            utils::lin l(utils::rational::one);
-            for (const auto &arg : is->args())
-            {
-                auto lin = linearize(arg);
-                if (lin.vars.empty())
-                    l *= lin.known_term;
-                else
-                {
-                    assert(l.vars.empty());
-                    l = lin * l.known_term;
-                }
-            }
-            return l;
-        }
-        else if (auto is = utils::s_ptr_cast<int_div>(expr))
-        {
-            utils::lin l;
-            for (const auto &arg : is->args())
-            {
-                auto lin = linearize(arg);
-                if (lin.vars.empty())
-                    l /= lin.known_term;
-                else
-                {
-                    assert(l.vars.empty());
-                    l = lin / l.known_term;
-                }
-            }
-            return l;
-        }
-        else
-            throw std::runtime_error("unexpected expression type");
-    }
-
-    void network::add_real_constraint(bool_expr expr)
-    {
-        utils::lin l;
-        if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-            l = linearize(real_lt_xpr->left()) - linearize(real_lt_xpr->right());
-        else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-            l = linearize(real_le_xpr->left()) - linearize(real_le_xpr->right());
-        else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-            l = linearize(real_eq_xpr->left()) - linearize(real_eq_xpr->right());
-        else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-            l = linearize(real_ge_xpr->right()) - linearize(real_ge_xpr->left());
-        else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-            l = linearize(real_gt_xpr->right()) - linearize(real_gt_xpr->left());
-        else
-            throw std::runtime_error("unexpected expression type");
-    }
-
-    utils::lin network::linearize(real_expr expr)
-    {
-        if (auto iv = utils::s_ptr_cast<real_var>(expr))
-            return utils::lin(add_real_var(iv->get_name(), iv->lb(), iv->ub()), utils::rational::one);
-        else if (auto ic = utils::s_ptr_cast<real_const>(expr))
-            return utils::lin(utils::rational(ic->val()));
-        else if (auto is = utils::s_ptr_cast<real_sum>(expr))
-        {
-            utils::lin l;
-            for (const auto &arg : is->args())
-                l += linearize(arg);
-            return l;
-        }
-        else if (auto is = utils::s_ptr_cast<real_sub>(expr))
-        {
-            utils::lin l;
-            for (const auto &arg : is->args())
-                l -= linearize(arg);
-            return l;
-        }
-        else if (auto is = utils::s_ptr_cast<real_mul>(expr))
-        {
-            utils::lin l(utils::rational::one);
-            for (const auto &arg : is->args())
-            {
-                auto lin = linearize(arg);
-                if (lin.vars.empty())
-                    l *= lin.known_term;
-                else
-                {
-                    assert(l.vars.empty());
-                    l = lin * l.known_term;
-                }
-            }
-            return l;
-        }
-        else if (auto is = utils::s_ptr_cast<real_div>(expr))
-        {
-            utils::lin l;
-            for (const auto &arg : is->args())
-            {
-                auto lin = linearize(arg);
-                if (lin.vars.empty())
-                    l /= lin.known_term;
-                else
-                {
-                    assert(l.vars.empty());
-                    l = lin / l.known_term;
-                }
-            }
-            return l;
-        }
-        else
-            throw std::runtime_error("unexpected expression type");
     }
 
     bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
