@@ -2,6 +2,8 @@
 
 #include "context.hpp"
 #include "lit.hpp"
+#include "lin.hpp"
+#include "inf_rational.hpp"
 #include <optional>
 #include <unordered_map>
 #include <queue>
@@ -71,7 +73,15 @@ namespace semitone
     [[nodiscard]] bool_expr distribute(bool_expr expr);
 
     [[nodiscard]] size_t add_var(std::string_view name);
+    [[nodiscard]] size_t add_int_var(std::string_view name, const utils::integer &lb, const utils::integer &ub);
+    [[nodiscard]] size_t add_real_var(std::string_view name, const utils::rational &lb, const utils::rational &ub);
+
+    void add_term(bool_expr expr);
     void add_clause(bool_expr expr);
+    void add_int_constraint(bool_expr expr);
+    utils::lin linearize(int_expr expr);
+    void add_real_constraint(bool_expr expr);
+    utils::lin linearize(real_expr expr);
 
     /**
      * @brief Return the value of a variable.
@@ -138,7 +148,7 @@ namespace semitone
 
   private:
     context &ctx;
-    std::unordered_map<std::string, size_t> var_map;
+    std::unordered_map<std::string, size_t> var_map, int_var_map, real_var_map;
     std::vector<std::vector<utils::ref_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
     std::vector<utils::lbool> assigns;                             // the current assignments..
     std::vector<std::optional<utils::ref_wrapper<clause>>> reason; // for each variable, the clause that implied its value..
@@ -148,6 +158,17 @@ namespace semitone
     std::queue<utils::lit> prop_queue; // propagation queue..
     std::vector<utils::lit> trail;     // the list of assignment in chronological order..
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
+
+    std::vector<utils::inf_rational> vals; // the current values..
+    /**
+     * Represents the bound of a variable and the reason for its existence.
+     */
+    struct bound
+    {
+      utils::inf_rational value;      // the value of the bound..
+      std::vector<utils::lit> reason; // the reason for the value..
+    };
+    std::vector<bound> c_bounds; // the current bounds..
   };
 
   class clause

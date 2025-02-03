@@ -39,18 +39,30 @@ namespace semitone
 
   using bool_expr = utils::s_ptr<bool_term>;
 
+  class bool_const final : public bool_term
+  {
+    friend class network;
+
+  public:
+    bool_const(context &ctx, utils::lbool val);
+
+    [[nodiscard]] utils::lbool val() const noexcept override;
+
+  private:
+    const utils::lbool value;
+  };
+
   class bool_var final : public bool_term
   {
     friend class network;
 
   public:
     bool_var(context &ctx, std::string_view name);
-    bool_var(context &ctx, utils::lbool val);
 
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    utils::lbool value;
+    utils::lbool value{utils::Undefined};
   };
 
   class and_expr final : public bool_term
@@ -113,6 +125,22 @@ namespace semitone
 
   using int_expr = utils::s_ptr<int_term>;
 
+  class int_const final : public int_term
+  {
+    friend class network;
+
+  public:
+    int_const(context &ctx, const utils::integer &val);
+
+    [[nodiscard]] utils::integer lb() const noexcept override;
+    [[nodiscard]] utils::integer ub() const noexcept override;
+
+    [[nodiscard]] utils::integer val() const noexcept override;
+
+  private:
+    const utils::integer value;
+  };
+
   class int_var final : public int_term
   {
     friend class network;
@@ -120,7 +148,6 @@ namespace semitone
   public:
     int_var(context &ctx, std::string_view name);
     int_var(context &ctx, std::string_view name, const utils::integer &lb, const utils::integer &ub);
-    int_var(context &ctx, const utils::integer &val);
 
     [[nodiscard]] utils::integer lb() const noexcept override;
     [[nodiscard]] utils::integer ub() const noexcept override;
@@ -215,10 +242,13 @@ namespace semitone
   public:
     int_lt(context &ctx, int_expr lhs, int_expr rhs);
 
+    [[nodiscard]] int_expr left() const noexcept;
+    [[nodiscard]] int_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    int_expr left, right;
+    int_expr lhs, rhs;
   };
 
   class int_le final : public bool_term
@@ -226,10 +256,13 @@ namespace semitone
   public:
     int_le(context &ctx, int_expr lhs, int_expr rhs);
 
+    [[nodiscard]] int_expr left() const noexcept;
+    [[nodiscard]] int_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    int_expr left, right;
+    int_expr lhs, rhs;
   };
 
   class int_eq final : public bool_term
@@ -237,10 +270,13 @@ namespace semitone
   public:
     int_eq(context &ctx, int_expr lhs, int_expr rhs);
 
+    [[nodiscard]] int_expr left() const noexcept;
+    [[nodiscard]] int_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    int_expr left, right;
+    int_expr lhs, rhs;
   };
 
   class int_ge final : public bool_term
@@ -248,10 +284,13 @@ namespace semitone
   public:
     int_ge(context &ctx, int_expr lhs, int_expr rhs);
 
+    [[nodiscard]] int_expr left() const noexcept;
+    [[nodiscard]] int_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    int_expr left, right;
+    int_expr lhs, rhs;
   };
 
   class int_gt final : public bool_term
@@ -259,10 +298,13 @@ namespace semitone
   public:
     int_gt(context &ctx, int_expr lhs, int_expr rhs);
 
+    [[nodiscard]] int_expr left() const noexcept;
+    [[nodiscard]] int_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    int_expr left, right;
+    int_expr lhs, rhs;
   };
 
   class real_term : public term
@@ -280,6 +322,22 @@ namespace semitone
 
   using real_expr = utils::s_ptr<real_term>;
 
+  class real_const final : public real_term
+  {
+    friend class network;
+
+  public:
+    real_const(context &ctx, const utils::rational &val);
+
+    [[nodiscard]] utils::rational lb() const noexcept override;
+    [[nodiscard]] utils::rational ub() const noexcept override;
+
+    [[nodiscard]] utils::rational val() const noexcept override;
+
+  private:
+    const utils::rational value;
+  };
+
   class real_var final : public real_term
   {
     friend class network;
@@ -287,7 +345,6 @@ namespace semitone
   public:
     real_var(context &ctx, std::string_view name);
     real_var(context &ctx, std::string_view name, const utils::rational &lb, const utils::rational &ub);
-    real_var(context &ctx, const utils::rational &val);
 
     [[nodiscard]] utils::rational lb() const noexcept override;
     [[nodiscard]] utils::rational ub() const noexcept override;
@@ -382,10 +439,13 @@ namespace semitone
   public:
     real_lt(context &ctx, real_expr lhs, real_expr rhs);
 
+    [[nodiscard]] real_expr left() const noexcept;
+    [[nodiscard]] real_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    real_expr left, right;
+    real_expr lhs, rhs;
   };
 
   class real_le final : public bool_term
@@ -393,10 +453,13 @@ namespace semitone
   public:
     real_le(context &ctx, real_expr lhs, real_expr rhs);
 
+    [[nodiscard]] real_expr left() const noexcept;
+    [[nodiscard]] real_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    real_expr left, right;
+    real_expr lhs, rhs;
   };
 
   class real_eq final : public bool_term
@@ -404,10 +467,13 @@ namespace semitone
   public:
     real_eq(context &ctx, real_expr lhs, real_expr rhs);
 
+    [[nodiscard]] real_expr left() const noexcept;
+    [[nodiscard]] real_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    real_expr left, right;
+    real_expr lhs, rhs;
   };
 
   class real_ge final : public bool_term
@@ -415,10 +481,13 @@ namespace semitone
   public:
     real_ge(context &ctx, real_expr lhs, real_expr rhs);
 
+    [[nodiscard]] real_expr left() const noexcept;
+    [[nodiscard]] real_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    real_expr left, right;
+    real_expr lhs, rhs;
   };
 
   class real_gt final : public bool_term
@@ -426,10 +495,13 @@ namespace semitone
   public:
     real_gt(context &ctx, real_expr lhs, real_expr rhs);
 
+    [[nodiscard]] real_expr left() const noexcept;
+    [[nodiscard]] real_expr right() const noexcept;
+
     [[nodiscard]] utils::lbool val() const noexcept override;
 
   private:
-    real_expr left, right;
+    real_expr lhs, rhs;
   };
 
   class string_var : public term

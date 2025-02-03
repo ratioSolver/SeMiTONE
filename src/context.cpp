@@ -7,7 +7,7 @@ namespace semitone
     bool_expr context::mk_bool_const(const utils::lbool value)
     {
         assert(!is_undefined(value));
-        return utils::make_s_ptr<bool_var>(*this, value);
+        return utils::make_s_ptr<bool_const>(*this, value);
     }
 
     bool_expr context::mk_and(std::vector<bool_expr> &&args) { return utils::make_s_ptr<and_expr>(*this, std::move(args)); }
@@ -23,7 +23,7 @@ namespace semitone
     int_expr context::mk_int_const(const utils::integer &value)
     {
         assert(!is_infinite(value));
-        return utils::make_s_ptr<int_var>(*this, value);
+        return utils::make_s_ptr<int_const>(*this, value);
     }
 
     int_expr context::mk_sum(std::vector<int_expr> &&args) { return utils::make_s_ptr<int_sum>(*this, std::move(args)); }
@@ -46,7 +46,7 @@ namespace semitone
     real_expr context::mk_real_const(const utils::rational &value)
     {
         assert(!is_infinite(value));
-        return utils::make_s_ptr<real_var>(*this, value);
+        return utils::make_s_ptr<real_const>(*this, value);
     }
 
     real_expr context::mk_sum(std::vector<real_expr> &&args) { return utils::make_s_ptr<real_sum>(*this, std::move(args)); }
