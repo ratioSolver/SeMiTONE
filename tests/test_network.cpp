@@ -24,8 +24,22 @@ void test_solver0()
     assert(slv.eval(d) == utils::Undefined);
 }
 
+void test_solver1()
+{
+    semitone::context ctx;
+    auto a = ctx.mk_real_var("a");
+    auto b = ctx.mk_real_var("b");
+    auto c = ctx.mk_real_var("c");
+
+    auto lin = 2.0 * a + 3.0 * b + 4.0 * c <= 10.0;
+
+    semitone::network slv(ctx);
+    slv.add(lin);
+}
+
 int main()
 {
     test_solver0();
+    test_solver1();
     return 0;
 }

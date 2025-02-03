@@ -47,5 +47,111 @@ namespace semitone
     bool_expr mk_gt(real_expr lhs, real_expr rhs);
   };
 
+  bool_expr operator&&(bool_expr lhs, bool_expr rhs) noexcept;
+  bool_expr operator&&(bool_expr lhs, bool rhs) noexcept;
+  bool_expr operator&&(bool lhs, bool_expr rhs) noexcept;
+  bool_expr operator||(bool_expr lhs, bool_expr rhs) noexcept;
+  bool_expr operator||(bool_expr lhs, bool rhs) noexcept;
+  bool_expr operator||(bool lhs, bool_expr rhs) noexcept;
   bool_expr operator!(bool_expr arg) noexcept;
+
+  int_expr operator+(int_expr lhs, int_expr rhs) noexcept;
+  int_expr operator+(int_expr lhs, utils::integer rhs) noexcept;
+  int_expr operator+(utils::integer lhs, int_expr rhs) noexcept;
+  int_expr operator+(int_expr lhs, int rhs) noexcept;
+  int_expr operator+(int lhs, int_expr rhs) noexcept;
+
+  int_expr operator-(int_expr lhs, int_expr rhs) noexcept;
+  int_expr operator-(int_expr lhs, utils::integer rhs) noexcept;
+  int_expr operator-(utils::integer lhs, int_expr rhs) noexcept;
+  int_expr operator-(int_expr lhs, int rhs) noexcept;
+  int_expr operator-(int lhs, int_expr rhs) noexcept;
+
+  int_expr operator*(int_expr lhs, int_expr rhs) noexcept;
+  int_expr operator*(int_expr lhs, utils::integer rhs) noexcept;
+  int_expr operator*(utils::integer lhs, int_expr rhs) noexcept;
+  int_expr operator*(int_expr lhs, int rhs) noexcept;
+  int_expr operator*(int lhs, int_expr rhs) noexcept;
+
+  int_expr operator/(int_expr lhs, int_expr rhs) noexcept;
+  int_expr operator/(int_expr lhs, utils::integer rhs) noexcept;
+  int_expr operator/(utils::integer lhs, int_expr rhs) noexcept;
+  int_expr operator/(int_expr lhs, int rhs) noexcept;
+  int_expr operator/(int lhs, int_expr rhs) noexcept;
+
+  bool_expr operator<(int_expr lhs, int_expr rhs) noexcept;
+  bool_expr operator<(int_expr lhs, utils::integer rhs) noexcept;
+  bool_expr operator<(utils::integer lhs, int_expr rhs) noexcept;
+  bool_expr operator<(int_expr lhs, int rhs) noexcept;
+  bool_expr operator<(int lhs, int_expr rhs) noexcept;
+  bool_expr operator<=(int_expr lhs, int_expr rhs) noexcept;
+  bool_expr operator<=(int_expr lhs, utils::integer rhs) noexcept;
+  bool_expr operator<=(utils::integer lhs, int_expr rhs) noexcept;
+  bool_expr operator<=(int_expr lhs, int rhs) noexcept;
+  bool_expr operator<=(int lhs, int_expr rhs) noexcept;
+  bool_expr operator==(int_expr lhs, int_expr rhs) noexcept;
+  bool_expr operator==(int_expr lhs, utils::integer rhs) noexcept;
+  bool_expr operator==(utils::integer lhs, int_expr rhs) noexcept;
+  bool_expr operator==(int_expr lhs, int rhs) noexcept;
+  bool_expr operator==(int lhs, int_expr rhs) noexcept;
+  bool_expr operator>=(int_expr lhs, int_expr rhs) noexcept;
+  bool_expr operator>=(int_expr lhs, utils::integer rhs) noexcept;
+  bool_expr operator>=(utils::integer lhs, int_expr rhs) noexcept;
+  bool_expr operator>=(int_expr lhs, int rhs) noexcept;
+  bool_expr operator>=(int lhs, int_expr rhs) noexcept;
+  bool_expr operator>(int_expr lhs, int_expr rhs) noexcept;
+  bool_expr operator>(int_expr lhs, utils::integer rhs) noexcept;
+  bool_expr operator>(utils::integer lhs, int_expr rhs) noexcept;
+  bool_expr operator>(int_expr lhs, int rhs) noexcept;
+  bool_expr operator>(int lhs, int_expr rhs) noexcept;
+
+  real_expr operator+(real_expr lhs, real_expr rhs) noexcept;
+  real_expr operator+(real_expr lhs, utils::rational rhs) noexcept;
+  real_expr operator+(utils::rational lhs, real_expr rhs) noexcept;
+  real_expr operator+(real_expr lhs, double rhs) noexcept;
+  real_expr operator+(double lhs, real_expr rhs) noexcept;
+
+  real_expr operator-(real_expr lhs, real_expr rhs) noexcept;
+  real_expr operator-(real_expr lhs, utils::rational rhs) noexcept;
+  real_expr operator-(utils::rational lhs, real_expr rhs) noexcept;
+  real_expr operator-(real_expr lhs, double rhs) noexcept;
+  real_expr operator-(double lhs, real_expr rhs) noexcept;
+
+  real_expr operator*(real_expr lhs, real_expr rhs) noexcept;
+  real_expr operator*(real_expr lhs, utils::rational rhs) noexcept;
+  real_expr operator*(utils::rational lhs, real_expr rhs) noexcept;
+  real_expr operator*(real_expr lhs, double rhs) noexcept;
+  real_expr operator*(double lhs, real_expr rhs) noexcept;
+
+  real_expr operator/(real_expr lhs, real_expr rhs) noexcept;
+  real_expr operator/(real_expr lhs, utils::rational rhs) noexcept;
+  real_expr operator/(utils::rational lhs, real_expr rhs) noexcept;
+  real_expr operator/(real_expr lhs, double rhs) noexcept;
+  real_expr operator/(double lhs, real_expr rhs) noexcept;
+
+  bool_expr operator<(real_expr lhs, real_expr rhs) noexcept;
+  bool_expr operator<(real_expr lhs, utils::rational rhs) noexcept;
+  bool_expr operator<(utils::rational lhs, real_expr rhs) noexcept;
+  bool_expr operator<(real_expr lhs, double rhs) noexcept;
+  bool_expr operator<(double lhs, real_expr rhs) noexcept;
+  bool_expr operator<=(real_expr lhs, real_expr rhs) noexcept;
+  bool_expr operator<=(real_expr lhs, utils::rational rhs) noexcept;
+  bool_expr operator<=(utils::rational lhs, real_expr rhs) noexcept;
+  bool_expr operator<=(real_expr lhs, double rhs) noexcept;
+  bool_expr operator<=(double lhs, real_expr rhs) noexcept;
+  bool_expr operator==(real_expr lhs, real_expr rhs) noexcept;
+  bool_expr operator==(real_expr lhs, utils::rational rhs) noexcept;
+  bool_expr operator==(utils::rational lhs, real_expr rhs) noexcept;
+  bool_expr operator==(real_expr lhs, double rhs) noexcept;
+  bool_expr operator==(double lhs, real_expr rhs) noexcept;
+  bool_expr operator>=(real_expr lhs, real_expr rhs) noexcept;
+  bool_expr operator>=(real_expr lhs, utils::rational rhs) noexcept;
+  bool_expr operator>=(utils::rational lhs, real_expr rhs) noexcept;
+  bool_expr operator>=(real_expr lhs, double rhs) noexcept;
+  bool_expr operator>=(double lhs, real_expr rhs) noexcept;
+  bool_expr operator>(real_expr lhs, real_expr rhs) noexcept;
+  bool_expr operator>(real_expr lhs, utils::rational rhs) noexcept;
+  bool_expr operator>(utils::rational lhs, real_expr rhs) noexcept;
+  bool_expr operator>(real_expr lhs, double rhs) noexcept;
+  bool_expr operator>(double lhs, real_expr rhs) noexcept;
 } // namespace semitone
