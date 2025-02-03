@@ -24,12 +24,35 @@ namespace semitone
 
     [[nodiscard]] utils::lit add_constraint(bool_expr expr, bool bind = false);
 
+    /**
+     * @brief Returns the current lower bound of variable `v`.
+     *
+     * @param v the variable to get the lower bound of.
+     * @return utils::inf_rational the current lower bound of variable `v`.
+     */
+    [[nodiscard]] inline utils::inf_rational lb(const utils::var v) const noexcept { return c_bounds[lb_index(v)].value; }
+    /**
+     * @brief Returns the current upper bound of variable `v`.
+     *
+     * @param v the variable to get the upper bound of.
+     * @return utils::inf_rational the current upper bound of variable `v`.
+     */
+    [[nodiscard]] inline utils::inf_rational ub(const utils::var v) const noexcept { return c_bounds[ub_index(v)].value; }
+    /**
+     * @brief Returns the current value of variable `v`.
+     *
+     * @param v the variable to get the value of.
+     * @return utils::inf_rational the current value of variable `v`.
+     */
+    [[nodiscard]] inline utils::inf_rational value(const utils::var v) const noexcept { return vals[v]; }
+
   private:
     [[nodiscard]] utils::var add_var(const utils::lin &&l) noexcept;
     [[nodiscard]] utils::lin linearize(real_expr expr);
 
-    void new_leq(const utils::var x, const utils::inf_rational &v, bool bind = false) noexcept;
-    void new_geq(const utils::var x, const utils::inf_rational &v, bool bind = false) noexcept;
+    [[nodiscard]] utils::lit new_leq(const utils::var x, const utils::inf_rational &v, bool bind = false) noexcept;
+    [[nodiscard]] utils::lit new_geq(const utils::var x, const utils::inf_rational &v, bool bind = false) noexcept;
+    [[nodiscard]] utils::lit new_eq(const utils::var x, const utils::inf_rational &v, bool bind = false) noexcept;
 
     void new_row(const utils::var x_i, const utils::lin &&xpr) noexcept;
 

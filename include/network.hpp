@@ -68,6 +68,8 @@ namespace semitone
      */
     utils::lbool eval(bool_expr xpr);
 
+    context &get_context() noexcept { return ctx; }
+
   private:
     [[nodiscard]] bool_expr to_cnf(bool_expr expr);
     [[nodiscard]] bool_expr push_negations(bool_expr expr);

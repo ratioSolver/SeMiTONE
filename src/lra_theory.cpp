@@ -90,50 +90,16 @@ namespace semitone
             switch (op)
             {
             case 0: // `<`
-            {
-                const utils::inf_rational c_right = utils::inf_rational(-l.known_term, -1) / c;
-                if (c > 0)
-                    new_leq(v, c_right, bind);
-                else
-                    new_geq(v, c_right, bind);
-            }
-            break;
+                return c > 0 ? new_leq(v, utils::inf_rational(-l.known_term, -1), bind) : new_geq(v, utils::inf_rational(-l.known_term, -1), bind);
             case 1: // `<=`
-            {
-                const utils::inf_rational c_right = utils::inf_rational(-l.known_term) / c;
-                if (c > 0)
-                    new_leq(v, c_right, bind);
-                else
-                    new_geq(v, c_right, bind);
-            }
-            break;
+                return c > 0 ? new_leq(v, utils::inf_rational(-l.known_term), bind) : new_geq(v, utils::inf_rational(-l.known_term), bind);
             case 2: // `==`
-            {
-                const utils::inf_rational c_right = utils::inf_rational(-l.known_term) / c;
-                new_leq(v, c_right, bind);
-                new_geq(v, c_right, bind);
-            }
-            break;
+                return new_eq(v, utils::inf_rational(-l.known_term), bind);
             case 3: // `>=`
-            {
-                const utils::inf_rational c_right = utils::inf_rational(-l.known_term) / c;
-                if (c > 0)
-                    new_geq(v, c_right, bind);
-                else
-                    new_leq(v, c_right, bind);
-            }
-            break;
+                return c > 0 ? new_geq(v, utils::inf_rational(-l.known_term), bind) : new_leq(v, utils::inf_rational(-l.known_term), bind);
             case 4: // `>`
-            {
-                const utils::inf_rational c_right = utils::inf_rational(-l.known_term, 1) / c;
-                if (c > 0)
-                    new_geq(v, c_right, bind);
-                else
-                    new_leq(v, c_right, bind);
+                return c > 0 ? new_geq(v, utils::inf_rational(-l.known_term, 1), bind) : new_leq(v, utils::inf_rational(-l.known_term, 1), bind);
             }
-            break;
-            }
-            break;
         }
         default: // the expression is an inequality with multiple variables
             switch (op)
@@ -142,38 +108,32 @@ namespace semitone
             {
                 const utils::inf_rational c_right = utils::inf_rational(-l.known_term, -1);
                 l.known_term = utils::rational::zero;
-                new_leq(add_var(std::move(l)), c_right, bind);
+                return new_leq(add_var(std::move(l)), c_right, bind);
             }
-            break;
             case 1: // `<=`
             {
                 const utils::inf_rational c_right = utils::inf_rational(-l.known_term);
                 l.known_term = utils::rational::zero;
-                new_leq(add_var(std::move(l)), c_right, bind);
+                return new_leq(add_var(std::move(l)), c_right, bind);
             }
-            break;
             case 2: // `==`
             {
                 const utils::inf_rational c_right = utils::inf_rational(-l.known_term);
                 l.known_term = utils::rational::zero;
-                new_leq(add_var(std::move(l)), c_right, bind);
-                new_geq(add_var(std::move(l)), c_right, bind);
+                return new_eq(add_var(std::move(l)), c_right, bind);
             }
-            break;
             case 3: // `>=`
             {
                 const utils::inf_rational c_right = utils::inf_rational(-l.known_term);
                 l.known_term = utils::rational::zero;
-                new_geq(add_var(std::move(l)), c_right, bind);
+                return new_geq(add_var(std::move(l)), c_right, bind);
             }
-            break;
             case 4: // `>`
             {
                 const utils::inf_rational c_right = utils::inf_rational(-l.known_term, 1);
                 l.known_term = utils::rational::zero;
-                new_geq(add_var(std::move(l)), c_right, bind);
+                return new_geq(add_var(std::move(l)), c_right, bind);
             }
-            break;
             }
         }
     }
@@ -270,7 +230,33 @@ namespace semitone
         tableau.emplace(x_i, utils::make_u_ptr<lra_eq>(x_i, std::move(xpr)));
     }
 
-    void lra_theory::new_leq(const utils::var x, const utils::inf_rational &v, bool bind) noexcept {}
+    utils::lit lra_theory::new_leq(const utils::var x, const utils::inf_rational &v, bool bind) noexcept
+    {
+        if (ub(x) <= v)
+            return utils::TRUE_lit; // the constraint is already satisfied..
+        else if (lb(x) > v)
+            return utils::FALSE_lit; // the constraint is unsatisfable..
 
-    void lra_theory::new_geq(const utils::var x, const utils::inf_rational &v, bool bind) noexcept {}
+        slv.get_context().mk_bool_var("(<= x" + std::to_string(x) + " " + to_string(v) + ")");
+    }
+
+    utils::lit lra_theory::new_geq(const utils::var x, const utils::inf_rational &v, bool bind) noexcept
+    {
+        if (lb(x) >= v)
+            return utils::TRUE_lit; // the constraint is already satisfied..
+        else if (ub(x) < v)
+            return utils::FALSE_lit; // the constraint is unsatisfable..
+
+        slv.get_context().mk_bool_var("(>= x" + std::to_string(x) + " " + to_string(v) + ")");
+    }
+
+    utils::lit lra_theory::new_eq(const utils::var x, const utils::inf_rational &v, bool bind) noexcept
+    {
+        if (lb(x) == v && ub(x) == v)
+            return utils::TRUE_lit; // the constraint is already satisfied..
+        else if (lb(x) > v || ub(x) < v)
+            return utils::FALSE_lit; // the constraint is unsatisfable..
+
+        slv.get_context().mk_bool_var("(== x" + std::to_string(x) + " " + to_string(v) + ")");
+    }
 } // namespace semitone
