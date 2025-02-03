@@ -10,12 +10,12 @@ namespace semitone
 {
   class clause;
 
-  class solver
+  class network
   {
     friend class clause;
 
   public:
-    solver(context &ctx);
+    network(context &ctx);
 
     /**
      * @brief Adds a boolean expression to the solver.
@@ -152,14 +152,14 @@ namespace semitone
 
   class clause
   {
-    friend class solver;
+    friend class network;
     /**
      * @brief Construct a new clause object given the `lits` literals.
      *
      * @param slv The solver.
      * @param lits The literals of the clause.
      */
-    clause(solver &slv, std::vector<utils::lit> &&lits) noexcept;
+    clause(network &slv, std::vector<utils::lit> &&lits) noexcept;
 
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept;
     [[nodiscard]] bool simplify() noexcept;
@@ -167,7 +167,7 @@ namespace semitone
     [[nodiscard]] std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept;
 
   private:
-    solver &slv;
+    network &slv;
     std::vector<utils::lit> lits;
   };
 

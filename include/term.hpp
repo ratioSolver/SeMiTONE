@@ -9,7 +9,7 @@
 namespace semitone
 {
   class context;
-  class solver;
+  class network;
 
   class term
   {
@@ -29,7 +29,7 @@ namespace semitone
 
   class bool_term : public term
   {
-    friend class solver;
+    friend class network;
 
   public:
     bool_term(context &ctx, std::string_view name);
@@ -41,7 +41,7 @@ namespace semitone
 
   class bool_var final : public bool_term
   {
-    friend class solver;
+    friend class network;
 
   public:
     bool_var(context &ctx, std::string_view name);
@@ -100,7 +100,7 @@ namespace semitone
 
   class int_term : public term
   {
-    friend class solver;
+    friend class network;
 
   public:
     int_term(context &ctx, std::string_view name);
@@ -115,7 +115,7 @@ namespace semitone
 
   class int_var final : public int_term
   {
-    friend class solver;
+    friend class network;
 
   public:
     int_var(context &ctx, std::string_view name);
@@ -267,7 +267,7 @@ namespace semitone
 
   class real_term : public term
   {
-    friend class solver;
+    friend class network;
 
   public:
     real_term(context &ctx, std::string_view name);
@@ -282,7 +282,7 @@ namespace semitone
 
   class real_var final : public real_term
   {
-    friend class solver;
+    friend class network;
 
   public:
     real_var(context &ctx, std::string_view name);

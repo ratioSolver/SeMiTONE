@@ -4,7 +4,7 @@ project(SeMiTONE VERSION 0.2.0 LANGUAGES CXX)
 include(CTest)
 enable_testing()
 
-add_library(SeMiTONE src/solver.cpp src/context.cpp src/term.cpp)
+add_library(SeMiTONE src/network.cpp src/context.cpp src/term.cpp)
 target_compile_features(SeMiTONE PUBLIC cxx_std_17)
 target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 if(NOT TARGET json)

@@ -1,4 +1,4 @@
-#include "solver.hpp"
+#include "network.hpp"
 #include "lit.hpp"
 #include "logging.hpp"
 #include <algorithm>
@@ -7,9 +7,9 @@
 
 namespace semitone
 {
-    solver::solver(context &ctx) : ctx(ctx) {}
+    network::network(context &ctx) : ctx(ctx) {}
 
-    void solver::add(bool_expr expr)
+    void network::add(bool_expr expr)
     {
         auto cnf_expr = to_cnf(expr); // Convert to CNF
         if (auto and_xpr = utils::s_ptr_cast<and_expr>(cnf_expr))
@@ -19,7 +19,7 @@ namespace semitone
             add_clause(cnf_expr);
     }
 
-    bool solver::propagate() noexcept
+    bool network::propagate() noexcept
     {
         utils::lit p;
     main_loop:
@@ -56,7 +56,7 @@ namespace semitone
         return true;
     }
 
-    bool solver::assume(bool_expr expr) noexcept
+    bool network::assume(bool_expr expr) noexcept
     {
         utils::lit p;
         if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr))
@@ -73,7 +73,7 @@ namespace semitone
         return enqueue(p) && propagate();
     }
 
-    void solver::pop() noexcept
+    void network::pop() noexcept
     {
         LOG_TRACE("-[" << to_string(decisions.back()) << "]");
         while (trail_lim.back() < trail.size())
@@ -84,7 +84,7 @@ namespace semitone
         //     th->pop();
     }
 
-    utils::lbool solver::eval(bool_expr xpr)
+    utils::lbool network::eval(bool_expr xpr)
     {
         if (auto bool_xpr = utils::s_ptr_cast<bool_var>(xpr))
         { // we evaluate the variable..
@@ -113,9 +113,9 @@ namespace semitone
         throw std::runtime_error("unexpected expression type");
     }
 
-    bool_expr solver::to_cnf(bool_expr expr) { return distribute(push_negations(expr)); }
+    bool_expr network::to_cnf(bool_expr expr) { return distribute(push_negations(expr)); }
 
-    bool_expr solver::push_negations(bool_expr expr)
+    bool_expr network::push_negations(bool_expr expr)
     {
         if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr))
         {
@@ -158,7 +158,7 @@ namespace semitone
             return expr;
     }
 
-    bool_expr solver::distribute(bool_expr expr)
+    bool_expr network::distribute(bool_expr expr)
     {
         if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
         {
@@ -185,7 +185,7 @@ namespace semitone
             return expr;
     }
 
-    size_t solver::add_var(std::string_view name)
+    size_t network::add_var(std::string_view name)
     {
         if (auto it = var_map.find(name.data()); it != var_map.end())
             return it->second;
@@ -202,7 +202,7 @@ namespace semitone
         }
     }
 
-    void solver::add_clause(bool_expr expr)
+    void network::add_clause(bool_expr expr)
     {
         std::vector<utils::lit> lits;
         if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
@@ -248,7 +248,7 @@ namespace semitone
         }
     }
 
-    bool solver::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
+    bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
     {
         if (auto val = value(p); val != utils::Undefined)
             return val; // the literal is already assigned..
@@ -261,7 +261,7 @@ namespace semitone
         return true;
     }
 
-    void solver::analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
+    void network::analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
     {
         std::set<utils::var> seen;
         int counter = 0; // this is the number of variables of the current decision level that have already been seen..
@@ -301,7 +301,7 @@ namespace semitone
         out_learnt[0] = !p;                                         // the asserting literal..
     }
 
-    void solver::record(std::vector<utils::lit> lits) noexcept
+    void network::record(std::vector<utils::lit> lits) noexcept
     {
         assert(value(lits[0]) == utils::Undefined); // the asserting literal must be unassigned..
         assert(std::all_of(std::next(lits.cbegin()), lits.cend(), [this](auto &p)
@@ -326,7 +326,7 @@ namespace semitone
         }
     }
 
-    void solver::pop_one() noexcept
+    void network::pop_one() noexcept
     {
         auto v = variable(trail.back());
         assigns[v] = utils::Undefined;
@@ -335,7 +335,7 @@ namespace semitone
         trail.pop_back();
     }
 
-    clause::clause(solver &slv, std::vector<utils::lit> &&lits) noexcept : slv(slv), lits(std::move(lits))
+    clause::clause(network &slv, std::vector<utils::lit> &&lits) noexcept : slv(slv), lits(std::move(lits))
     {
         assert(lits.size() >= 2);
         slv.watches[index(!lits[0])].emplace_back(*this);

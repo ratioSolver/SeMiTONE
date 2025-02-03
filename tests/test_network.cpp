@@ -1,4 +1,4 @@
-#include "solver.hpp"
+#include "network.hpp"
 #include <cassert>
 
 void test_solver0()
@@ -11,7 +11,7 @@ void test_solver0()
     auto and_xpr = ctx.mk_and({!a, b});
     auto or_xpr = ctx.mk_or({a, c});
 
-    semitone::solver slv(ctx);
+    semitone::network slv(ctx);
     slv.add(and_xpr);
     slv.add(or_xpr);
 
