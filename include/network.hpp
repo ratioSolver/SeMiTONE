@@ -10,8 +10,6 @@
 namespace semitone
 {
   class clause;
-  class lia_theory;
-  class lra_theory;
 
   class network
   {
@@ -71,10 +69,6 @@ namespace semitone
     context &get_context() noexcept { return ctx; }
 
   private:
-    [[nodiscard]] bool_expr to_cnf(bool_expr expr);
-    [[nodiscard]] bool_expr push_negations(bool_expr expr);
-    [[nodiscard]] bool_expr distribute(bool_expr expr);
-
     [[nodiscard]] size_t add_var(std::string_view name);
 
     void add_term(bool_expr expr);
@@ -174,7 +168,6 @@ namespace semitone
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
 
     std::vector<utils::u_ptr<theory>> theories; // all the theories..
-    lra_theory &lra;                            // the linear real arithmetic theory..
   };
 
   class clause

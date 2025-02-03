@@ -4,8 +4,12 @@
 
 namespace semitone
 {
+  class network;
+
   class context
   {
+    friend class network;
+
   public:
     context() = default;
     context(const context &) = delete;

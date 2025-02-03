@@ -1,5 +1,4 @@
 #include "network.hpp"
-#include "lra_theory.hpp"
 #include "logging.hpp"
 #include <algorithm>
 #include <set>
@@ -7,11 +6,11 @@
 
 namespace semitone
 {
-    network::network(context &ctx) : ctx(ctx), lra(new_theory<lra_theory>(*this)) {}
+    network::network(context &ctx) : ctx(ctx) {}
 
     void network::add(bool_expr expr)
     {
-        auto cnf_expr = to_cnf(expr); // Convert to CNF
+        auto cnf_expr = ctx.to_cnf(expr); // Convert to CNF
         if (auto and_xpr = utils::s_ptr_cast<and_expr>(cnf_expr))
             for (const auto &arg : and_xpr->args())
                 add_term(arg);
@@ -138,31 +137,6 @@ namespace semitone
             add_clause(not_xpr); // we have a unit clause..
         else if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
             add_clause(or_xpr); // we have a clause..
-        else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-        { // we have an integer constraint..
-            if (lra.add_constraint(real_lt_xpr) == utils::FALSE_lit)
-                throw unsolvable_exception();
-        }
-        else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-        { // we have an integer constraint..
-            if (lra.add_constraint(real_le_xpr) == utils::FALSE_lit)
-                throw unsolvable_exception();
-        }
-        else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-        { // we have an integer constraint..
-            if (lra.add_constraint(real_eq_xpr) == utils::FALSE_lit)
-                throw unsolvable_exception();
-        }
-        else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-        { // we have an integer constraint..
-            if (lra.add_constraint(real_ge_xpr) == utils::FALSE_lit)
-                throw unsolvable_exception();
-        }
-        else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-        { // we have an integer constraint..
-            if (lra.add_constraint(real_gt_xpr) == utils::FALSE_lit)
-                throw unsolvable_exception();
-        }
         else
             throw std::runtime_error("unexpected expression type");
     }
@@ -177,16 +151,6 @@ namespace semitone
                     lits.push_back(utils::lit(add_var(arg->get_name()), true));
                 else if (auto not_xpr = utils::s_ptr_cast<not_expr>(arg))
                     lits.push_back(utils::lit(add_var(not_xpr->arg()->get_name()), false));
-                else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-                    lits.push_back(lra.add_constraint(real_lt_xpr, true));
-                else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-                    lits.push_back(lra.add_constraint(real_le_xpr, true));
-                else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-                    lits.push_back(lra.add_constraint(real_eq_xpr, true));
-                else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-                    lits.push_back(lra.add_constraint(real_ge_xpr, true));
-                else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-                    lits.push_back(lra.add_constraint(real_gt_xpr, true));
                 else
                     throw std::runtime_error("unexpected expression type");
             }

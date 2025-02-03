@@ -1,5 +1,7 @@
 #include "context.hpp"
+#include <map>
 #include <cassert>
+#include <stdexcept>
 
 namespace semitone
 {
