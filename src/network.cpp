@@ -211,15 +211,30 @@ namespace semitone
         else if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
             add_clause(or_xpr); // we have a clause..
         else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-            lra.add_constraint(real_lt_xpr); // we have an integer constraint..
+        { // we have an integer constraint..
+            if (lra.add_constraint(real_lt_xpr) == utils::FALSE_lit)
+                throw unsolvable_exception();
+        }
         else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-            lra.add_constraint(real_le_xpr); // we have an integer constraint..
+        { // we have an integer constraint..
+            if (lra.add_constraint(real_le_xpr) == utils::FALSE_lit)
+                throw unsolvable_exception();
+        }
         else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-            lra.add_constraint(real_eq_xpr); // we have an integer constraint..
+        { // we have an integer constraint..
+            if (lra.add_constraint(real_eq_xpr) == utils::FALSE_lit)
+                throw unsolvable_exception();
+        }
         else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-            lra.add_constraint(real_ge_xpr); // we have an integer constraint..
+        { // we have an integer constraint..
+            if (lra.add_constraint(real_ge_xpr) == utils::FALSE_lit)
+                throw unsolvable_exception();
+        }
         else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-            lra.add_constraint(real_gt_xpr); // we have an integer constraint..
+        { // we have an integer constraint..
+            if (lra.add_constraint(real_gt_xpr) == utils::FALSE_lit)
+                throw unsolvable_exception();
+        }
         else
             throw std::runtime_error("unexpected expression type");
     }

@@ -5,6 +5,7 @@
 #include "lin.hpp"
 #include "inf_rational.hpp"
 #include <unordered_map>
+#include <set>
 
 namespace semitone
 {
@@ -19,15 +20,21 @@ namespace semitone
   public:
     lra_theory(network &slv) noexcept;
 
-    utils::var add_var(std::string_view name, const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
+    [[nodiscard]] utils::var add_var(std::string_view name, const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
 
-    utils::lit add_constraint(bool_expr expr, bool bind = false);
+    [[nodiscard]] utils::lit add_constraint(bool_expr expr, bool bind = false);
 
   private:
-    utils::lin linearize(real_expr expr);
+    [[nodiscard]] utils::var add_var(const utils::lin &&l) noexcept;
+    [[nodiscard]] utils::lin linearize(real_expr expr);
 
     void new_leq(const utils::var x, const utils::inf_rational &v, bool bind = false) noexcept;
     void new_geq(const utils::var x, const utils::inf_rational &v, bool bind = false) noexcept;
+
+    void new_row(const utils::var x_i, const utils::lin &&xpr) noexcept;
+
+    [[nodiscard]] inline static size_t lb_index(const utils::var v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
+    [[nodiscard]] inline static size_t ub_index(const utils::var v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
   private:
     std::unordered_map<std::string, size_t> var_map;
@@ -43,6 +50,7 @@ namespace semitone
     std::vector<bound> c_bounds;                                     // the current bounds..
     std::map<const utils::var, utils::u_ptr<lra_assertion>> v_asrts; // the assertions (literal to assertions) used for enforcing (negating) assertions..
     std::map<const utils::var, utils::u_ptr<lra_eq>> tableau;        // the tableau..
+    std::vector<std::set<utils::var>> t_watches;                     // for each variable `v`, a list of tableau rows watching `v`..
   };
 
   enum op

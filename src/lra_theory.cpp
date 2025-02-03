@@ -8,13 +8,13 @@ namespace semitone
 {
     lra_theory::lra_theory(network &slv) noexcept : theory(slv) {}
 
-    size_t lra_theory::add_var(std::string_view name, const utils::rational &lb, const utils::rational &ub) noexcept
+    utils::var lra_theory::add_var(std::string_view name, const utils::rational &lb, const utils::rational &ub) noexcept
     {
         if (auto it = var_map.find(name.data()); it != var_map.end())
             return it->second;
         else
         {
-            size_t id = var_map.size();
+            utils::var id = var_map.size();
             var_map.emplace(name.data(), id);
             c_bounds.push_back({utils::inf_rational(lb), {}});
             c_bounds.push_back({utils::inf_rational(ub), {}});
@@ -135,6 +135,46 @@ namespace semitone
             }
             break;
         }
+        default: // the expression is an inequality with multiple variables
+            switch (op)
+            {
+            case 0: // `<`
+            {
+                const utils::inf_rational c_right = utils::inf_rational(-l.known_term, -1);
+                l.known_term = utils::rational::zero;
+                new_leq(add_var(std::move(l)), c_right, bind);
+            }
+            break;
+            case 1: // `<=`
+            {
+                const utils::inf_rational c_right = utils::inf_rational(-l.known_term);
+                l.known_term = utils::rational::zero;
+                new_leq(add_var(std::move(l)), c_right, bind);
+            }
+            break;
+            case 2: // `==`
+            {
+                const utils::inf_rational c_right = utils::inf_rational(-l.known_term);
+                l.known_term = utils::rational::zero;
+                new_leq(add_var(std::move(l)), c_right, bind);
+                new_geq(add_var(std::move(l)), c_right, bind);
+            }
+            break;
+            case 3: // `>=`
+            {
+                const utils::inf_rational c_right = utils::inf_rational(-l.known_term);
+                l.known_term = utils::rational::zero;
+                new_geq(add_var(std::move(l)), c_right, bind);
+            }
+            break;
+            case 4: // `>`
+            {
+                const utils::inf_rational c_right = utils::inf_rational(-l.known_term, 1);
+                l.known_term = utils::rational::zero;
+                new_geq(add_var(std::move(l)), c_right, bind);
+            }
+            break;
+            }
         }
     }
 
@@ -192,6 +232,42 @@ namespace semitone
         }
         else
             throw std::runtime_error("unexpected expression type");
+    }
+
+    utils::var lra_theory::add_var(const utils::lin &&l) noexcept
+    { // we create, if needed, a new arithmetic variable which is equal to the given linear expression..
+        assert(!l.vars.empty());
+        const auto s_expr = to_string(l);
+        if (const auto it = var_map.find(s_expr); it != var_map.cend())
+            return it->second;
+
+        const auto slack = add_var("slk" + std::to_string(tableau.size()));
+
+        utils::inf_rational val(l.known_term), lb(l.known_term), ub(l.known_term);
+        std::vector<utils::lit> lb_reason, ub_reason;
+        for (const auto &[v, c] : l.vars)
+        {
+            val += c * vals[v];
+            lb += (is_positive(c) ? c_bounds[lb_index(v)].value : c_bounds[ub_index(v)].value) * c;
+            lb_reason.insert(lb_reason.end(), c_bounds[lb_index(v)].reason.cbegin(), c_bounds[lb_index(v)].reason.cend());
+            ub += (is_positive(c) ? c_bounds[ub_index(v)].value : c_bounds[lb_index(v)].value) * c;
+            ub_reason.insert(ub_reason.end(), c_bounds[ub_index(v)].reason.cbegin(), c_bounds[ub_index(v)].reason.cend());
+        }
+
+        c_bounds[lb_index(slack)] = {lb, lb_reason}; // we set the lower bound of the slack variable to the lower bound of the linear expression
+        c_bounds[ub_index(slack)] = {ub, ub_reason}; // we set the upper bound of the slack variable to the upper bound of the linear expression
+        vals[slack] = val;                           // we set the value of the slack variable to the value of the linear expression
+        var_map.emplace(s_expr, slack);              // we add the linear expression to the expressions
+        new_row(slack, std::move(l));                // we add the new row `slack = ...` to the tableau
+        return slack;
+    }
+
+    void lra_theory::new_row(const utils::var x_i, const utils::lin &&xpr) noexcept
+    {
+        assert(tableau.find(x_i) == tableau.cend()); // the variable `x_i` must not be in the tableau..
+        for (const auto &x : xpr.vars)
+            t_watches[x.first].insert(x_i);
+        tableau.emplace(x_i, utils::make_u_ptr<lra_eq>(x_i, std::move(xpr)));
     }
 
     void lra_theory::new_leq(const utils::var x, const utils::inf_rational &v, bool bind) noexcept {}
