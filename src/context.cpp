@@ -391,7 +391,10 @@ namespace semitone
                 std::map<std::string, utils::rational> new_dist;
                 for (const auto &[name, coeff] : dist)
                     for (const auto &[arg_name, arg_coeff] : arg_dist)
-                        new_dist[name + arg_name] += coeff * arg_coeff;
+                        if (!name.empty() && !arg_name.empty())
+                            throw std::runtime_error("Non-linear real expression.");
+                        else
+                            new_dist[name + arg_name] += coeff * arg_coeff;
                 dist = std::move(new_dist);
             }
         }
@@ -402,7 +405,10 @@ namespace semitone
             std::map<std::string, utils::rational> new_dist;
             for (const auto &[name, coeff] : dist)
                 for (const auto &[arg_name, arg_coeff] : arg_dist)
-                    new_dist[name + arg_name] += coeff * arg_coeff;
+                    if (!name.empty() && !arg_name.empty())
+                        throw std::runtime_error("Non-linear real expression.");
+                    else
+                        new_dist[name + arg_name] += coeff * arg_coeff;
             dist = std::move(new_dist);
             for (size_t i = 1; i < div_xpr->args().size(); ++i)
             {
@@ -410,7 +416,10 @@ namespace semitone
                 std::map<std::string, utils::rational> new_dist;
                 for (const auto &[name, coeff] : dist)
                     for (const auto &[arg_name, arg_coeff] : arg_dist)
-                        new_dist[name + arg_name] += coeff / arg_coeff;
+                        if (!name.empty() && !arg_name.empty())
+                            throw std::runtime_error("Non-linear real expression.");
+                        else
+                            new_dist[name + arg_name] += coeff / arg_coeff;
                 dist = std::move(new_dist);
             }
         }
