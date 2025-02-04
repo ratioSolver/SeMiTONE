@@ -1,5 +1,4 @@
 #include "context.hpp"
-#include <map>
 #include <cassert>
 #include <stdexcept>
 
@@ -130,6 +129,51 @@ namespace semitone
         }
         else
             return expr;
+    }
+
+    std::map<std::string, utils::integer> context::linearize(int_expr expr)
+    {
+    }
+
+    std::map<std::string, utils::rational> context::linearize(real_expr expr)
+    {
+        if (auto c_xpr = utils::s_ptr_cast<real_const>(expr))
+            return {{"", c_xpr->val()}}; // we have a constant..
+        else if (auto var_xpr = utils::s_ptr_cast<real_var>(expr))
+            return {{var_xpr->get_name(), utils::rational::one}}; // we have a variable..
+
+        std::map<std::string, utils::rational> dist;
+        if (auto sum_xpr = utils::s_ptr_cast<real_sum>(expr))
+        {
+            for (const auto &arg : sum_xpr->args())
+            {
+                auto arg_dist = linearize(arg);
+                for (const auto &[name, coeff] : arg_dist)
+                    dist[name] += coeff;
+            }
+        }
+        else if (auto sub_xpr = utils::s_ptr_cast<real_sub>(expr))
+        {
+            std::map<std::string, utils::rational> dist;
+            auto arg_dist = linearize(sub_xpr->args()[0]);
+            for (const auto &[name, coeff] : arg_dist)
+                dist[name] += coeff;
+            for (size_t i = 1; i < sub_xpr->args().size(); ++i)
+            {
+                arg_dist = linearize(sub_xpr->args()[i]);
+                for (const auto &[name, coeff] : arg_dist)
+                    dist[name] -= coeff;
+            }
+        }
+        else if (auto mul_xpr = utils::s_ptr_cast<real_mul>(expr))
+        {
+        }
+        else if (auto div_xpr = utils::s_ptr_cast<real_div>(expr))
+        {
+        }
+        else
+            throw std::runtime_error("Unknown real expression type.");
+        return dist;
     }
 
     bool_expr operator&&(bool_expr lhs, bool_expr rhs) noexcept { return lhs->get_ctx().mk_and({lhs, rhs}); }
