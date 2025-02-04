@@ -31,7 +31,7 @@ void test_solver1()
     auto b = ctx.mk_real_var("b");
     auto c = ctx.mk_real_var("c");
 
-    auto lin = 2.0 * a + 3.0 * b + 4.0 * c <= 10.0;
+    auto lin = ((2.0 * a + 3.0 * b + 4.0 * c) * 2.0) / 2.0 <= 10.0;
 
     semitone::network slv(ctx);
     slv.add(lin);

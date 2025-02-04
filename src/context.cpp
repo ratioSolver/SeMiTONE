@@ -154,7 +154,6 @@ namespace semitone
         }
         else if (auto sub_xpr = utils::s_ptr_cast<real_sub>(expr))
         {
-            std::map<std::string, utils::rational> dist;
             auto arg_dist = linearize(sub_xpr->args()[0]);
             for (const auto &[name, coeff] : arg_dist)
                 dist[name] += coeff;
@@ -167,9 +166,35 @@ namespace semitone
         }
         else if (auto mul_xpr = utils::s_ptr_cast<real_mul>(expr))
         {
+            dist = {{"", utils::rational::one}};
+            for (const auto &arg : mul_xpr->args())
+            {
+                auto arg_dist = linearize(arg);
+                std::map<std::string, utils::rational> new_dist;
+                for (const auto &[name, coeff] : dist)
+                    for (const auto &[arg_name, arg_coeff] : arg_dist)
+                        new_dist[name + arg_name] += coeff * arg_coeff;
+                dist = std::move(new_dist);
+            }
         }
         else if (auto div_xpr = utils::s_ptr_cast<real_div>(expr))
         {
+            dist = {{"", utils::rational::one}};
+            auto arg_dist = linearize(div_xpr->args()[0]);
+            std::map<std::string, utils::rational> new_dist;
+            for (const auto &[name, coeff] : dist)
+                for (const auto &[arg_name, arg_coeff] : arg_dist)
+                    new_dist[name + arg_name] += coeff * arg_coeff;
+            dist = std::move(new_dist);
+            for (size_t i = 1; i < div_xpr->args().size(); ++i)
+            {
+                arg_dist = linearize(div_xpr->args()[i]);
+                std::map<std::string, utils::rational> new_dist;
+                for (const auto &[name, coeff] : dist)
+                    for (const auto &[arg_name, arg_coeff] : arg_dist)
+                        new_dist[name + arg_name] += coeff / arg_coeff;
+                dist = std::move(new_dist);
+            }
         }
         else
             throw std::runtime_error("Unknown real expression type.");
