@@ -131,8 +131,226 @@ namespace semitone
             return expr;
     }
 
+    bool_expr context::simplify(bool_expr expr)
+    {
+        if (auto int_lt_xpr = utils::s_ptr_cast<int_lt>(expr))
+        {
+            std::vector<int_expr> lhs;
+            utils::integer rhs;
+            auto lin = linearize(int_lt_xpr->left() - int_lt_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<int_expr>{mk_int_var(name), mk_int_const(coeff)}));
+                }
+            return mk_lt(mk_sum(std::move(lhs)), mk_int_const(rhs));
+        }
+        else if (auto int_le_xpr = utils::s_ptr_cast<int_le>(expr))
+        {
+            std::vector<int_expr> lhs;
+            utils::integer rhs;
+            auto lin = linearize(int_le_xpr->left() - int_le_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<int_expr>{mk_int_var(name), mk_int_const(coeff)}));
+                }
+            return mk_le(mk_sum(std::move(lhs)), mk_int_const(rhs));
+        }
+        else if (auto int_eq_xpr = utils::s_ptr_cast<int_eq>(expr))
+        {
+            std::vector<int_expr> lhs;
+            utils::integer rhs;
+            auto lin = linearize(int_eq_xpr->left() - int_eq_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<int_expr>{mk_int_var(name), mk_int_const(coeff)}));
+                }
+            return mk_eq(mk_sum(std::move(lhs)), mk_int_const(rhs));
+        }
+        else if (auto int_ge_xpr = utils::s_ptr_cast<int_ge>(expr))
+        {
+            std::vector<int_expr> lhs;
+            utils::integer rhs;
+            auto lin = linearize(int_ge_xpr->left() - int_ge_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<int_expr>{mk_int_var(name), mk_int_const(coeff)}));
+                }
+            return mk_ge(mk_sum(std::move(lhs)), mk_int_const(rhs));
+        }
+        else if (auto int_gt_xpr = utils::s_ptr_cast<int_gt>(expr))
+        {
+            std::vector<int_expr> lhs;
+            utils::integer rhs;
+            auto lin = linearize(int_gt_xpr->left() - int_gt_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<int_expr>{mk_int_var(name), mk_int_const(coeff)}));
+                }
+            return mk_gt(mk_sum(std::move(lhs)), mk_int_const(rhs));
+        }
+        else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
+        {
+            std::vector<real_expr> lhs;
+            utils::rational rhs;
+            auto lin = linearize(real_lt_xpr->left() - real_lt_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<real_expr>{mk_real_var(name), mk_real_const(coeff)}));
+                }
+            return mk_lt(mk_sum(std::move(lhs)), mk_real_const(rhs));
+        }
+        else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
+        {
+            std::vector<real_expr> lhs;
+            utils::rational rhs;
+            auto lin = linearize(real_le_xpr->left() - real_le_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<real_expr>{mk_real_var(name), mk_real_const(coeff)}));
+                }
+            return mk_le(mk_sum(std::move(lhs)), mk_real_const(rhs));
+        }
+        else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
+        {
+            std::vector<real_expr> lhs;
+            utils::rational rhs;
+            auto lin = linearize(real_eq_xpr->left() - real_eq_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<real_expr>{mk_real_var(name), mk_real_const(coeff)}));
+                }
+            return mk_eq(mk_sum(std::move(lhs)), mk_real_const(rhs));
+        }
+        else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
+        {
+            std::vector<real_expr> lhs;
+            utils::rational rhs;
+            auto lin = linearize(real_ge_xpr->left() - real_ge_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<real_expr>{mk_real_var(name), mk_real_const(coeff)}));
+                }
+            return mk_ge(mk_sum(std::move(lhs)), mk_real_const(rhs));
+        }
+        else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
+        {
+            std::vector<real_expr> lhs;
+            utils::rational rhs;
+            auto lin = linearize(real_gt_xpr->left() - real_gt_xpr->right());
+            for (const auto &[name, coeff] : lin)
+                if (!is_zero(coeff))
+                {
+                    if (name.empty())
+                        rhs -= coeff;
+                    else
+                        lhs.push_back(mk_mul(std::vector<real_expr>{mk_real_var(name), mk_real_const(coeff)}));
+                }
+            return mk_gt(mk_sum(std::move(lhs)), mk_real_const(rhs));
+        }
+        else
+            throw std::runtime_error("Unknown integer expression type.");
+    }
+
     std::map<std::string, utils::integer> context::linearize(int_expr expr)
     {
+        if (auto c_xpr = utils::s_ptr_cast<int_const>(expr))
+            return {{"", c_xpr->val()}}; // we have a constant..
+        else if (auto var_xpr = utils::s_ptr_cast<int_var>(expr))
+            return {{var_xpr->get_name(), utils::integer::one}}; // we have a variable..
+
+        std::map<std::string, utils::integer> dist;
+        if (auto sum_xpr = utils::s_ptr_cast<int_sum>(expr))
+        {
+            for (const auto &arg : sum_xpr->args())
+            {
+                auto arg_dist = linearize(arg);
+                for (const auto &[name, coeff] : arg_dist)
+                    dist[name] += coeff;
+            }
+        }
+        else if (auto sub_xpr = utils::s_ptr_cast<int_sub>(expr))
+        {
+            auto arg_dist = linearize(sub_xpr->args()[0]);
+            for (const auto &[name, coeff] : arg_dist)
+                dist[name] += coeff;
+            for (size_t i = 1; i < sub_xpr->args().size(); ++i)
+            {
+                arg_dist = linearize(sub_xpr->args()[i]);
+                for (const auto &[name, coeff] : arg_dist)
+                    dist[name] -= coeff;
+            }
+        }
+        else if (auto mul_xpr = utils::s_ptr_cast<int_mul>(expr))
+        {
+            dist = {{"", utils::integer::one}};
+            for (const auto &arg : mul_xpr->args())
+            {
+                auto arg_dist = linearize(arg);
+                std::map<std::string, utils::integer> new_dist;
+                for (const auto &[name, coeff] : dist)
+                    for (const auto &[arg_name, arg_coeff] : arg_dist)
+                        new_dist[name + arg_name] += coeff * arg_coeff;
+                dist = std::move(new_dist);
+            }
+        }
+        else if (auto div_xpr = utils::s_ptr_cast<int_div>(expr))
+        {
+            dist = {{"", utils::integer::one}};
+            auto arg_dist = linearize(div_xpr->args()[0]);
+            std::map<std::string, utils::integer> new_dist;
+            for (const auto &[name, coeff] : dist)
+                for (const auto &[arg_name, arg_coeff] : arg_dist)
+                    new_dist[name + arg_name] += coeff * arg_coeff;
+            dist = std::move(new_dist);
+            for (size_t i = 1; i < div_xpr->args().size(); ++i)
+            {
+                arg_dist = linearize(div_xpr->args()[i]);
+                std::map<std::string, utils::integer> new_dist;
+                for (const auto &[name, coeff] : dist)
+                    for (const auto &[arg_name, arg_coeff] : arg_dist)
+                        new_dist[name + arg_name] += coeff / arg_coeff;
+                dist = std::move(new_dist);
+            }
+        }
+        else
+            throw std::runtime_error("Unknown real expression type.");
+        return dist;
     }
 
     std::map<std::string, utils::rational> context::linearize(real_expr expr)

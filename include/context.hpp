@@ -58,6 +58,7 @@ namespace semitone
     [[nodiscard]] bool_expr push_negations(bool_expr expr);
     [[nodiscard]] bool_expr distribute(bool_expr expr);
 
+    [[nodiscard]] bool_expr simplify(bool_expr expr);
     [[nodiscard]] std::map<std::string, utils::integer> linearize(int_expr expr);
     [[nodiscard]] std::map<std::string, utils::rational> linearize(real_expr expr);
   };

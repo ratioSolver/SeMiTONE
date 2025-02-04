@@ -137,37 +137,25 @@ namespace semitone
         else if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
             add_clause(or_xpr); // we have a clause..
         else if (auto int_lt_xpr = utils::s_ptr_cast<int_lt>(expr))
-            auto dist = ctx.linearize(int_lt_xpr->left());
+            auto simp = ctx.simplify(int_lt_xpr);
         else if (auto int_le_xpr = utils::s_ptr_cast<int_le>(expr))
-            auto dist = ctx.linearize(int_le_xpr->left());
+            auto simp = ctx.simplify(int_le_xpr);
         else if (auto int_eq_xpr = utils::s_ptr_cast<int_eq>(expr))
-            add_clause(int_eq_xpr); // we have a clause..
+            auto simp = ctx.simplify(int_eq_xpr);
         else if (auto int_ge_xpr = utils::s_ptr_cast<int_ge>(expr))
-            add_clause(int_ge_xpr); // we have a clause..
+            auto simp = ctx.simplify(int_ge_xpr);
         else if (auto int_gt_xpr = utils::s_ptr_cast<int_gt>(expr))
-            add_clause(int_gt_xpr); // we have a clause..
+            auto simp = ctx.simplify(int_gt_xpr);
         else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-            auto dist = ctx.linearize(real_lt_xpr->left());
+            auto simp = ctx.simplify(int_lt_xpr);
         else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-        {
-            LOG_DEBUG("Distributing " << real_le_xpr->left()->get_name());
-            auto dist = ctx.linearize(real_le_xpr->left());
-            std::vector<real_expr> args;
-            for (const auto &[name, coeff] : dist)
-                if (!is_zero(coeff))
-                    if (name.empty())
-                        args.push_back(ctx.mk_real_const(coeff));
-                    else
-                        args.push_back(ctx.mk_mul(std::vector<real_expr>{ctx.mk_real_var(name), ctx.mk_real_const(coeff)}));
-            auto sum = ctx.mk_sum(std::move(args));
-            LOG_DEBUG("Distributed " << sum->get_name());
-        }
+            auto simp = ctx.simplify(real_le_xpr);
         else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-            add_clause(real_eq_xpr); // we have a clause..
+            auto simp = ctx.simplify(real_eq_xpr);
         else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-            add_clause(real_ge_xpr); // we have a clause..
+            auto simp = ctx.simplify(real_ge_xpr);
         else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-            add_clause(real_gt_xpr); // we have a clause..
+            auto simp = ctx.simplify(real_gt_xpr);
         else
             throw std::runtime_error("unexpected expression type");
     }
