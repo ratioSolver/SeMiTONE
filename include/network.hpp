@@ -10,6 +10,7 @@
 namespace semitone
 {
   class clause;
+  class la_theory;
 
   class network
   {
@@ -168,6 +169,7 @@ namespace semitone
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
 
     std::vector<utils::u_ptr<theory>> theories; // all the theories..
+    la_theory &la;                              // the linear arithmetic theory..
   };
 
   class clause

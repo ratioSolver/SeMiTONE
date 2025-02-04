@@ -1,4 +1,5 @@
 #include "network.hpp"
+#include "la_theory.hpp"
 #include "logging.hpp"
 #include <algorithm>
 #include <set>
@@ -6,7 +7,9 @@
 
 namespace semitone
 {
-    network::network(context &ctx) : ctx(ctx) {}
+    network::network(context &ctx) : ctx(ctx), la(new_theory<la_theory>(*this))
+    {
+    }
 
     void network::add(bool_expr expr)
     {
@@ -66,9 +69,8 @@ namespace semitone
         assert(prop_queue.empty());
         LOG_TRACE("+[" << to_string(p) << "]");
         trail_lim.push_back(trail.size());
-        // TODO: Push the theories
-        // for (const auto &th : theories)
-        //     th->push();
+        for (const auto &th : theories)
+            th->push();
         return enqueue(p) && propagate();
     }
 
@@ -77,9 +79,8 @@ namespace semitone
         while (trail_lim.back() < trail.size())
             pop_one();
         trail_lim.pop_back();
-        // TODO: Pop the theories
-        // for (const auto &th : theories)
-        //     th->pop();
+        for (const auto &th : theories)
+            th->pop();
     }
 
     utils::lbool network::eval(bool_expr xpr)
