@@ -138,25 +138,25 @@ namespace semitone
         else if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
             add_clause(or_xpr); // we have a clause..
         else if (auto int_lt_xpr = utils::s_ptr_cast<int_lt>(expr))
-            auto simp = ctx.simplify(int_lt_xpr);
+            la.add(ctx.simplify(int_lt_xpr)); // we have a linear arithmetic constraint..
         else if (auto int_le_xpr = utils::s_ptr_cast<int_le>(expr))
-            auto simp = ctx.simplify(int_le_xpr);
+            la.add(ctx.simplify(int_le_xpr)); // we have a linear arithmetic constraint..
         else if (auto int_eq_xpr = utils::s_ptr_cast<int_eq>(expr))
-            auto simp = ctx.simplify(int_eq_xpr);
+            la.add(ctx.simplify(int_eq_xpr)); // we have a linear arithmetic constraint..
         else if (auto int_ge_xpr = utils::s_ptr_cast<int_ge>(expr))
-            auto simp = ctx.simplify(int_ge_xpr);
+            la.add(ctx.simplify(int_ge_xpr)); // we have a linear arithmetic constraint..
         else if (auto int_gt_xpr = utils::s_ptr_cast<int_gt>(expr))
-            auto simp = ctx.simplify(int_gt_xpr);
+            la.add(ctx.simplify(int_gt_xpr)); // we have a linear arithmetic constraint..
         else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-            auto simp = ctx.simplify(int_lt_xpr);
+            la.add(ctx.simplify(real_lt_xpr)); // we have a linear arithmetic constraint..
         else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-            auto simp = ctx.simplify(real_le_xpr);
+            la.add(ctx.simplify(real_le_xpr)); // we have a linear arithmetic constraint..
         else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-            auto simp = ctx.simplify(real_eq_xpr);
+            la.add(ctx.simplify(real_eq_xpr)); // we have a linear arithmetic constraint..
         else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-            auto simp = ctx.simplify(real_ge_xpr);
+            la.add(ctx.simplify(real_ge_xpr)); // we have a linear arithmetic constraint..
         else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-            auto simp = ctx.simplify(real_gt_xpr);
+            la.add(ctx.simplify(real_gt_xpr)); // we have a linear arithmetic constraint..
         else
             throw std::runtime_error("unexpected expression type");
     }
