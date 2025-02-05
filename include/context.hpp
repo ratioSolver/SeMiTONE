@@ -1,7 +1,10 @@
 #pragma once
 
 #include "term.hpp"
+#include "lit.hpp"
+#include "lin.hpp"
 #include <map>
+#include <unordered_map>
 
 namespace semitone
 {
@@ -61,6 +64,11 @@ namespace semitone
     [[nodiscard]] bool_expr simplify(bool_expr expr);
     [[nodiscard]] std::map<std::string, utils::integer> linearize(int_expr expr);
     [[nodiscard]] std::map<std::string, utils::rational> linearize(real_expr expr);
+
+  private:
+    std::unordered_map<std::string, utils::var> var_map;
+    std::unordered_map<std::string, utils::var> int_var_map;
+    std::unordered_map<std::string, utils::var> real_var_map;
   };
 
   [[nodiscard]] bool_expr operator&&(bool_expr lhs, bool_expr rhs) noexcept;

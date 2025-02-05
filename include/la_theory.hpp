@@ -19,7 +19,8 @@ namespace semitone
     [[nodiscard]] utils::var new_int(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
     [[nodiscard]] utils::var new_real(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
 
-    [[nodiscard]] utils::lit add_lt(const utils::lin &&xpr, bool bind = false);
+    void add_lt(const utils::lin &&xpr);
+    [[nodiscard]] utils::lit new_lt(const utils::lin &&xpr) noexcept;
 
     void push() noexcept override;
     void pop() noexcept override;

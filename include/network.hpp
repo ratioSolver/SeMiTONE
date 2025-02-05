@@ -4,7 +4,6 @@
 #include "lit.hpp"
 #include "theory.hpp"
 #include <optional>
-#include <unordered_map>
 #include <queue>
 
 namespace semitone
@@ -66,8 +65,6 @@ namespace semitone
      * @param xpr The expression to be evaluated.
      */
     utils::lbool eval(bool_expr xpr);
-
-    context &get_context() noexcept { return ctx; }
 
   private:
     [[nodiscard]] utils::var add_var(std::string_view name);
@@ -158,9 +155,6 @@ namespace semitone
 
   private:
     context &ctx;
-    std::unordered_map<std::string, utils::var> var_map;
-    std::unordered_map<std::string, utils::var> int_var_map;
-    std::unordered_map<std::string, utils::var> real_var_map;
     std::vector<std::vector<utils::ref_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
     std::vector<utils::lbool> assigns;                             // the current assignments..
     std::vector<std::optional<utils::ref_wrapper<clause>>> reason; // for each variable, the clause that implied its value..

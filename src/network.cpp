@@ -62,9 +62,9 @@ namespace semitone
     {
         utils::lit p;
         if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr))
-            p = utils::lit(var_map.at(not_xpr->arg()->get_name()), false);
+            p = utils::lit(ctx.var_map.at(not_xpr->arg()->get_name()), false);
         else
-            p = utils::lit(var_map.at(expr->get_name()), true);
+            p = utils::lit(ctx.var_map.at(expr->get_name()), true);
         assert(value(p) == utils::Undefined);
         assert(prop_queue.empty());
         LOG_TRACE("+[" << to_string(p) << "]");
@@ -87,7 +87,7 @@ namespace semitone
     {
         if (auto bool_xpr = utils::s_ptr_cast<bool_var>(xpr))
         { // we evaluate the variable..
-            if (auto it = var_map.find(bool_xpr->get_name()); it != var_map.end())
+            if (auto it = ctx.var_map.find(bool_xpr->get_name()); it != ctx.var_map.end())
                 return value(it->second);
             else
                 return bool_xpr->val();
@@ -114,12 +114,12 @@ namespace semitone
 
     utils::var network::add_var(std::string_view name)
     {
-        if (auto it = var_map.find(name.data()); it != var_map.end())
+        if (auto it = ctx.var_map.find(name.data()); it != ctx.var_map.end())
             return it->second;
         else
         {
-            utils::var id = var_map.size();
-            var_map.emplace(name.data(), id);
+            utils::var id = ctx.var_map.size();
+            ctx.var_map.emplace(name.data(), id);
             assigns.push_back(utils::Undefined);
             watches.emplace_back();
             watches.emplace_back();
@@ -131,24 +131,24 @@ namespace semitone
 
     utils::var network::add_int_var(std::string_view name)
     {
-        if (auto it = int_var_map.find(name.data()); it != int_var_map.end())
+        if (auto it = ctx.int_var_map.find(name.data()); it != ctx.int_var_map.end())
             return it->second;
         else
         {
             utils::var id = la.new_int();
-            int_var_map.emplace(name.data(), id);
+            ctx.int_var_map.emplace(name.data(), id);
             return id;
         }
     }
 
     utils::var network::add_real_var(std::string_view name)
     {
-        if (auto it = real_var_map.find(name.data()); it != real_var_map.end())
+        if (auto it = ctx.real_var_map.find(name.data()); it != ctx.real_var_map.end())
             return it->second;
         else
         {
             utils::var id = la.new_real();
-            real_var_map.emplace(name.data(), id);
+            ctx.real_var_map.emplace(name.data(), id);
             return id;
         }
     }
