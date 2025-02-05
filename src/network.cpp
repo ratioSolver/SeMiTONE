@@ -58,13 +58,8 @@ namespace semitone
         return true;
     }
 
-    bool network::assume(bool_expr expr) noexcept
+    bool network::assume(const utils::lit &p) noexcept
     {
-        utils::lit p;
-        if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr))
-            p = utils::lit(ctx.var_map.at(not_xpr->arg()->get_name()), false);
-        else
-            p = utils::lit(ctx.var_map.at(expr->get_name()), true);
         assert(value(p) == utils::Undefined);
         assert(prop_queue.empty());
         LOG_TRACE("+[" << to_string(p) << "]");

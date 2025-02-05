@@ -41,15 +41,15 @@ namespace semitone
     bool propagate() noexcept;
 
     /**
-     * @brief Assume a boolean expression.
+     * @brief Assume a literal.
      *
-     * This function assumes a boolean expression to be true. It adds the expression
-     * to the solver's internal data structures and propagates the constraints.
+     * This function assumes the literal `p` to be true. It enqueues the literal
+     * and propagates the constraints to ensure that the assumption is consistent.
      *
-     * @param expr The boolean expression to assume.
+     * @param p the literal to assume.
      * @return `true` if the assumption is consistent, `false` otherwise.
      */
-    bool assume(bool_expr expr) noexcept;
+    bool assume(const utils::lit &p) noexcept;
 
     /**
      * @brief Pop the last decision from the trail.
