@@ -11,6 +11,7 @@
 namespace semitone
 {
   class clause;
+  class la_theory;
 
   class network
   {
@@ -63,6 +64,23 @@ namespace semitone
      */
     [[nodiscard]] size_t decision_level() const noexcept { return trail_lim.size(); }
 
+    /**
+     * @brief Create a new theory of type `Tp` with the given arguments.
+     *
+     * @tparam Tp the type of the theory.
+     * @tparam Args the type of the arguments.
+     * @param args the arguments to pass to the theory constructor.
+     * @return Tp& the new theory.
+     */
+    template <typename Tp, typename... Args>
+    Tp &new_theory(Args &&...args)
+    {
+      static_assert(std::is_base_of_v<theory, Tp>, "Tp must be a subclass of theory");
+      auto th = new Tp(std::forward<Args>(args)...);
+      theories.push_back(th);
+      return *th;
+    }
+
   private:
     /**
      * @brief Enqueue a literal in the assignment.
@@ -87,6 +105,8 @@ namespace semitone
 
     std::vector<utils::u_ptr<theory>> theories;                                 // all the theories..
     std::unordered_map<utils::var, std::set<utils::ref_wrapper<theory>>> binds; // for each variable, the theories that depend on it..
+
+    la_theory &la; // the linear arithmetic theory..
   };
 
   /**
