@@ -70,7 +70,9 @@ namespace semitone
     context &get_context() noexcept { return ctx; }
 
   private:
-    [[nodiscard]] size_t add_var(std::string_view name);
+    [[nodiscard]] utils::var add_var(std::string_view name);
+    [[nodiscard]] utils::var add_int_var(std::string_view name);
+    [[nodiscard]] utils::var add_real_var(std::string_view name);
 
     void add_clause(bool_expr expr);
 
@@ -156,7 +158,9 @@ namespace semitone
 
   private:
     context &ctx;
-    std::unordered_map<std::string, size_t> var_map;
+    std::unordered_map<std::string, utils::var> var_map;
+    std::unordered_map<std::string, utils::var> int_var_map;
+    std::unordered_map<std::string, utils::var> real_var_map;
     std::vector<std::vector<utils::ref_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
     std::vector<utils::lbool> assigns;                             // the current assignments..
     std::vector<std::optional<utils::ref_wrapper<clause>>> reason; // for each variable, the clause that implied its value..

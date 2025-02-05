@@ -112,19 +112,43 @@ namespace semitone
         throw std::runtime_error("unexpected expression type");
     }
 
-    size_t network::add_var(std::string_view name)
+    utils::var network::add_var(std::string_view name)
     {
         if (auto it = var_map.find(name.data()); it != var_map.end())
             return it->second;
         else
         {
-            size_t id = var_map.size();
+            utils::var id = var_map.size();
             var_map.emplace(name.data(), id);
             assigns.push_back(utils::Undefined);
             watches.emplace_back();
             watches.emplace_back();
             level.emplace_back(0);
             reason.emplace_back(std::nullopt);
+            return id;
+        }
+    }
+
+    utils::var network::add_int_var(std::string_view name)
+    {
+        if (auto it = int_var_map.find(name.data()); it != int_var_map.end())
+            return it->second;
+        else
+        {
+            utils::var id = la.new_int();
+            int_var_map.emplace(name.data(), id);
+            return id;
+        }
+    }
+
+    utils::var network::add_real_var(std::string_view name)
+    {
+        if (auto it = real_var_map.find(name.data()); it != real_var_map.end())
+            return it->second;
+        else
+        {
+            utils::var id = la.new_real();
+            real_var_map.emplace(name.data(), id);
             return id;
         }
     }

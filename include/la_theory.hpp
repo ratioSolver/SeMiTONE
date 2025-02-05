@@ -4,6 +4,7 @@
 #include "inf_rational.hpp"
 #include "lin.hpp"
 #include <unordered_map>
+#include <set>
 
 namespace semitone
 {
@@ -15,14 +16,8 @@ namespace semitone
   public:
     la_theory(network &slv) noexcept;
 
-    /**
-     * @brief Create a new linear real arithmetic variable.
-     *
-     * @param lb the lower bound of the new variable.
-     * @param ub the upper bound of the new variable.
-     * @return utils::var the new variable.
-     */
-    [[nodiscard]] utils::var new_var(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    [[nodiscard]] utils::var new_int(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    [[nodiscard]] utils::var new_real(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
 
     [[nodiscard]] utils::lit add_lt(const utils::lin &&xpr, bool bind = false);
 
@@ -39,10 +34,12 @@ namespace semitone
       std::vector<utils::lit> reason; // the reason for the value..
     };
 
-    std::vector<bound> c_bounds;                                    // the current bounds..
-    std::vector<utils::inf_rational> vals;                          // the current values..
-    std::map<const utils::var, utils::u_ptr<la_assertion>> v_asrts; // the assertions (literal to assertions) used for enforcing the assertions..
-    std::map<const utils::var, utils::u_ptr<la_eq>> tableau;        // the tableau..
+    std::vector<bound> c_bounds;                                          // the current bounds..
+    std::vector<utils::inf_rational> vals;                                // the current values..
+    std::map<const utils::var, utils::u_ptr<la_assertion>> v_asrts;       // the assertions (literal to assertions) used for enforcing the assertions..
+    std::map<const utils::var, utils::u_ptr<la_eq>> tableau;              // the tableau..
+    std::vector<std::vector<utils::ref_wrapper<la_assertion>>> a_watches; // for each variable `v`, a list of assertions watching `v`..
+    std::vector<std::set<utils::var>> t_watches;                          // for each variable `v`, a list of tableau rows watching `v`..
   };
 
   enum op
