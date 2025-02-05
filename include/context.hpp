@@ -4,7 +4,6 @@
 #include "lit.hpp"
 #include "lin.hpp"
 #include <map>
-#include <unordered_map>
 
 namespace semitone
 {
@@ -65,10 +64,14 @@ namespace semitone
     [[nodiscard]] std::map<std::string, utils::integer> linearize(int_expr expr);
     [[nodiscard]] std::map<std::string, utils::rational> linearize(real_expr expr);
 
+    [[nodiscard]] std::vector<utils::lit> to_lits(bool_expr expr);
+    [[nodiscard]] utils::lin to_lin(int_expr expr);
+    [[nodiscard]] utils::lin to_lin(real_expr expr);
+
   private:
-    std::unordered_map<std::string, utils::var> var_map;
-    std::unordered_map<std::string, utils::var> int_var_map;
-    std::unordered_map<std::string, utils::var> real_var_map;
+    std::map<std::string, utils::var> var_map;
+    std::map<std::string, utils::var> int_var_map;
+    std::map<std::string, utils::var> real_var_map;
   };
 
   [[nodiscard]] bool_expr operator&&(bool_expr lhs, bool_expr rhs) noexcept;

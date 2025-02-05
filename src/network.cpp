@@ -9,6 +9,10 @@ namespace semitone
 {
     network::network(context &ctx) : ctx(ctx), la(new_theory<la_theory>(*this))
     {
+        [[maybe_unused]] utils::var c_false = get_var("false"); // the false constant..
+        assert(c_false == utils::FALSE_var);
+        assigns[utils::FALSE_var] = utils::False;
+        level[utils::FALSE_var] = 0;
     }
 
     void network::add(bool_expr expr)
@@ -107,7 +111,7 @@ namespace semitone
         throw std::runtime_error("unexpected expression type");
     }
 
-    utils::var network::add_var(std::string_view name)
+    utils::var network::get_var(std::string_view name)
     {
         if (auto it = ctx.var_map.find(name.data()); it != ctx.var_map.end())
             return it->second;
@@ -124,7 +128,7 @@ namespace semitone
         }
     }
 
-    utils::var network::add_int_var(std::string_view name)
+    utils::var network::get_int_var(std::string_view name)
     {
         if (auto it = ctx.int_var_map.find(name.data()); it != ctx.int_var_map.end())
             return it->second;
@@ -136,7 +140,7 @@ namespace semitone
         }
     }
 
-    utils::var network::add_real_var(std::string_view name)
+    utils::var network::get_real_var(std::string_view name)
     {
         if (auto it = ctx.real_var_map.find(name.data()); it != ctx.real_var_map.end())
             return it->second;
@@ -150,48 +154,49 @@ namespace semitone
 
     void network::add_clause(bool_expr expr)
     {
-        std::vector<utils::lit> lits;
-        if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr)) // we have a clause..
+        if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
+        { // we have a clause..
+            std::vector<utils::lit> lits;
             for (const auto &arg : or_xpr->args())
             {
                 if (auto bool_xpr = utils::s_ptr_cast<bool_var>(arg))
-                    lits.push_back(utils::lit(add_var(arg->get_name()), true));
+                    lits.push_back(utils::lit(get_var(arg->get_name()), true));
                 else if (auto not_xpr = utils::s_ptr_cast<not_expr>(arg))
-                    lits.push_back(utils::lit(add_var(not_xpr->arg()->get_name()), false));
+                    lits.push_back(utils::lit(get_var(not_xpr->arg()->get_name()), false));
                 else
                     throw std::runtime_error("unexpected expression type");
             }
-        else if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr)) // we have a unit clause..
-            lits.push_back(utils::lit(add_var(not_xpr->arg()->get_name()), false));
-        else // we have a unit clause..
-            lits.push_back(utils::lit(add_var(expr->get_name()), true));
+            // we sort the clause to make sure that we can easily check for duplicates..
+            std::sort(lits.begin(), lits.end(), [](const auto &l0, const auto &l1)
+                      { return variable(l0) < variable(l1); });
+            utils::lit p;
+            size_t j = 0;
+            for (auto it = lits.cbegin(); it != lits.cend(); ++it)
+                if (value(*it) == utils::True || *it == !p)
+                    return; // the clause is already satisfied or represents a tautology..
+                else if (value(*it) != utils::False && *it != p)
+                { // we need to include this literal in the clause..
+                    p = *it;
+                    lits[j++] = p;
+                }
+            lits.resize(j);
 
-        // we sort the clause to make sure that we can easily check for duplicates..
-        std::sort(lits.begin(), lits.end(), [](const auto &l0, const auto &l1)
-                  { return variable(l0) < variable(l1); });
-        utils::lit p;
-        size_t j = 0;
-        for (auto it = lits.cbegin(); it != lits.cend(); ++it)
-            if (value(*it) == utils::True || *it == !p)
-                return; // the clause is already satisfied or represents a tautology..
-            else if (value(*it) != utils::False && *it != p)
-            { // we need to include this literal in the clause..
-                p = *it;
-                lits[j++] = p;
-            }
-        lits.resize(j);
-
-        switch (lits.size())
-        {
-        case 0: // the clause is unsatisfable under the current assignment (so is the problem)..
-            throw unsolvable_exception();
-        case 1: // the clause is unique under the current assignment..
-            if (!enqueue(lits[0]))
+            switch (lits.size())
+            {
+            case 0: // the clause is unsatisfable under the current assignment (so is the problem)..
                 throw unsolvable_exception();
-            break;
-        default: // we need to create a new clause..
-            clauses.push_back(new clause(*this, std::move(lits)));
+            case 1: // the clause is unique under the current assignment..
+                if (!enqueue(lits[0]))
+                    throw unsolvable_exception();
+                break;
+            default: // we need to create a new clause..
+                clauses.push_back(new clause(*this, std::move(lits)));
+            }
         }
+        else if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr)) // we have a unit clause..
+            lits.push_back(utils::lit(get_var(not_xpr->arg()->get_name()), false));
+        else // we have a unit clause..
+            lits.push_back(utils::lit(get_var(expr->get_name()), true));
     }
 
     bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept

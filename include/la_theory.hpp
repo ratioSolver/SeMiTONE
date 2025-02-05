@@ -21,6 +21,10 @@ namespace semitone
 
     void add_lt(const utils::lin &&xpr);
     [[nodiscard]] utils::lit new_lt(const utils::lin &&xpr) noexcept;
+    void add_le(const utils::lin &&xpr);
+    [[nodiscard]] utils::lit new_le(const utils::lin &&xpr) noexcept;
+    void add_eq(const utils::lin &&xpr);
+    [[nodiscard]] utils::lit new_eq(const utils::lin &&xpr) noexcept;
 
     void push() noexcept override;
     void pop() noexcept override;

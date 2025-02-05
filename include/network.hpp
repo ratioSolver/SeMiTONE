@@ -1,7 +1,6 @@
 #pragma once
 
 #include "context.hpp"
-#include "lit.hpp"
 #include "theory.hpp"
 #include <optional>
 #include <queue>
@@ -67,9 +66,9 @@ namespace semitone
     utils::lbool eval(bool_expr xpr);
 
   private:
-    [[nodiscard]] utils::var add_var(std::string_view name);
-    [[nodiscard]] utils::var add_int_var(std::string_view name);
-    [[nodiscard]] utils::var add_real_var(std::string_view name);
+    [[nodiscard]] utils::var get_var(std::string_view name);
+    [[nodiscard]] utils::var get_int_var(std::string_view name);
+    [[nodiscard]] utils::var get_real_var(std::string_view name);
 
     void add_clause(bool_expr expr);
 
