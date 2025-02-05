@@ -15,12 +15,13 @@ namespace semitone
   public:
     la_theory(network &slv) noexcept;
 
-    void add(bool_expr expr);
+    utils::lit add(bool_expr expr, bool bind = false);
 
     void push() noexcept override;
     void pop() noexcept override;
 
   private:
+    [[nodiscard]] size_t add_int(std::string_view name, const utils::integer &lb = utils::integer::negative_infinite, const utils::integer &ub = utils::integer::positive_infinite);
     [[nodiscard]] size_t add_real(std::string_view name, const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite));
 
     [[nodiscard]] utils::lin to_lin(int_expr expr);
@@ -37,8 +38,8 @@ namespace semitone
       std::vector<utils::lit> reason; // the reason for the value..
     };
 
-    std::vector<bound> c_bounds;                                     // the current bounds..
-    std::vector<utils::inf_rational> vals;                           // the current values..
+    std::vector<bound> c_bounds;                                    // the current bounds..
+    std::vector<utils::inf_rational> vals;                          // the current values..
     std::map<const utils::var, utils::u_ptr<la_assertion>> v_asrts; // the assertions (literal to assertions) used for enforcing (negating) assertions..
     std::map<const utils::var, utils::u_ptr<la_eq>> tableau;        // the tableau..
   };

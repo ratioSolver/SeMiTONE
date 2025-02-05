@@ -6,9 +6,9 @@ namespace semitone
 {
     la_theory::la_theory(network &slv) noexcept : theory(slv) {}
 
-    void la_theory::add(bool_expr expr)
+    utils::lit la_theory::add(bool_expr expr, bool bind = false)
     {
-        LOG_DEBUG("adding linear arithmetic constraint: " << expr->get_name());
+        LOG_DEBUG("adding constraint: " << expr->get_name());
         if (auto int_lt_xpr = utils::s_ptr_cast<int_lt>(expr))
         {
             utils::lin lhs = to_lin(int_lt_xpr->left());
@@ -29,6 +29,27 @@ namespace semitone
 
     void la_theory::pop() noexcept
     {
+    }
+
+    size_t la_theory::add_int(std::string_view name, const utils::integer &lb, const utils::integer &ub)
+    {
+        if (auto it = var_map.find(name.data()); it != var_map.end())
+            return it->second;
+        else
+        {
+            size_t id = var_map.size();
+            var_map.emplace(name.data(), id);
+            if (!is_infinite(lb))
+                c_bounds.emplace_back(bound{utils::inf_rational(lb.value()), {}}); // add the lower bound..
+            else
+                c_bounds.emplace_back(bound{utils::inf_rational(utils::rational::negative_infinite), {}}); // add the lower bound..
+            if (!is_infinite(ub))
+                c_bounds.emplace_back(bound{utils::inf_rational(ub.value()), {}}); // add the upper bound..
+            else
+                c_bounds.emplace_back(bound{utils::inf_rational(utils::rational::positive_infinite), {}}); // add the upper bound..
+            vals.push_back(utils::inf_rational(utils::rational::zero));
+            return id;
+        }
     }
 
     size_t la_theory::add_real(std::string_view name, const utils::inf_rational &lb, const utils::inf_rational &ub)
