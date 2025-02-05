@@ -16,9 +16,9 @@ namespace semitone
         auto cnf_expr = ctx.to_cnf(expr); // Convert to CNF
         if (auto and_xpr = utils::s_ptr_cast<and_expr>(cnf_expr))
             for (const auto &arg : and_xpr->args())
-                add_term(arg);
+                add_clause(arg);
         else
-            add_term(cnf_expr);
+            add_clause(cnf_expr);
     }
 
     bool network::propagate() noexcept
@@ -127,38 +127,6 @@ namespace semitone
             reason.emplace_back(std::nullopt);
             return id;
         }
-    }
-
-    void network::add_term(bool_expr expr)
-    {
-        if (auto bool_xpr = utils::s_ptr_cast<bool_var>(expr))
-            add_clause(bool_xpr); // we have a unit clause..
-        else if (auto not_xpr = utils::s_ptr_cast<not_expr>(expr))
-            add_clause(not_xpr); // we have a unit clause..
-        else if (auto or_xpr = utils::s_ptr_cast<or_expr>(expr))
-            add_clause(or_xpr); // we have a clause..
-        else if (auto int_lt_xpr = utils::s_ptr_cast<int_lt>(expr))
-            la.add(ctx.simplify(int_lt_xpr)); // we have a linear arithmetic constraint..
-        else if (auto int_le_xpr = utils::s_ptr_cast<int_le>(expr))
-            la.add(ctx.simplify(int_le_xpr)); // we have a linear arithmetic constraint..
-        else if (auto int_eq_xpr = utils::s_ptr_cast<int_eq>(expr))
-            la.add(ctx.simplify(int_eq_xpr)); // we have a linear arithmetic constraint..
-        else if (auto int_ge_xpr = utils::s_ptr_cast<int_ge>(expr))
-            la.add(ctx.simplify(int_ge_xpr)); // we have a linear arithmetic constraint..
-        else if (auto int_gt_xpr = utils::s_ptr_cast<int_gt>(expr))
-            la.add(ctx.simplify(int_gt_xpr)); // we have a linear arithmetic constraint..
-        else if (auto real_lt_xpr = utils::s_ptr_cast<real_lt>(expr))
-            la.add(ctx.simplify(real_lt_xpr)); // we have a linear arithmetic constraint..
-        else if (auto real_le_xpr = utils::s_ptr_cast<real_le>(expr))
-            la.add(ctx.simplify(real_le_xpr)); // we have a linear arithmetic constraint..
-        else if (auto real_eq_xpr = utils::s_ptr_cast<real_eq>(expr))
-            la.add(ctx.simplify(real_eq_xpr)); // we have a linear arithmetic constraint..
-        else if (auto real_ge_xpr = utils::s_ptr_cast<real_ge>(expr))
-            la.add(ctx.simplify(real_ge_xpr)); // we have a linear arithmetic constraint..
-        else if (auto real_gt_xpr = utils::s_ptr_cast<real_gt>(expr))
-            la.add(ctx.simplify(real_gt_xpr)); // we have a linear arithmetic constraint..
-        else
-            throw std::runtime_error("unexpected expression type");
     }
 
     void network::add_clause(bool_expr expr)

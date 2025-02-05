@@ -72,7 +72,6 @@ namespace semitone
   private:
     [[nodiscard]] size_t add_var(std::string_view name);
 
-    void add_term(bool_expr expr);
     void add_clause(bool_expr expr);
 
     /**

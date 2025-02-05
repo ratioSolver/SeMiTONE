@@ -15,20 +15,21 @@ namespace semitone
   public:
     la_theory(network &slv) noexcept;
 
-    utils::lit add(bool_expr expr, bool bind = false);
+    /**
+     * @brief Create a new linear real arithmetic variable.
+     *
+     * @param lb the lower bound of the new variable.
+     * @param ub the upper bound of the new variable.
+     * @return utils::var the new variable.
+     */
+    [[nodiscard]] utils::var new_var(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+
+    [[nodiscard]] utils::lit add_lt(const utils::lin &&xpr, bool bind = false);
 
     void push() noexcept override;
     void pop() noexcept override;
 
   private:
-    [[nodiscard]] size_t add_int(std::string_view name, const utils::integer &lb = utils::integer::negative_infinite, const utils::integer &ub = utils::integer::positive_infinite);
-    [[nodiscard]] size_t add_real(std::string_view name, const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite));
-
-    [[nodiscard]] utils::lin to_lin(int_expr expr);
-    [[nodiscard]] utils::lin to_lin(real_expr expr);
-
-  private:
-    std::unordered_map<std::string, size_t> var_map;
     /**
      * Represents the bound of a variable and the reason for its existence.
      */
@@ -40,7 +41,7 @@ namespace semitone
 
     std::vector<bound> c_bounds;                                    // the current bounds..
     std::vector<utils::inf_rational> vals;                          // the current values..
-    std::map<const utils::var, utils::u_ptr<la_assertion>> v_asrts; // the assertions (literal to assertions) used for enforcing (negating) assertions..
+    std::map<const utils::var, utils::u_ptr<la_assertion>> v_asrts; // the assertions (literal to assertions) used for enforcing the assertions..
     std::map<const utils::var, utils::u_ptr<la_eq>> tableau;        // the tableau..
   };
 
@@ -57,10 +58,6 @@ namespace semitone
   public:
     la_assertion(const utils::lit b, const utils::var x, const op o, const utils::inf_rational &v) noexcept : b(b), x(x), o(o), v(v) {}
 
-#ifdef ENABLE_API
-    friend json::json to_json(const lra_theory &rhs) noexcept;
-#endif
-
   private:
     const utils::lit b;          // the literal associated to the assertion..
     const utils::var x;          // the numeric variable..
@@ -74,10 +71,6 @@ namespace semitone
 
   public:
     la_eq(const utils::var x, const utils::lin &&l) noexcept : x(x), l(std::move(l)) {}
-
-#ifdef ENABLE_API
-    friend json::json to_json(const lra_theory &rhs) noexcept;
-#endif
 
   private:
     const utils::var x; // the numeric variable..
