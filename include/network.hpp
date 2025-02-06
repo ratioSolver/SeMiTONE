@@ -94,7 +94,7 @@ namespace semitone
      */
     [[nodiscard]] bool add_clause(std::vector<utils::lit> &&lits) noexcept;
 
-    void add_lt(utils::lin &lhs, utils::lin &rhs) noexcept;
+    void add_lt(utils::lin &lhs, utils::lin &rhs);
     [[nodiscard]] utils::lit new_lt(utils::lin &lhs, utils::lin &rhs) noexcept;
     void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
     void add_le(utils::lin &lhs, utils::lin &rhs) noexcept;
@@ -175,5 +175,10 @@ namespace semitone
   private:
     network &net;
     std::vector<utils::lit> lits;
+  };
+  
+  class unsolvable_exception : public std::exception
+  {
+    const char *what() const noexcept override { return "the problem is unsolvable.."; }
   };
 } // namespace semitone

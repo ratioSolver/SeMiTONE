@@ -1,4 +1,5 @@
 #include "la_theory.hpp"
+#include "network.hpp"
 #include <cassert>
 
 namespace semitone
@@ -55,6 +56,71 @@ namespace semitone
         new_row(var, std::move(xpr));
 
         return var;
+    }
+
+    void la_theory::add_lt(utils::lin &lhs, utils::lin &rhs, bool strict)
+    {
+        utils::lin expr = lhs - rhs;
+        // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
+        std::vector<utils::var> vars;
+        vars.reserve(expr.vars.size());
+        for ([[maybe_unused]] const auto &[v, c] : expr.vars)
+            vars.push_back(v);
+        for (const auto &v : vars)
+            if (tableau.find(v) != tableau.cend())
+            {
+                auto c = expr.vars.at(v);
+                expr.vars.erase(v);
+                expr += c * tableau.at(v)->l;
+            }
+
+        switch (expr.vars.size())
+        {
+        case 0: // the expression is a constant..
+            if (expr.known_term >= 0)
+                throw unsolvable_exception(); // the constraint is unsatisfiable..
+            return;                           // the constraint is already satisfied..
+        case 1:
+        { // the expression is a single variable..
+            const auto [v, c] = *expr.vars.cbegin();
+            assert(c != 0);
+            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0) / c; // the right-hand side of the constraint is the division of the negation of the known term minus an infinitesimal by the coefficient..
+            if (c > 0)
+            { // `v` <= `c_right`..
+                if (ub(v) <= c_right)
+                    return; // the constraint is already satisfied..
+                else if (lb(v) > c_right)
+                    throw unsolvable_exception(); // the constraint is unsatisfiable..
+                // we update the upper bound of `v`..
+                c_bounds[ub_index(v)].value = c_right;
+            }
+            else
+            { // `v` >= `c_right`..
+                if (lb(v) >= c_right)
+                    return; // the constraint is already satisfied..
+                else if (ub(v) < c_right)
+                    throw unsolvable_exception(); // the constraint is unsatisfiable..
+                // we update the lower bound of `v`..
+                c_bounds[lb_index(v)].value = c_right;
+            }
+        }
+        break;
+        default:
+        { // the expression is an inequality with multiple variables
+            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0);
+            expr.known_term = utils::rational::zero;
+
+            if (ub(expr) <= c_right)
+                return; // the constraint is already satisfied..
+            else if (lb(expr) > c_right)
+                throw unsolvable_exception(); // the constraint is unsatisfiable..
+
+            // we add a slack variable to the tableau..
+            auto slack = new_slack(std::move(expr));
+            // .. and update its upper bound..
+            c_bounds[ub_index(slack)].value = c_right;
+        }
+        }
     }
 
     void la_theory::propagate(const utils::lit &p) noexcept {}

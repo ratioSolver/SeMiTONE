@@ -83,35 +83,9 @@ namespace semitone
       return val;
     }
 
-    void add_lt(utils::lin &lhs, utils::lin &rhs) noexcept;
-    [[nodiscard]] utils::lit new_lt(utils::lin &lhs, utils::lin &rhs) noexcept;
-    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
-    void add_le(utils::lin &lhs, utils::lin &rhs) noexcept;
-    [[nodiscard]] utils::lit new_le(utils::lin &lhs, utils::lin &rhs) noexcept;
-    void new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
-
-    void add_eq(utils::lin &lhs, utils::lin &rhs) noexcept
-    {
-      add_le(lhs, rhs);
-      add_le(rhs, lhs);
-    }
-    [[nodiscard]] utils::lit new_eq(utils::lin &lhs, utils::lin &rhs) noexcept
-    {
-      auto p = new_le(lhs, rhs);
-      new_le(p, rhs, lhs);
-      return p;
-    }
-    void new_eq(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept
-    {
-      new_le(p, lhs, rhs);
-      new_le(p, rhs, lhs);
-    }
-    void add_ge(utils::lin &lhs, utils::lin &rhs) noexcept { add_le(rhs, lhs); }
-    [[nodiscard]] utils::lit new_ge(utils::lin &lhs, utils::lin &rhs) noexcept { return new_le(rhs, lhs); }
-    void new_ge(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_le(p, rhs, lhs); }
-    void add_gt(utils::lin &lhs, utils::lin &rhs) noexcept { add_lt(rhs, lhs); }
-    [[nodiscard]] utils::lit new_gt(utils::lin &lhs, utils::lin &rhs) noexcept { return new_lt(rhs, lhs); }
-    void new_gt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_lt(p, rhs, lhs); }
+    void add_lt(utils::lin &lhs, utils::lin &rhs, bool strict = false);
+    [[nodiscard]] utils::lit new_lt(utils::lin &lhs, utils::lin &rhs, bool strict = false) noexcept;
+    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict = false) noexcept;
 
   private:
     [[nodiscard]] inline static size_t lb_index(const utils::var v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
