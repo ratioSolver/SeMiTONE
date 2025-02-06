@@ -13,11 +13,13 @@
 namespace semitone
 {
   class clause;
+  class theory;
   class la_theory;
 
   class network
   {
     friend class clause;
+    friend class theory;
 
   public:
     /**
@@ -95,33 +97,24 @@ namespace semitone
     [[nodiscard]] bool add_clause(std::vector<utils::lit> &&lits) noexcept;
 
     void add_lt(utils::lin &lhs, utils::lin &rhs);
-    [[nodiscard]] utils::lit new_lt(utils::lin &lhs, utils::lin &rhs) noexcept;
-    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
     void add_le(utils::lin &lhs, utils::lin &rhs) noexcept;
-    [[nodiscard]] utils::lit new_le(utils::lin &lhs, utils::lin &rhs) noexcept;
-    void new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
-
     void add_eq(utils::lin &lhs, utils::lin &rhs) noexcept
     {
       add_le(lhs, rhs);
       add_le(rhs, lhs);
     }
-    [[nodiscard]] utils::lit new_eq(utils::lin &lhs, utils::lin &rhs) noexcept
-    {
-      auto p = new_le(lhs, rhs);
-      new_le(p, rhs, lhs);
-      return p;
-    }
+    void add_ge(utils::lin &lhs, utils::lin &rhs) noexcept { add_le(rhs, lhs); }
+    void add_gt(utils::lin &lhs, utils::lin &rhs) noexcept { add_lt(rhs, lhs); }
+
+    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
+    void new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
+
     void new_eq(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept
     {
       new_le(p, lhs, rhs);
       new_le(p, rhs, lhs);
     }
-    void add_ge(utils::lin &lhs, utils::lin &rhs) noexcept { add_le(rhs, lhs); }
-    [[nodiscard]] utils::lit new_ge(utils::lin &lhs, utils::lin &rhs) noexcept { return new_le(rhs, lhs); }
     void new_ge(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_le(p, rhs, lhs); }
-    void add_gt(utils::lin &lhs, utils::lin &rhs) noexcept { add_lt(rhs, lhs); }
-    [[nodiscard]] utils::lit new_gt(utils::lin &lhs, utils::lin &rhs) noexcept { return new_lt(rhs, lhs); }
     void new_gt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_lt(p, rhs, lhs); }
 
   private:
@@ -146,8 +139,8 @@ namespace semitone
     std::vector<size_t> trail_lim;     // separator indices for different decision levels in `trail`..
     std::vector<utils::lit> decisions; // the list of decisions in chronological order..
 
-    std::vector<utils::u_ptr<theory>> theories;                                 // all the theories..
-    std::unordered_map<utils::var, std::set<utils::ref_wrapper<theory>>> binds; // for each variable, the theories that depend on it..
+    std::vector<utils::u_ptr<theory>> theories;               // all the theories..
+    std::unordered_map<utils::var, std::set<theory *>> binds; // for each variable, the theories that depend on it..
 
     la_theory &la; // the linear arithmetic theory..
   };
@@ -176,7 +169,7 @@ namespace semitone
     network &net;
     std::vector<utils::lit> lits;
   };
-  
+
   class unsolvable_exception : public std::exception
   {
     const char *what() const noexcept override { return "the problem is unsolvable.."; }

@@ -84,14 +84,13 @@ namespace semitone
     }
 
     void add_lt(utils::lin &lhs, utils::lin &rhs, bool strict = false);
-    [[nodiscard]] utils::lit new_lt(utils::lin &lhs, utils::lin &rhs, bool strict = false) noexcept;
-    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict = false) noexcept;
+    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict = false);
 
   private:
     [[nodiscard]] inline static size_t lb_index(const utils::var v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const utils::var v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
-    void propagate(const utils::lit &p) noexcept override;
+    bool propagate(const utils::lit &p) noexcept override;
 
     void new_row(const utils::var x_i, utils::lin &&xpr) noexcept;
 

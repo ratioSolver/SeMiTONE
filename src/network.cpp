@@ -59,11 +59,9 @@ namespace semitone
     }
 
     void network::add_lt(utils::lin &lhs, utils::lin &rhs) { la.add_lt(lhs, rhs, true); }
-    utils::lit network::new_lt(utils::lin &lhs, utils::lin &rhs) noexcept { return la.new_lt(lhs, rhs, true); }
-    void network::new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { la.new_lt(p, lhs, rhs, true); }
-
     void network::add_le(utils::lin &lhs, utils::lin &rhs) noexcept { la.add_lt(lhs, rhs); }
-    utils::lit network::new_le(utils::lin &lhs, utils::lin &rhs) noexcept { return la.new_lt(lhs, rhs); }
+
+    void network::new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { la.new_lt(p, lhs, rhs, true); }
     void network::new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { la.new_lt(p, lhs, rhs); }
 
     bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
