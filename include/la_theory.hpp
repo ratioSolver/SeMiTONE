@@ -18,7 +18,7 @@ namespace semitone
 
     [[nodiscard]] utils::var new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept;
     [[nodiscard]] utils::var new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept;
-    [[nodiscard]] utils::var new_slack(utils::lin &lin) noexcept;
+    [[nodiscard]] utils::var new_slack(utils::lin &&xpr) noexcept;
 
     /**
      * @brief Returns the current lower bound of variable `v`.
@@ -118,6 +118,8 @@ namespace semitone
     [[nodiscard]] inline static size_t ub_index(const utils::var v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
     void propagate(const utils::lit &p) noexcept override;
+
+    void new_row(const utils::var x_i, utils::lin &&xpr) noexcept;
 
   private:
     std::vector<char> is_int; // the type of the variable..
