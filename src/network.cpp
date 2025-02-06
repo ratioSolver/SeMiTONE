@@ -1,5 +1,6 @@
 #include "network.hpp"
 #include "la_theory.hpp"
+#include <algorithm>
 #include <cassert>
 
 namespace semitone
@@ -22,6 +23,48 @@ namespace semitone
         reason.emplace_back(std::nullopt);
         return x;
     }
+
+    utils::var network::new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_int(lb, ub); }
+    utils::var network::new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_real(lb, ub); }
+
+    bool network::add_clause(std::vector<utils::lit> &&lits) noexcept
+    {
+        assert(decision_level() == 0);
+        // we check if the clause is already satisfied and filter out false/duplicate literals..
+        std::sort(lits.begin(), lits.end()); // we sort the literals to easily remove duplicates..
+        utils::lit p;
+        size_t j = 0;
+        for (auto it = lits.cbegin(); it != lits.cend(); ++it)
+        {
+            if (value(*it) == utils::True || *it == !p)
+                return true; // the clause is already satisfied or is a tautology..
+            if (value(*it) != utils::False && *it != p)
+            { // we include this literal in the clause..
+                p = *it;
+                lits[j++] = p;
+            }
+        }
+        lits.resize(j);
+
+        switch (lits.size())
+        {
+        case 0:
+            return false; // the clause is unsatisfiable..
+        case 1:
+            return enqueue(lits[0]); // the clause is unit under the current assignment..
+        default:
+            clauses.push_back(new clause(*this, std::move(lits))); // we add the clause to the problem..
+            return true;
+        }
+    }
+
+    void network::add_lt(utils::lin &lhs, utils::lin &rhs) noexcept { la.add_lt(lhs, rhs); }
+    utils::lit network::new_lt(utils::lin &lhs, utils::lin &rhs) noexcept { return la.new_lt(lhs, rhs); }
+    void network::new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { la.new_lt(p, lhs, rhs); }
+
+    void network::add_le(utils::lin &lhs, utils::lin &rhs) noexcept { la.add_le(lhs, rhs); }
+    utils::lit network::new_le(utils::lin &lhs, utils::lin &rhs) noexcept { return la.new_le(lhs, rhs); }
+    void network::new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { la.new_le(p, lhs, rhs); }
 
     bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
     {

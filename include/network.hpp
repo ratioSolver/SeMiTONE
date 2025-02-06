@@ -3,6 +3,8 @@
 #include "theory.hpp"
 #include "memory.hpp"
 #include "bool.hpp"
+#include "lin.hpp"
+#include "inf_rational.hpp"
 #include <optional>
 #include <queue>
 #include <unordered_map>
@@ -30,6 +32,9 @@ namespace semitone
      * @return The new variable.
      */
     [[nodiscard]] utils::var new_var() noexcept;
+
+    [[nodiscard]] utils::var new_int(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    [[nodiscard]] utils::var new_real(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
 
     /**
      * @brief Return the value of a variable.
@@ -80,6 +85,44 @@ namespace semitone
       theories.push_back(th);
       return *th;
     }
+
+    /**
+     * @brief Add a new clause to the problem returning `false` if some trivial inconsistency is detected.
+     *
+     * @param lits the literals of the clause.
+     * @return `true` if the clause is consistent, `false` otherwise.
+     */
+    [[nodiscard]] bool add_clause(std::vector<utils::lit> &&lits) noexcept;
+
+    void add_lt(utils::lin &lhs, utils::lin &rhs) noexcept;
+    [[nodiscard]] utils::lit new_lt(utils::lin &lhs, utils::lin &rhs) noexcept;
+    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
+    void add_le(utils::lin &lhs, utils::lin &rhs) noexcept;
+    [[nodiscard]] utils::lit new_le(utils::lin &lhs, utils::lin &rhs) noexcept;
+    void new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
+
+    void add_eq(utils::lin &lhs, utils::lin &rhs) noexcept
+    {
+      add_le(lhs, rhs);
+      add_le(rhs, lhs);
+    }
+    [[nodiscard]] utils::lit new_eq(utils::lin &lhs, utils::lin &rhs) noexcept
+    {
+      auto p = new_le(lhs, rhs);
+      new_le(p, rhs, lhs);
+      return p;
+    }
+    void new_eq(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept
+    {
+      new_le(p, lhs, rhs);
+      new_le(p, rhs, lhs);
+    }
+    void add_ge(utils::lin &lhs, utils::lin &rhs) noexcept { add_le(rhs, lhs); }
+    [[nodiscard]] utils::lit new_ge(utils::lin &lhs, utils::lin &rhs) noexcept { return new_le(rhs, lhs); }
+    void new_ge(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_le(p, rhs, lhs); }
+    void add_gt(utils::lin &lhs, utils::lin &rhs) noexcept { add_lt(rhs, lhs); }
+    [[nodiscard]] utils::lit new_gt(utils::lin &lhs, utils::lin &rhs) noexcept { return new_lt(rhs, lhs); }
+    void new_gt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_lt(p, rhs, lhs); }
 
   private:
     /**
