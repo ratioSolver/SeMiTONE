@@ -117,6 +117,42 @@ namespace semitone
     void new_ge(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_le(p, rhs, lhs); }
     void new_gt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_lt(p, rhs, lhs); }
 
+    /**
+     * @brief Assume the literal `p` and propagate the current set of assumptions returning `false` if a conflict is detected.
+     *
+     * @param p the literal to assume.
+     * @return bool `true` if the assumption is consistent, `false` otherwise.
+     */
+    [[nodiscard]] bool assume(const utils::lit &p) noexcept;
+
+    /**
+     * @brief Simplify the current set of assumptions.
+     *
+     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
+     */
+    [[nodiscard]] bool simplify_db() noexcept;
+
+    /**
+     * @brief Check whether the current set of assumptions is satisfiable.
+     *
+     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
+     */
+    [[nodiscard]] bool propagate() noexcept;
+
+    /**
+     * @brief Advances to the next state.
+     *
+     * This function advances the state to the next state by propagating the negation of the current assumptions.
+     *
+     * @return true if the state was successfully advanced, false otherwise.
+     */
+    [[nodiscard]] bool next() noexcept;
+
+    /**
+     * @brief Pop the last decision from the trail.
+     */
+    void pop() noexcept;
+
   private:
     /**
      * @brief Enqueue a literal in the assignment.
@@ -126,6 +162,27 @@ namespace semitone
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
     [[nodiscard]] bool enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c = std::nullopt) noexcept;
+
+    /**
+     * @brief Pop the last literal from the trail.
+     */
+    void pop_one() noexcept;
+
+    /**
+     * @brief Analyze the conflict `cnfl` and return the learnt clause in `out_learnt` and the backtracking level in `out_btlevel`.
+     *
+     * @param cnfl the conflict to analyze.
+     * @param out_learnt the learnt clause.
+     * @param out_btlevel the backtracking level.
+     */
+    void analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept;
+
+    /**
+     * @brief Record the learnt clause `lits`.
+     *
+     * @param lits the learnt clause.
+     */
+    void record(std::vector<utils::lit> &&lits) noexcept;
 
   private:
     std::vector<utils::u_ptr<clause>> clauses;                     // the collection of problem clauses..
@@ -150,6 +207,8 @@ namespace semitone
    */
   class clause final
   {
+    friend class network;
+
   public:
     /**
      * @brief Construct a new clause object given the `lits` literals.

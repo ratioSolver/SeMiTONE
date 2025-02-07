@@ -83,14 +83,47 @@ namespace semitone
       return val;
     }
 
+    /**
+     * @brief Adds a less-than constraint between two linear expressions.
+     *
+     * This function adds a less-than constraint between the left-hand side (lhs)
+     * and the right-hand side (rhs) linear expressions. The constraint can be
+     * either strict or non-strict based on the value of the `strict` parameter.
+     *
+     * @param lhs The left-hand side linear expression.
+     * @param rhs The right-hand side linear expression.
+     * @param strict If true, the constraint is strict (lhs < rhs). If false, the
+     *               constraint is non-strict (lhs <= rhs). Default is false.
+     */
     void add_lt(utils::lin &lhs, utils::lin &rhs, bool strict = false);
+    /**
+     * @brief Adds a less-than constraint between two linear expressions, with a
+     *       literal as a guard.
+     *
+     * This function adds a less-than constraint between the left-hand side (lhs)
+     * and the right-hand side (rhs) linear expressions. The constraint can be
+     * either strict or non-strict based on the value of the `strict` parameter.
+     * The constraint is guarded by the literal `p`.
+     *
+     * @param p The guard literal.
+     * @param lhs The left-hand side linear expression.
+     * @param rhs The right-hand side linear expression.
+     * @param strict If true, the constraint is strict (lhs < rhs). If false, the
+     *              constraint is non-strict (lhs <= rhs). Default is false.
+     */
     void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict = false);
 
   private:
     [[nodiscard]] inline static size_t lb_index(const utils::var v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const utils::var v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
 
-    bool propagate(const utils::lit &p) noexcept override;
+    [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
+    [[nodiscard]] bool check() noexcept override;
+    void push() noexcept override;
+    void pop() noexcept override;
+
+    [[nodiscard]] bool assert_lower(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
+    [[nodiscard]] bool assert_upper(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
 
     void new_row(const utils::var x_i, utils::lin &&xpr) noexcept;
 
