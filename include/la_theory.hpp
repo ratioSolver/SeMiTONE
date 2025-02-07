@@ -122,9 +122,49 @@ namespace semitone
     void push() noexcept override;
     void pop() noexcept override;
 
+    /**
+     * @brief Returns whether the variable `v` is basic.
+     *
+     * @param v the variable to check.
+     */
+    [[nodiscard]] bool is_basic(const utils::var v) const noexcept { return tableau.count(v); }
+
     [[nodiscard]] bool assert_lower(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
     [[nodiscard]] bool assert_upper(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept;
 
+    /**
+     * @brief Updates the value of the non-basic variable `x_i` to `v` and adjusts the value of all the other basic variables so that all the equations remain satisfied.
+     *
+     * @param x_i the variable to update.
+     * @param v the new value of the variable.
+     */
+    void update(const utils::var x_i, const utils::inf_rational &v) noexcept;
+
+    /**
+     * @brief Pivots the basic variable `x_i` with the non-basic variable `x_j` and updates the values of all the other basic variables so that all the equations remain satisfied.
+     *
+     * @param x_i the basic variable to pivot.
+     * @param x_j the non-basic variable to pivot.
+     * @param v the new value of the non-basic variable.
+     */
+    void pivot_and_update(const utils::var x_i, const utils::var x_j, const utils::inf_rational &v) noexcept;
+
+    /**
+     * @brief Pivots the basic variable `x_i` with the non-basic variable `x_j`.
+     *
+     * @param x_i the basic variable to pivot.
+     * @param x_j the non-basic variable to pivot.
+     */
+    void pivot(const utils::var x_i, const utils::var x_j) noexcept;
+
+    /**
+     * @brief Adds a new row `x_i = xpr` to the tableau.
+     *
+     * This function adds a new row to the tableau with the variable `x_i` as the basic variable and the linear expression `xpr` as the right-hand side of the equation.
+     *
+     * @param x_i the basic variable.
+     * @param xpr the linear expression.
+     */
     void new_row(const utils::var x_i, utils::lin &&xpr) noexcept;
 
   private:
@@ -137,12 +177,13 @@ namespace semitone
       utils::inf_rational value;      // the value of the bound..
       std::vector<utils::lit> reason; // the reason for the value..
     };
-    std::vector<bound> c_bounds;                                          // the current bounds..
-    std::vector<utils::inf_rational> vals;                                // the current values..
-    std::map<const utils::var, utils::u_ptr<la_assertion>> v_asrts;       // the assertions (literal to assertions) used for enforcing (negating) assertions..
-    std::map<const utils::var, utils::u_ptr<la_eq>> tableau;              // the tableau..
-    std::vector<std::vector<utils::ref_wrapper<la_assertion>>> a_watches; // for each variable `v`, a list of assertions watching `v`..
-    std::vector<std::set<utils::var>> t_watches;                          // for each variable `v`, a list of tableau rows watching `v`..
+    std::vector<bound> c_bounds;                                              // the current bounds..
+    std::vector<utils::inf_rational> vals;                                    // the current values..
+    std::map<const utils::var, std::set<utils::u_ptr<la_assertion>>> v_asrts; // the assertions (literal to assertions) used for enforcing (negating) assertions..
+    std::map<const utils::var, utils::u_ptr<la_eq>> tableau;                  // the tableau..
+    std::vector<std::vector<utils::ref_wrapper<la_assertion>>> a_watches;     // for each variable `v`, a list of assertions watching `v`..
+    std::vector<std::set<utils::var>> t_watches;                              // for each variable `v`, a list of tableau rows watching `v`..
+    std::vector<std::map<size_t, bound>> layers;                              // we store the updated bounds..
   };
 
   enum op

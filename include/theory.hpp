@@ -25,6 +25,11 @@ namespace semitone
      */
     void bind(const utils::var &v) noexcept;
 
+    /**
+     * @brief Records a new clause which might be inferred by the theory during propagation.
+     */
+    void record(std::vector<utils::lit> &&clause) noexcept;
+
   private:
     /**
      * @brief Asks the theory to perform propagation after the given literal has been assigned.
