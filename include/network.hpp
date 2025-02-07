@@ -218,6 +218,8 @@ namespace semitone
 
     [[nodiscard]] std::vector<utils::lit> get_reason(const utils::lit &p) const noexcept;
 
+    friend std::ostream &operator<<(std::ostream &os, const clause &c);
+
   private:
     network &net;
     std::vector<utils::lit> lits;
@@ -227,4 +229,6 @@ namespace semitone
   {
     const char *what() const noexcept override { return "the problem is unsolvable.."; }
   };
+
+  [[nodiscard]] std::ostream &operator<<(std::ostream &os, const clause &c);
 } // namespace semitone

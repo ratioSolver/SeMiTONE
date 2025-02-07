@@ -52,11 +52,14 @@ namespace semitone
         case 0:
             throw unsolvable_exception(); // the problem is unsolvable..
         case 1:
+            LOG_TRACE("( " << to_string(lits[0]) << " )");
             if (!enqueue(lits[0]))            // the clause is unit under the current assignment..
                 throw unsolvable_exception(); // the problem is unsolvable..
             break;
         default:
-            clauses.emplace_back(new clause(*this, std::move(lits))); // we add the clause to the problem..
+            auto c = new clause(*this, std::move(lits));
+            LOG_TRACE(*c);
+            clauses.emplace_back(c); // we add the clause to the problem..
         }
     }
 
@@ -291,6 +294,7 @@ namespace semitone
 
             auto l0 = lits[0];
             auto c = new clause(*this, std::move(lits));
+            LOG_TRACE(*c);
             [[maybe_unused]] bool e = enqueue(l0, *c);
             assert(e);
             clauses.emplace_back(c);
@@ -330,7 +334,7 @@ namespace semitone
 
         // clause is unit under assignment..
         net.watches[index(p)].emplace_back(*this);
-        return net.enqueue(lits[0]);
+        return net.enqueue(lits[0], *this);
     }
 
     bool clause::simplify() noexcept
@@ -361,5 +365,13 @@ namespace semitone
             r.push_back(!lits[i]);
         }
         return r;
+    }
+
+    [[nodiscard]] std::ostream &operator<<(std::ostream &os, const clause &c)
+    {
+        os << "(" << to_string(c.lits[0]);
+        for (size_t i = 1; i < c.lits.size(); ++i)
+            os << " ∨ " << to_string(c.lits[i]);
+        return os << ")";
     }
 } // namespace semitone
