@@ -144,11 +144,11 @@ namespace semitone
         switch (expr.vars.size())
         {
         case 0: // the expression is a constant..
-            if (strict && expr.known_term >= 0 && !net.add_clause({!p}))
-                throw unsolvable_exception(); // the problem is unsatisfiable..
-            else if (expr.known_term > 0 && !net.add_clause({!p}))
-                throw unsolvable_exception(); // the problem is unsatisfiable..
-            return;                           // the constraint is already satisfied..
+            if (strict && expr.known_term >= 0)
+                net.add_clause({!p});
+            else if (expr.known_term > 0)
+                net.add_clause({!p});
+            return; // the constraint is already satisfied..
         case 1:
         { // the expression is a single variable..
             const auto [v, c] = *expr.vars.cbegin();
@@ -158,8 +158,8 @@ namespace semitone
             { // `v` <= `c_right`..
                 if (ub(v) <= c_right)
                     return; // the constraint is already satisfied..
-                else if (lb(v) > c_right && !net.add_clause({!p}))
-                    throw unsolvable_exception(); // the problem is unsatisfiable..
+                else if (lb(v) > c_right)
+                    net.add_clause({!p});
                 v_asrts.emplace(variable(p), new la_assertion(p, v, op::leq, c_right));
                 bind(variable(p)); // we get notified when the variable `v` changes..
             }
@@ -167,8 +167,8 @@ namespace semitone
             { // `v` >= `c_right`..
                 if (lb(v) >= c_right)
                     return; // the constraint is already satisfied..
-                else if (ub(v) < c_right && !net.add_clause({!p}))
-                    throw unsolvable_exception(); // the problem is unsatisfiable..
+                else if (ub(v) < c_right)
+                    net.add_clause({!p});
                 v_asrts.emplace(variable(p), new la_assertion(p, v, op::geq, c_right));
                 bind(variable(p)); // we get notified when the variable `v` changes..
             }
@@ -181,8 +181,8 @@ namespace semitone
 
             if (ub(expr) <= c_right)
                 return; // the constraint is already satisfied..
-            else if (lb(expr) > c_right && !net.add_clause({!p}))
-                throw unsolvable_exception(); // the problem is unsatisfiable..
+            else if (lb(expr) > c_right)
+                net.add_clause({!p});
 
             // we add a slack variable to the tableau..
             auto slack = new_slack(std::move(expr));

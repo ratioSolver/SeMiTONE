@@ -28,7 +28,7 @@ namespace semitone
     utils::var network::new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_int(lb, ub); }
     utils::var network::new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_real(lb, ub); }
 
-    bool network::add_clause(std::vector<utils::lit> &&lits) noexcept
+    void network::add_clause(std::vector<utils::lit> &&lits)
     {
         assert(decision_level() == 0);
         // we check if the clause is already satisfied and filter out false/duplicate literals..
@@ -38,7 +38,7 @@ namespace semitone
         for (auto it = lits.cbegin(); it != lits.cend(); ++it)
         {
             if (value(*it) == utils::True || *it == !p)
-                return true; // the clause is already satisfied or is a tautology..
+                return; // the clause is already satisfied or is a tautology..
             if (value(*it) != utils::False && *it != p)
             { // we include this literal in the clause..
                 p = *it;
@@ -50,12 +50,13 @@ namespace semitone
         switch (lits.size())
         {
         case 0:
-            return false; // the clause is unsatisfiable..
+            throw unsolvable_exception(); // the problem is unsolvable..
         case 1:
-            return enqueue(lits[0]); // the clause is unit under the current assignment..
+            if (!enqueue(lits[0]))            // the clause is unit under the current assignment..
+                throw unsolvable_exception(); // the problem is unsolvable..
+            break;
         default:
             clauses.emplace_back(new clause(*this, std::move(lits))); // we add the clause to the problem..
-            return true;
         }
     }
 
@@ -140,7 +141,18 @@ namespace semitone
                             return false;
 
                         // we analyze the theory's conflict, create a no-good from the analysis and backjump..
-                        th->analyze_and_backjump();
+                        clause cnfl_cl(*this, std::move(th->cnfl));
+
+                        // .. and we analyze the conflict..
+                        std::vector<utils::lit> no_good;
+                        size_t bt_level = 0;
+                        analyze(cnfl_cl, no_good, bt_level);
+
+                        // we backjump..
+                        while (decision_level() > bt_level)
+                            pop();
+                        // .. and record the no-good..
+                        record(std::move(no_good));
                         goto main_loop;
                     }
                 if (decision_level() == 0) // since this variable will no more be assigned, we can perform some cleanings..
@@ -168,7 +180,18 @@ namespace semitone
                 }
 
                 // we analyze the theory's conflict, create a no-good from the analysis and backjump..
-                th->analyze_and_backjump();
+                clause cnfl_cl(*this, std::move(th->cnfl));
+
+                // .. and we analyze the conflict..
+                std::vector<utils::lit> no_good;
+                size_t bt_level = 0;
+                analyze(cnfl_cl, no_good, bt_level);
+
+                // we backjump..
+                while (decision_level() > bt_level)
+                    pop();
+                // .. and record the no-good..
+                record(std::move(no_good));
                 goto main_loop;
             }
 
@@ -274,7 +297,7 @@ namespace semitone
         }
     }
 
-    clause::clause(network &net, std::vector<utils::lit> &&lits) noexcept : net(net), lits(std::move(lits))
+    clause::clause(network &net, std::vector<utils::lit> &&ls) noexcept : net(net), lits(std::move(ls))
     {
         assert(lits.size() >= 2);
         net.watches[index(!lits[0])].emplace_back(*this);

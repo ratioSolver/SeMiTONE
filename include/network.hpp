@@ -88,13 +88,7 @@ namespace semitone
       return *th;
     }
 
-    /**
-     * @brief Add a new clause to the problem returning `false` if some trivial inconsistency is detected.
-     *
-     * @param lits the literals of the clause.
-     * @return `true` if the clause is consistent, `false` otherwise.
-     */
-    [[nodiscard]] bool add_clause(std::vector<utils::lit> &&lits) noexcept;
+    void add_clause(std::vector<utils::lit> &&lits);
 
     void add_lt(utils::lin &lhs, utils::lin &rhs);
     void add_le(utils::lin &lhs, utils::lin &rhs) noexcept;
@@ -211,10 +205,10 @@ namespace semitone
 
   public:
     /**
-     * @brief Construct a new clause object given the `lits` literals.
+     * @brief Construct a new clause object given the `ls` literals.
      *
      * @param net the sat core.
-     * @param lits the literals of the clause.
+     * @param ls the literals of the clause.
      */
     clause(network &net, std::vector<utils::lit> &&ls) noexcept;
 

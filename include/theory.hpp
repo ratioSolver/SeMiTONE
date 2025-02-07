@@ -55,12 +55,6 @@ namespace semitone
      */
     virtual void pop() noexcept = 0;
 
-  private:
-    /**
-     * @brief Analyzes the current conflict and backjumps to the proper decision level.
-     */
-    void analyze_and_backjump() noexcept;
-
   protected:
     network &net;
     std::vector<utils::lit> cnfl;
