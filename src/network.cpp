@@ -26,7 +26,9 @@ namespace semitone
     }
 
     utils::var network::new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_int(lb, ub); }
+    utils::var network::new_int(utils::lin &&xpr) noexcept { return la.new_int(std::move(xpr)); }
     utils::var network::new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_real(lb, ub); }
+    utils::var network::new_real(utils::lin &&xpr) noexcept { return la.new_real(std::move(xpr)); }
 
     void network::add_clause(std::vector<utils::lit> &&lits)
     {
@@ -63,11 +65,11 @@ namespace semitone
         }
     }
 
-    void network::add_lt(utils::lin &lhs, utils::lin &rhs) { la.add_lt(lhs, rhs, true); }
-    void network::add_le(utils::lin &lhs, utils::lin &rhs) noexcept { la.add_lt(lhs, rhs); }
+    void network::add_lt(utils::lin &&lhs, utils::lin &&rhs) { la.add_lt(lhs, rhs, true); }
+    void network::add_le(utils::lin &&lhs, utils::lin &&rhs) noexcept { la.add_lt(lhs, rhs); }
 
-    void network::new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { la.new_lt(p, lhs, rhs, true); }
-    void network::new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { la.new_lt(p, lhs, rhs); }
+    void network::new_lt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(p, lhs, rhs, true); }
+    void network::new_le(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(p, lhs, rhs); }
 
     bool network::assume(const utils::lit &p) noexcept
     {
@@ -215,6 +217,7 @@ namespace semitone
 
     bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
     {
+        LOG_TRACE(to_string(p) << "@" << decision_level());
         if (auto val = value(p); val != utils::Undefined)
             return val;
         assigns[variable(p)] = sign(p);

@@ -35,8 +35,36 @@ namespace semitone
      */
     [[nodiscard]] utils::var new_var() noexcept;
 
+    /**
+     * @brief Creates a new integer variable with optional lower and upper bounds.
+     *
+     * @param lb The lower bound of the integer variable. Defaults to negative infinity.
+     * @param ub The upper bound of the integer variable. Defaults to positive infinity.
+     * @return utils::var The newly created integer variable.
+     */
     [[nodiscard]] utils::var new_int(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    /**
+     * @brief Creates a new integer variable with the given linear expression.
+     *
+     * @param xpr The linear expression.
+     * @return utils::var The newly created integer variable.
+     */
+    [[nodiscard]] utils::var new_int(utils::lin &&xpr) noexcept;
+    /**
+     * @brief Creates a new real variable with optional lower and upper bounds.
+     *
+     * @param lb The lower bound of the real variable. Defaults to negative infinity.
+     * @param ub The upper bound of the real variable. Defaults to positive infinity.
+     * @return utils::var The newly created real variable.
+     */
     [[nodiscard]] utils::var new_real(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    /**
+     * @brief Creates a new real variable with the given linear expression.
+     *
+     * @param xpr The linear expression.
+     * @return utils::var The newly created real variable.
+     */
+    [[nodiscard]] utils::var new_real(utils::lin &&xpr) noexcept;
 
     /**
      * @brief Return the value of a variable.
@@ -90,26 +118,26 @@ namespace semitone
 
     void add_clause(std::vector<utils::lit> &&lits);
 
-    void add_lt(utils::lin &lhs, utils::lin &rhs);
-    void add_le(utils::lin &lhs, utils::lin &rhs) noexcept;
-    void add_eq(utils::lin &lhs, utils::lin &rhs) noexcept
+    void add_lt(utils::lin &&lhs, utils::lin &&rhs);
+    void add_le(utils::lin &&lhs, utils::lin &&rhs) noexcept;
+    void add_eq(utils::lin &&lhs, utils::lin &&rhs) noexcept
     {
-      add_le(lhs, rhs);
-      add_le(rhs, lhs);
+      add_le(utils::lin(lhs), utils::lin(rhs));
+      add_le(std::move(rhs), std::move(lhs));
     }
-    void add_ge(utils::lin &lhs, utils::lin &rhs) noexcept { add_le(rhs, lhs); }
-    void add_gt(utils::lin &lhs, utils::lin &rhs) noexcept { add_lt(rhs, lhs); }
+    void add_ge(utils::lin &&lhs, utils::lin &&rhs) noexcept { add_le(utils::lin(rhs), utils::lin(lhs)); }
+    void add_gt(utils::lin &&lhs, utils::lin &&rhs) noexcept { add_lt(std::move(rhs), std::move(lhs)); }
 
-    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
-    void new_le(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept;
+    void new_lt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept;
+    void new_le(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept;
 
-    void new_eq(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept
+    void new_eq(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept
     {
-      new_le(p, lhs, rhs);
-      new_le(p, rhs, lhs);
+      new_le(utils::lit(p), utils::lin(lhs), utils::lin(rhs));
+      new_le(std::move(p), std::move(rhs), std::move(lhs));
     }
-    void new_ge(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_le(p, rhs, lhs); }
-    void new_gt(utils::lit &p, utils::lin &lhs, utils::lin &rhs) noexcept { new_lt(p, rhs, lhs); }
+    void new_ge(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { new_le(std::move(p), std::move(rhs), std::move(lhs)); }
+    void new_gt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { new_lt(std::move(p), std::move(rhs), std::move(lhs)); }
 
     /**
      * @brief Assume the literal `p` and propagate the current set of assumptions returning `false` if a conflict is detected.

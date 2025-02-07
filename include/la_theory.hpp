@@ -17,8 +17,9 @@ namespace semitone
     la_theory(network &net) noexcept;
 
     [[nodiscard]] utils::var new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept;
+    [[nodiscard]] utils::var new_int(utils::lin &&xpr) noexcept;
     [[nodiscard]] utils::var new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept;
-    [[nodiscard]] utils::var new_slack(utils::lin &&xpr) noexcept;
+    [[nodiscard]] utils::var new_real(utils::lin &&xpr) noexcept;
 
     /**
      * @brief Returns the current lower bound of variable `v`.

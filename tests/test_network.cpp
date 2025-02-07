@@ -62,9 +62,48 @@ void test_no_good()
     assert(assm);
 }
 
+void test_net()
+{
+    semitone::network net;
+
+    auto x = net.new_real();
+    auto y = net.new_real();
+    auto s1 = net.new_real(utils::lin(x, -utils::rational::one) + utils::lin(y, utils::rational::one));
+    auto s2 = net.new_real(utils::lin(x, utils::rational::one) + utils::lin(y, utils::rational::one));
+
+    // x <= -4
+    auto x_le_m4 = net.new_var();
+    net.new_le(utils::lit(x_le_m4), utils::lin(x, utils::rational::one), utils::lin(utils::rational(-4)));
+    // x >= -8
+    auto x_ge_m8 = net.new_var();
+    net.new_le(utils::lit(x_ge_m8), utils::lin(utils::rational(-8)), utils::lin(x, utils::rational::one));
+    // s1 <= 1
+    auto s1_le_1 = net.new_var();
+    net.new_le(utils::lit(s1_le_1), utils::lin(s1, utils::rational::one), utils::lin(utils::rational::one));
+    // s2 >= -3
+    auto s2_geq_m3 = net.new_var();
+    net.new_le(utils::lit(s2_geq_m3), utils::lin(utils::rational(-3)), utils::lin(s2, utils::rational::one));
+
+    bool prop = net.propagate();
+    assert(prop);
+
+    auto a = net.assume(utils::lit(x_le_m4));
+    assert(a);
+    a = net.assume(utils::lit(x_ge_m8));
+    assert(a);
+    a = net.assume(utils::lit(s1_le_1));
+    assert(a);
+    a = net.assume(utils::lit(s2_geq_m3));
+    assert(a);
+    assert(net.value(s2_geq_m3) == utils::False);
+}
+
 int main()
 {
     test_network0();
     test_no_good();
+
+    test_net();
+
     return 0;
 }

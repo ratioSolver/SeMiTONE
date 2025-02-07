@@ -1,5 +1,6 @@
 #include "la_theory.hpp"
 #include "network.hpp"
+#include "logging.hpp"
 #include <algorithm>
 #include <cassert>
 
@@ -20,6 +21,32 @@ namespace semitone
         return var;
     }
 
+    utils::var la_theory::new_int(utils::lin &&xpr) noexcept
+    {
+        auto var = vals.size();
+        is_int.push_back(true);
+
+        utils::inf_rational val(xpr.known_term), lb(xpr.known_term), ub(xpr.known_term);
+        std::vector<utils::lit> lb_reason, ub_reason;
+        for (const auto &[v, c] : xpr.vars)
+        {
+            val += c * vals[v];
+            lb += (is_positive(c) ? c_bounds[lb_index(v)].value : c_bounds[ub_index(v)].value) * c;
+            lb_reason.insert(lb_reason.end(), c_bounds[lb_index(v)].reason.cbegin(), c_bounds[lb_index(v)].reason.cend());
+            ub += (is_positive(c) ? c_bounds[ub_index(v)].value : c_bounds[lb_index(v)].value) * c;
+            ub_reason.insert(ub_reason.end(), c_bounds[ub_index(v)].reason.cbegin(), c_bounds[ub_index(v)].reason.cend());
+        }
+        c_bounds.emplace_back(bound{lb, std::move(lb_reason)});
+        c_bounds.emplace_back(bound{ub, std::move(ub_reason)});
+        vals.push_back(val);
+        a_watches.emplace_back();
+        t_watches.emplace_back();
+
+        new_row(var, std::move(xpr));
+
+        return var;
+    }
+
     utils::var la_theory::new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept
     {
         assert(lb < ub);
@@ -33,7 +60,7 @@ namespace semitone
         return var;
     }
 
-    utils::var la_theory::new_slack(utils::lin &&xpr) noexcept
+    utils::var la_theory::new_real(utils::lin &&xpr) noexcept
     {
         auto var = vals.size();
         is_int.push_back(false);
@@ -62,18 +89,6 @@ namespace semitone
     void la_theory::add_lt(utils::lin &lhs, utils::lin &rhs, bool strict)
     {
         utils::lin expr = lhs - rhs;
-        // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
-        std::vector<utils::var> vars;
-        vars.reserve(expr.vars.size());
-        for ([[maybe_unused]] const auto &[v, c] : expr.vars)
-            vars.push_back(v);
-        for (const auto &v : vars)
-            if (tableau.find(v) != tableau.cend())
-            {
-                auto c = expr.vars.at(v);
-                expr.vars.erase(v);
-                expr += c * tableau.at(v)->l;
-            }
 
         switch (expr.vars.size())
         {
@@ -95,7 +110,8 @@ namespace semitone
                 else if (lb(v) > c_right)
                     throw unsolvable_exception(); // the problem is unsatisfiable..
                 // we update the upper bound of `v`..
-                c_bounds[ub_index(v)].value = c_right;
+                LOG_TRACE("x" << std::to_string(v) << " <= " << to_string(c_right));
+                c_bounds[ub_index(v)] = {c_right, {}};
             }
             else
             { // `v` >= `c_right`..
@@ -104,24 +120,78 @@ namespace semitone
                 else if (ub(v) < c_right)
                     throw unsolvable_exception(); // the problem is unsatisfiable..
                 // we update the lower bound of `v`..
-                c_bounds[lb_index(v)].value = c_right;
+                LOG_TRACE("x" << std::to_string(v) << " >= " << to_string(c_right));
+                c_bounds[lb_index(v)] = {c_right, {}};
             }
+            return;
         }
-        break;
         default:
-        { // the expression is an inequality with multiple variables
-            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0);
-            expr.known_term = utils::rational::zero;
+        {
+            // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
+            std::vector<utils::var> vars;
+            vars.reserve(expr.vars.size());
+            for ([[maybe_unused]] const auto &[v, c] : expr.vars)
+                vars.push_back(v);
+            for (const auto &v : vars)
+                if (tableau.find(v) != tableau.cend())
+                {
+                    auto c = expr.vars.at(v);
+                    expr.vars.erase(v);
+                    expr += c * tableau.at(v)->l;
+                }
 
-            if (ub(expr) <= c_right)
-                return; // the constraint is already satisfied..
-            else if (lb(expr) > c_right)
-                throw unsolvable_exception(); // the problem is unsatisfiable..
+            switch (expr.vars.size())
+            {
+            case 0: // the expression is a constant..
+                if (strict && expr.known_term >= 0)
+                    throw unsolvable_exception(); // the problem is unsatisfiable..
+                else if (expr.known_term > 0)
+                    throw unsolvable_exception(); // the problem is unsatisfiable..
+                return;                           // the constraint is already satisfied..
+            case 1:
+            { // the expression is a single variable..
+                const auto [v, c] = *expr.vars.cbegin();
+                assert(c != 0);
+                const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0) / c; // the right-hand side of the constraint is the division of the negation of the known term minus an infinitesimal by the coefficient..
+                if (c > 0)
+                { // `v` <= `c_right`..
+                    if (ub(v) <= c_right)
+                        return; // the constraint is already satisfied..
+                    else if (lb(v) > c_right)
+                        throw unsolvable_exception(); // the problem is unsatisfiable..
+                    // we update the upper bound of `v`..
+                    LOG_TRACE("x" << std::to_string(v) << " <= " << to_string(c_right));
+                    c_bounds[ub_index(v)] = {c_right, {}};
+                }
+                else
+                { // `v` >= `c_right`..
+                    if (lb(v) >= c_right)
+                        return; // the constraint is already satisfied..
+                    else if (ub(v) < c_right)
+                        throw unsolvable_exception(); // the problem is unsatisfiable..
+                    // we update the lower bound of `v`..
+                    LOG_TRACE("x" << std::to_string(v) << " >= " << to_string(c_right));
+                    c_bounds[lb_index(v)] = {c_right, {}};
+                }
+            }
+            break;
+            default:
+            { // the expression is an inequality with multiple variables
+                const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0);
+                expr.known_term = utils::rational::zero;
 
-            // we add a slack variable to the tableau..
-            auto slack = new_slack(std::move(expr));
-            // .. and update its upper bound..
-            c_bounds[ub_index(slack)].value = c_right;
+                if (ub(expr) <= c_right)
+                    return; // the constraint is already satisfied..
+                else if (lb(expr) > c_right)
+                    throw unsolvable_exception(); // the problem is unsatisfiable..
+
+                // we add a slack variable to the tableau..
+                auto slack = new_real(std::move(expr));
+                // .. and update its upper bound..
+                LOG_TRACE("x" << std::to_string(slack) << " <= " << to_string(c_right));
+                c_bounds[ub_index(slack)] = {c_right, {}};
+            }
+            }
         }
         }
     }
@@ -129,27 +199,15 @@ namespace semitone
     void la_theory::new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict)
     {
         utils::lin expr = lhs - rhs;
-        // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
-        std::vector<utils::var> vars;
-        vars.reserve(expr.vars.size());
-        for ([[maybe_unused]] const auto &[v, c] : expr.vars)
-            vars.push_back(v);
-        for (const auto &v : vars)
-            if (tableau.find(v) != tableau.cend())
-            {
-                auto c = expr.vars.at(v);
-                expr.vars.erase(v);
-                expr += c * tableau.at(v)->l;
-            }
 
         switch (expr.vars.size())
         {
         case 0: // the expression is a constant..
             if (strict && expr.known_term >= 0)
-                net.add_clause({!p});
+                return net.add_clause({!p}); // the constraint is conflicting..
             else if (expr.known_term > 0)
-                net.add_clause({!p});
-            return; // the constraint is already satisfied..
+                return net.add_clause({!p}); // the constraint is conflicting..
+            return;                          // the constraint is already satisfied..
         case 1:
         { // the expression is a single variable..
             const auto [v, c] = *expr.vars.cbegin();
@@ -160,7 +218,8 @@ namespace semitone
                 if (ub(v) <= c_right)
                     return; // the constraint is already satisfied..
                 else if (lb(v) > c_right)
-                    net.add_clause({!p});
+                    return net.add_clause({!p}); // the constraint is conflicting..
+                LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " <= " << to_string(c_right));
                 v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, c_right));
                 bind(variable(p)); // we get notified when the variable `v` changes..
             }
@@ -169,35 +228,87 @@ namespace semitone
                 if (lb(v) >= c_right)
                     return; // the constraint is already satisfied..
                 else if (ub(v) < c_right)
-                    net.add_clause({!p});
+                    return net.add_clause({!p}); // the constraint is conflicting..
+                LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " >= " << to_string(c_right));
                 v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, c_right));
                 bind(variable(p)); // we get notified when the variable `v` changes..
             }
+            return;
         }
-        break;
         default:
-        { // the expression is an inequality with multiple variables
-            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0);
-            expr.known_term = utils::rational::zero;
+        {
+            // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
+            std::vector<utils::var> vars;
+            vars.reserve(expr.vars.size());
+            for ([[maybe_unused]] const auto &[v, c] : expr.vars)
+                vars.push_back(v);
+            for (const auto &v : vars)
+                if (tableau.find(v) != tableau.cend())
+                {
+                    auto c = expr.vars.at(v);
+                    expr.vars.erase(v);
+                    expr += c * tableau.at(v)->l;
+                }
 
-            if (ub(expr) <= c_right)
-                return; // the constraint is already satisfied..
-            else if (lb(expr) > c_right)
-                net.add_clause({!p});
+            switch (expr.vars.size())
+            {
+            case 0: // the expression is a constant..
+                if (strict && expr.known_term >= 0)
+                    return net.add_clause({!p}); // the constraint is conflicting..
+                else if (expr.known_term > 0)
+                    return net.add_clause({!p}); // the constraint is conflicting..
+                return;                          // the constraint is already satisfied..
+            case 1:
+            { // the expression is a single variable..
+                const auto [v, c] = *expr.vars.cbegin();
+                assert(c != 0);
+                const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0) / c; // the right-hand side of the constraint is the division of the negation of the known term minus an infinitesimal by the coefficient..
+                if (c > 0)
+                { // `v` <= `c_right`..
+                    if (ub(v) <= c_right)
+                        return; // the constraint is already satisfied..
+                    else if (lb(v) > c_right)
+                        return net.add_clause({!p}); // the constraint is conflicting..
+                    LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " <= " << to_string(c_right));
+                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, c_right));
+                    bind(variable(p)); // we get notified when the variable `v` changes..
+                }
+                else
+                { // `v` >= `c_right`..
+                    if (lb(v) >= c_right)
+                        return; // the constraint is already satisfied..
+                    else if (ub(v) < c_right)
+                        return net.add_clause({!p}); // the constraint is conflicting..
+                    LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " >= " << to_string(c_right));
+                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, c_right));
+                    bind(variable(p)); // we get notified when the variable `v` changes..
+                }
+            }
+            break;
+            default:
+            { // the expression is an inequality with multiple variables
+                const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0);
+                expr.known_term = utils::rational::zero;
 
-            // we add a slack variable to the tableau..
-            auto slack = new_slack(std::move(expr));
-            // .. and update its upper bound..
-            c_bounds[ub_index(slack)].value = c_right;
-            v_asrts[variable(p)].emplace(new la_assertion(p, slack, op::leq, c_right));
-            bind(variable(p)); // we get notified when the slack variable changes..
+                if (ub(expr) <= c_right)
+                    return; // the constraint is already satisfied..
+                else if (lb(expr) > c_right)
+                    net.add_clause({!p});
+
+                // we add a slack variable to the tableau..
+                auto slack = new_real(std::move(expr));
+                LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(slack) << " <= " << to_string(c_right));
+                v_asrts[variable(p)].emplace(new la_assertion(p, slack, op::leq, c_right));
+                bind(variable(p)); // we get notified when the slack variable changes..
+            }
+            }
         }
         }
     }
 
     bool la_theory::propagate(const utils::lit &p) noexcept
     {
-        if (net.value(p) == utils::True)
+        if (net.value(variable(p)) == utils::True)
             for (const auto &asrt : v_asrts[variable(p)])
                 switch (asrt->o)
                 {
@@ -281,6 +392,7 @@ namespace semitone
 
     bool la_theory::assert_lower(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
     {
+        LOG_TRACE("x" << std::to_string(x_i) << " >= " << to_string(val));
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
                            { return net.value(lit) != utils::Undefined; })); // all the literals in the reason must be assigned..
         if (val <= lb(x_i))
@@ -373,6 +485,7 @@ namespace semitone
     }
     bool la_theory::assert_upper(const utils::var x_i, const utils::inf_rational &val, const std::vector<utils::lit> &r) noexcept
     {
+        LOG_TRACE("x" << std::to_string(x_i) << " <= " << to_string(val));
         assert(std::all_of(r.cbegin(), r.cend(), [this](const auto &lit)
                            { return net.value(lit) != utils::Undefined; })); // all the literals in the reason must be assigned..
         if (val >= ub(x_i))
@@ -544,6 +657,7 @@ namespace semitone
                         t_watches[v].erase(r);  // we remove `r` from the watches of `v`
                     }
                 }
+            LOG_TRACE("x" << std::to_string(r) << " = " << to_string(c_l));
         }
         t_watches[x_j].clear();
 
@@ -553,6 +667,7 @@ namespace semitone
     void la_theory::new_row(const utils::var x_i, utils::lin &&xpr) noexcept
     {
         assert(tableau.find(x_i) == tableau.cend()); // the variable `x_i` must not be in the tableau..
+        LOG_TRACE("x" << std::to_string(x_i) << " = " << to_string(xpr));
         for (const auto &x : xpr.vars)
             t_watches[x.first].insert(x_i);
         tableau.emplace(x_i, new la_eq(x_i, std::move(xpr)));
