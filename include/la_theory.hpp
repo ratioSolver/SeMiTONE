@@ -114,6 +114,17 @@ namespace semitone
      */
     void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict = false);
 
+    /**
+     * @brief Checks if the given variable is an integer.
+     *
+     * This function checks whether the specified variable is an integer by
+     * looking it up in the is_int_var map.
+     *
+     * @param v The variable to check.
+     * @return true if the variable is an integer, false otherwise.
+     */
+    inline bool is_int(const utils::var v) const noexcept { return is_int_var.at(v); }
+
   private:
     [[nodiscard]] inline static size_t lb_index(const utils::var v) noexcept { return v << 1; }       // the index of the lower bound of the `v` variable..
     [[nodiscard]] inline static size_t ub_index(const utils::var v) noexcept { return (v << 1) ^ 1; } // the index of the upper bound of the `v` variable..
@@ -169,7 +180,7 @@ namespace semitone
     void new_row(const utils::var x_i, utils::lin &&xpr) noexcept;
 
   private:
-    std::vector<char> is_int; // the type of the variable..
+    std::vector<char> is_int_var; // the type of the variable..
     /**
      * Represents the bound of a variable and the reason for its existence.
      */
