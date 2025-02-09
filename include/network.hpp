@@ -15,6 +15,7 @@ namespace semitone
   class clause;
   class theory;
   class la_theory;
+  class dl_theory;
 
   class network
   {
@@ -222,6 +223,7 @@ namespace semitone
     std::unordered_map<utils::var, std::set<theory *>> binds; // for each variable, the theories that depend on it..
 
     la_theory &la; // the linear arithmetic theory..
+    dl_theory &dl; // the difference logic theory..
   };
 
   /**

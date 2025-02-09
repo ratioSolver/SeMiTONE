@@ -1,12 +1,13 @@
 #include "network.hpp"
 #include "la_theory.hpp"
+#include "dl_theory.hpp"
 #include "logging.hpp"
 #include <algorithm>
 #include <cassert>
 
 namespace semitone
 {
-    network::network() noexcept : la(new_theory<la_theory>(*this))
+    network::network() noexcept : la(new_theory<la_theory>(*this)), dl(new_theory<dl_theory>(*this))
     {
         [[maybe_unused]] utils::var c_false = new_var(); // the false constant..
         assert(c_false == utils::FALSE_var);
