@@ -98,12 +98,36 @@ void test_net()
     assert(net.value(s2_geq_m3) == utils::False);
 }
 
+void test_dl()
+{
+    semitone::network net;
+
+    auto tp0 = net.new_tp();
+    auto tp1 = net.new_tp();
+    auto tp2 = net.new_tp();
+
+    auto tp0_0_10_tp1 = net.new_var();
+    net.new_distance(utils::lit(tp0_0_10_tp1), tp0, tp1, utils::rational(0), utils::rational(10));
+    auto tp1_0_10_tp2 = net.new_var();
+    net.new_distance(utils::lit(tp1_0_10_tp2), tp1, tp2, utils::rational(0), utils::rational(10));
+
+    bool prop = net.propagate();
+    assert(prop);
+
+    auto a = net.assume(utils::lit(tp0_0_10_tp1));
+    assert(a);
+    a = net.assume(utils::lit(tp1_0_10_tp2));
+    assert(a);
+}
+
 int main()
 {
     test_network0();
     test_no_good();
 
     test_net();
+
+    test_dl();
 
     return 0;
 }

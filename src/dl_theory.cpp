@@ -5,12 +5,12 @@
 
 namespace semitone
 {
-    dl_theory::dl_theory(network &net, const size_t &size) noexcept : theory(net), dists(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite))), preds(size, std::vector<utils::var>(size))
+    dl_theory::dl_theory(network &net, const size_t &size) noexcept : theory(net), dists(size, std::vector<utils::rational>(size, utils::rational(utils::rational::positive_infinite))), preds(size, std::vector<utils::var>(size))
     {
         assert(size > 1);
         for (size_t i = 0; i < size; ++i)
         {
-            dists[i][i] = utils::inf_rational(utils::rational::zero);
+            dists[i][i] = utils::rational(utils::rational::zero);
             std::fill(preds[i].begin(), preds[i].end(), std::numeric_limits<utils::var>::max());
             preds[i][i] = i;
         }
@@ -24,7 +24,7 @@ namespace semitone
         return var;
     }
 
-    void dl_theory::add_distance(utils::var from, utils::var to, const utils::inf_rational &dist)
+    void dl_theory::add_distance(utils::var from, utils::var to, const utils::rational &dist)
     {
         if (dists[to][from] < -dist)
             throw unsolvable_exception(); // the problem is unsolvable..
@@ -33,7 +33,7 @@ namespace semitone
         set_dist(from, to, dist);
     }
 
-    void dl_theory::new_distance(utils::lit &p, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept
+    void dl_theory::new_distance(utils::lit &&p, utils::var from, utils::var to, const utils::rational &dist) noexcept
     {
         if (dists[to][from] < -dist)
             return net.add_clause({!p}); // the constraint is conflicting..
@@ -91,8 +91,9 @@ namespace semitone
         return true;
     }
 
-    void dl_theory::propagate(utils::var from, utils::var to, const utils::inf_rational &dist) noexcept
+    void dl_theory::propagate(utils::var from, utils::var to, const utils::rational &dist) noexcept
     {
+        LOG_TRACE(from << " -> " << to << " : " << to_string(dist));
         assert(!is_infinite(dist));
         set_dist(from, to, dist);
         set_pred(from, to, from);
@@ -204,7 +205,7 @@ namespace semitone
         layers.pop_back();
     }
 
-    void dl_theory::set_dist(utils::var from, utils::var to, const utils::inf_rational &dist) noexcept
+    void dl_theory::set_dist(utils::var from, utils::var to, const utils::rational &dist) noexcept
     {
         assert(dists[from][to] > dist);                                                 // we should never increase the distance
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
@@ -226,14 +227,14 @@ namespace semitone
         const size_t c_size = dists.size();
         for (size_t i = 0; i < c_size; ++i)
         {
-            dists[i].resize(size, utils::inf_rational(utils::rational::positive_infinite));
+            dists[i].resize(size, utils::rational(utils::rational::positive_infinite));
             preds[i].resize(size, std::numeric_limits<INT_TYPE>::max());
         }
-        dists.resize(size, std::vector<utils::inf_rational>(size, utils::inf_rational(utils::rational::positive_infinite)));
+        dists.resize(size, std::vector<utils::rational>(size, utils::rational(utils::rational::positive_infinite)));
         preds.resize(size, std::vector<utils::var>(size, std::numeric_limits<INT_TYPE>::max()));
         for (size_t i = c_size; i < size; ++i)
         {
-            dists[i][i] = utils::inf_rational(utils::rational::zero);
+            dists[i][i] = utils::rational(utils::rational::zero);
             preds[i][i] = i;
         }
     }

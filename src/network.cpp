@@ -70,12 +70,12 @@ namespace semitone
     void network::add_lt(utils::lin &&lhs, utils::lin &&rhs) { la.add_lt(lhs, rhs, true); }
     void network::add_le(utils::lin &&lhs, utils::lin &&rhs) noexcept { la.add_lt(lhs, rhs); }
 
-    void network::new_lt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(p, lhs, rhs, true); }
-    void network::new_le(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(p, lhs, rhs); }
+    void network::new_lt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(std::move(p), lhs, rhs, true); }
+    void network::new_le(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(std::move(p), lhs, rhs); }
 
-    void network::add_distance(utils::var from, utils::var to, const utils::inf_rational &dist) { dl.add_distance(from, to, dist); }
+    void network::add_distance(utils::var from, utils::var to, const utils::rational &dist) { dl.add_distance(from, to, dist); }
 
-    void network::new_distance(utils::lit &p, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept { dl.new_distance(p, from, to, dist); }
+    void network::new_distance(utils::lit &&p, utils::var from, utils::var to, const utils::rational &dist) noexcept { dl.new_distance(std::move(p), from, to, dist); }
 
     bool network::assume(const utils::lit &p) noexcept
     {

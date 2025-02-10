@@ -196,7 +196,7 @@ namespace semitone
         }
     }
 
-    void la_theory::new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict)
+    void la_theory::new_lt(utils::lit &&p, utils::lin &lhs, utils::lin &rhs, bool strict)
     {
         utils::lin expr = lhs - rhs;
 

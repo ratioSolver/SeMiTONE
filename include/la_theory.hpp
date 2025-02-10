@@ -112,7 +112,7 @@ namespace semitone
      * @param strict If true, the constraint is strict (lhs < rhs). If false, the
      *              constraint is non-strict (lhs <= rhs). Default is false.
      */
-    void new_lt(utils::lit &p, utils::lin &lhs, utils::lin &rhs, bool strict = false);
+    void new_lt(utils::lit &&p, utils::lin &lhs, utils::lin &rhs, bool strict = false);
 
     /**
      * @brief Checks if the given variable is an integer.
