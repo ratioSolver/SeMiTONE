@@ -1,4 +1,6 @@
 #include "network.hpp"
+#include "logging.hpp"
+#include "floyd_warshall.hpp"
 #include <cassert>
 
 void test_network0()
@@ -106,22 +108,37 @@ void test_dl()
     auto tp1 = net.new_tp();
     auto tp2 = net.new_tp();
 
-    auto origin_3_7_tp1 = net.new_var();
-    net.new_distance(utils::lit(origin_3_7_tp1), 0, tp0, utils::rational(3), utils::rational(7));
+    // origin -[3, 7]-> tp0
+    auto origin_3_7_tp0 = net.new_var();
+    net.new_distance(utils::lit(origin_3_7_tp0), 0, tp0, utils::rational(3), utils::rational(7));
+    // tp0 -[2, 5]-> tp1
     auto tp0_2_5_tp1 = net.new_var();
     net.new_distance(utils::lit(tp0_2_5_tp1), tp0, tp1, utils::rational(2), utils::rational(5));
+    // tp1 -[0, 10]-> tp2
     auto tp1_0_10_tp2 = net.new_var();
     net.new_distance(utils::lit(tp1_0_10_tp2), tp1, tp2, utils::rational(0), utils::rational(10));
 
     bool prop = net.propagate();
     assert(prop);
 
-    auto a = net.assume(utils::lit(origin_3_7_tp1));
+    auto a = net.assume(utils::lit(origin_3_7_tp0));
     assert(a);
     a = net.assume(utils::lit(tp0_2_5_tp1));
     assert(a);
     a = net.assume(utils::lit(tp1_0_10_tp2));
     assert(a);
+
+    utils::floyd_warshall<double, 4> fw;
+    fw.add_edge(0, 1, 7.0);
+    fw.add_edge(1, 0, -3.0);
+    fw.add_edge(1, 2, 5.0);
+    fw.add_edge(2, 1, -2.0);
+    fw.add_edge(2, 3, 10.0);
+    fw.add_edge(3, 2, 0.0);
+
+    fw.compute_all_pairs_shortest_paths();
+
+    LOG_TRACE(fw);
 }
 
 int main()
