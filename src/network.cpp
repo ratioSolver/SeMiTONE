@@ -73,6 +73,10 @@ namespace semitone
     void network::new_lt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(p, lhs, rhs, true); }
     void network::new_le(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(p, lhs, rhs); }
 
+    void network::add_distance(utils::var from, utils::var to, const utils::inf_rational &dist) { dl.add_distance(from, to, dist); }
+
+    void network::new_distance(utils::lit &p, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept { dl.new_distance(p, from, to, dist); }
+
     bool network::assume(const utils::lit &p) noexcept
     {
         assert(value(p) == utils::Undefined);

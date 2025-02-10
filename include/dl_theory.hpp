@@ -19,20 +19,11 @@ namespace semitone
     [[nodiscard]] utils::var new_var() noexcept;
 
     void add_distance(utils::var from, utils::var to, const utils::inf_rational &dist);
-    void add_distance(utils::var from, utils::var to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept
-    {
-      add_distance(to, from, -min);
-      add_distance(from, to, max);
-    }
-    void new_distance(utils::lit &b, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept;
-    void new_distance(utils::lit &b, utils::var from, utils::var to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept
-    {
-      new_distance(b, to, from, -min);
-      new_distance(b, from, to, max);
-    }
+    void new_distance(utils::lit &p, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept;
 
   private:
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
+    void propagate(utils::var from, utils::var to, const utils::inf_rational &dist) noexcept;
     [[nodiscard]] bool check() noexcept override;
     void push() noexcept override;
     void pop() noexcept override;
@@ -59,8 +50,8 @@ namespace semitone
     size_t n_vars = 1;                                                                                              // the number of variables..
     std::vector<std::vector<utils::inf_rational>> dists;                                                            // the distance matrix..
     std::vector<std::vector<utils::var>> preds;                                                                     // the predecessor matrix..
-    std::unordered_map<utils::var, std::vector<utils::u_ptr<distance_constraint>>> var_dists;                       // the constraints controlled by a propositional variable (for propagation purposes)..
-    std::map<std::pair<utils::var, utils::var>, std::vector<utils::ref_wrapper<distance_constraint>>> dist_constrs; // the constraints between two temporal points (for propagation purposes)..
+    std::unordered_map<utils::var, std::vector<utils::u_ptr<distance_constraint>>> var_constrs;                     // the constraints controlled by a propositional variable (when the variable is assigned, the constraint is enforced)..
+    std::map<std::pair<utils::var, utils::var>, std::vector<utils::ref_wrapper<distance_constraint>>> dist_constrs; // the constraints between two temporal points (when the constraint becomes inconsistent, the corresponding propositional variable is negated)..
     std::map<std::pair<utils::var, utils::var>, utils::ref_wrapper<distance_constraint>> dist_constr;               // the currently enforced constraints..
     std::vector<layer> layers;                                                                                      // we store the updates..
   };
@@ -68,7 +59,7 @@ namespace semitone
   class distance_constraint
   {
   public:
-    distance_constraint(const utils::lit &b, utils::var from, utils::var to, utils::inf_rational &&dist) noexcept : b(b), from(from), to(to), dist(dist) {}
+    distance_constraint(const utils::lit &b, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept : b(b), from(from), to(to), dist(dist) {}
 
     [[nodiscard]] const utils::lit &get_lit() const noexcept { return b; }
     [[nodiscard]] utils::var get_from() const noexcept { return from; }

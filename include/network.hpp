@@ -147,6 +147,20 @@ namespace semitone
     void new_ge(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { new_le(std::move(p), std::move(rhs), std::move(lhs)); }
     void new_gt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { new_lt(std::move(p), std::move(rhs), std::move(lhs)); }
 
+    void add_distance(utils::var from, utils::var to, const utils::inf_rational &dist);
+    void add_distance(utils::var from, utils::var to, const utils::inf_rational &min, const utils::inf_rational &max)
+    {
+      add_distance(to, from, -min);
+      add_distance(from, to, max);
+    }
+
+    void new_distance(utils::lit &p, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept;
+    void new_distance(utils::lit &p, utils::var from, utils::var to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept
+    {
+      new_distance(p, to, from, -min);
+      new_distance(p, from, to, max);
+    }
+
     /**
      * @brief Assume the literal `p` and propagate the current set of assumptions returning `false` if a conflict is detected.
      *
