@@ -40,6 +40,7 @@ namespace semitone
         if (dists[from][to] <= dist)
             return; // the constraint is redundant..
 
+        LOG_TRACE("[" << to_string(p) << "] tp" << std::to_string(from) << " -> tp" << std::to_string(to) << " : " << to_string(dist));
         bind(variable(p));
         auto constr = new distance_constraint(p, from, to, dist);
         dist_constrs[{from, to}].emplace_back(*constr);
@@ -93,7 +94,7 @@ namespace semitone
 
     void dl_theory::propagate(utils::var from, utils::var to, const utils::rational &dist) noexcept
     {
-        LOG_TRACE(from << " -> " << to << " : " << to_string(dist));
+        LOG_TRACE("tp" << from << " -> tp" << to << " : " << to_string(dist));
         assert(!is_infinite(dist));
         set_dist(from, to, dist);
         set_pred(from, to, from);
@@ -185,6 +186,14 @@ namespace semitone
                             record(std::move(cnfl));
                         }
                     }
+
+        for (size_t i = 0; i < n_vars; ++i)
+        {
+            std::string row = to_string(dists[i][0]);
+            for (size_t j = 1; j < n_vars; ++j)
+                row += " " + to_string(dists[i][j]);
+            LOG_TRACE(row);
+        }
     }
 
     bool dl_theory::check() noexcept { return true; }

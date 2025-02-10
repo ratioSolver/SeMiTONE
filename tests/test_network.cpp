@@ -106,15 +106,19 @@ void test_dl()
     auto tp1 = net.new_tp();
     auto tp2 = net.new_tp();
 
-    auto tp0_0_10_tp1 = net.new_var();
-    net.new_distance(utils::lit(tp0_0_10_tp1), tp0, tp1, utils::rational(0), utils::rational(10));
+    auto origin_3_7_tp1 = net.new_var();
+    net.new_distance(utils::lit(origin_3_7_tp1), 0, tp0, utils::rational(3), utils::rational(7));
+    auto tp0_2_5_tp1 = net.new_var();
+    net.new_distance(utils::lit(tp0_2_5_tp1), tp0, tp1, utils::rational(2), utils::rational(5));
     auto tp1_0_10_tp2 = net.new_var();
     net.new_distance(utils::lit(tp1_0_10_tp2), tp1, tp2, utils::rational(0), utils::rational(10));
 
     bool prop = net.propagate();
     assert(prop);
 
-    auto a = net.assume(utils::lit(tp0_0_10_tp1));
+    auto a = net.assume(utils::lit(origin_3_7_tp1));
+    assert(a);
+    a = net.assume(utils::lit(tp0_2_5_tp1));
     assert(a);
     a = net.assume(utils::lit(tp1_0_10_tp2));
     assert(a);
