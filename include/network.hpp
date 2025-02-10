@@ -68,6 +68,13 @@ namespace semitone
     [[nodiscard]] utils::var new_real(utils::lin &&xpr) noexcept;
 
     /**
+     * @brief Creates a new temporal point.
+     *
+     * @return utils::var The newly created temporal point.
+     */
+    [[nodiscard]] utils::var new_tp() noexcept;
+
+    /**
      * @brief Return the value of a variable.
      *
      * @param x The variable.
