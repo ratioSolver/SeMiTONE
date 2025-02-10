@@ -18,11 +18,27 @@ namespace semitone
 
     [[nodiscard]] utils::var new_var() noexcept;
 
+    void add_distance(utils::var from, utils::var to, const utils::inf_rational &dist);
+    void add_distance(utils::var from, utils::var to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept
+    {
+      add_distance(to, from, -min);
+      add_distance(from, to, max);
+    }
+    void new_distance(utils::lit &b, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept;
+    void new_distance(utils::lit &b, utils::var from, utils::var to, const utils::inf_rational &min, const utils::inf_rational &max) noexcept
+    {
+      new_distance(b, to, from, -min);
+      new_distance(b, from, to, max);
+    }
+
   private:
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;
     [[nodiscard]] bool check() noexcept override;
     void push() noexcept override;
     void pop() noexcept override;
+
+    void set_dist(utils::var from, utils::var to, const utils::inf_rational &dist) noexcept;
+    void set_pred(utils::var from, utils::var to, utils::var pred) noexcept;
 
   private:
     /**

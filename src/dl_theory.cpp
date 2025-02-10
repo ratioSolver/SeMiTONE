@@ -24,6 +24,20 @@ namespace semitone
         return var;
     }
 
+    void dl_theory::add_distance(utils::var from, utils::var to, const utils::inf_rational &dist)
+    {
+        if (dists[to][from] < -dist)
+            throw unsolvable_exception(); // the problem is unsolvable..
+        if (dists[from][to] <= dist)
+            return; // the constraint is redundant..
+        set_dist(from, to, dist);
+    }
+
+    void dl_theory::new_distance(utils::lit &b, utils::var from, utils::var to, const utils::inf_rational &dist) noexcept
+    {
+        // TODO: implement this function..
+    }
+
     bool dl_theory::propagate(const utils::lit &p) noexcept
     {
         return true;
@@ -37,6 +51,23 @@ namespace semitone
     void dl_theory::push() noexcept {}
 
     void dl_theory::pop() noexcept {}
+
+    void dl_theory::set_dist(utils::var from, utils::var to, const utils::inf_rational &dist) noexcept
+    {
+        assert(dists[from][to] > dist);                                                 // we should never increase the distance
+        if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
+            layers.back().old_dists.emplace(std::make_pair(from, to), dists[from][to]); // save the old distance
+        dists[from][to] = dist;                                                         // set the new distance
+    }
+
+    void dl_theory::set_pred(utils::var from, utils::var to, utils::var pred) noexcept
+    {
+        assert(dist_constr.find({pred, to}) != dist_constr.end());
+        assert(preds[from][to] != pred);                                                // we should never set the same predecessor
+        if (!layers.empty() && !layers.back().old_preds.count({from, to}))              // we have not updated this predecessor yet
+            layers.back().old_preds.emplace(std::make_pair(from, to), preds[from][to]); // save the old predecessor
+        preds[from][to] = pred;                                                         // set the new predecessor
+    }
 
     void dl_theory::resize(const size_t &size) noexcept
     {
