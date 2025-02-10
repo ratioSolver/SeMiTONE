@@ -101,6 +101,80 @@ namespace semitone
     }
 
     /**
+     * @brief Return the lower bound of a variable.
+     *
+     * @param v The variable.
+     * @return The lower bound of the variable.
+     */
+    [[nodiscard]] utils::inf_rational arith_lb(const utils::var v) const noexcept;
+    /**
+     * @brief Return the upper bound of a variable.
+     *
+     * @param v The variable.
+     * @return The upper bound of the variable.
+     */
+    [[nodiscard]] utils::inf_rational arith_ub(const utils::var v) const noexcept;
+    /**
+     * @brief Return the value of a variable.
+     *
+     * @param v The variable.
+     * @return The value of the variable.
+     */
+    [[nodiscard]] utils::inf_rational arith_value(const utils::var v) const noexcept;
+
+    /**
+     * @brief Return the lower bound of a linear expression.
+     *
+     * @param l The linear expression.
+     * @return The lower bound of the linear expression.
+     */
+    [[nodiscard]] utils::inf_rational arith_lb(const utils::lin &l) const noexcept;
+    /**
+     * @brief Return the upper bound of a linear expression.
+     *
+     * @param l The linear expression.
+     * @return The upper bound of the linear expression.
+     */
+    [[nodiscard]] utils::inf_rational arith_ub(const utils::lin &l) const noexcept;
+    /**
+     * @brief Return the value of a linear expression.
+     *
+     * @param l The linear expression.
+     * @return The value of the linear expression.
+     */
+    [[nodiscard]] utils::inf_rational arith_value(const utils::lin &l) const noexcept;
+
+    /**
+     * @brief Return the lower bound of a temporal point.
+     *
+     * @param v The temporal point.
+     * @return The lower bound of the temporal point.
+     */
+    [[nodiscard]] utils::rational tp_lb(const utils::var v) const noexcept;
+    /**
+     * @brief Return the upper bound of a temporal point.
+     *
+     * @param v The temporal point.
+     * @return The upper bound of the temporal point.
+     */
+    [[nodiscard]] utils::rational tp_ub(const utils::var v) const noexcept;
+    /**
+     * @brief Return the bounds of a temporal point.
+     *
+     * @param v The temporal point.
+     * @return The bounds of the temporal point.
+     */
+    [[nodiscard]] std::pair<utils::rational, utils::rational> tp_bounds(const utils::var v) const noexcept;
+    /**
+     * @brief Return the distance between two temporal points.
+     *
+     * @param from The source temporal point.
+     * @param to The destination temporal point.
+     * @return The distance between the two temporal points.
+     */
+    [[nodiscard]] std::pair<utils::rational, utils::rational> tp_distance(const utils::var from, const utils::var to) const noexcept;
+
+    /**
      * @brief Return the current decision level.
      *
      * @return The current decision level.

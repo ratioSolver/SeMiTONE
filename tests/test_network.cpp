@@ -137,8 +137,18 @@ void test_dl()
     fw.add_edge(3, 2, 0.0);
 
     fw.compute_all_pairs_shortest_paths();
-
     LOG_TRACE(fw);
+
+    assert(net.value(origin_3_7_tp0) == utils::True);
+    assert(net.value(tp0_2_5_tp1) == utils::True);
+    assert(net.value(tp1_0_10_tp2) == utils::True);
+
+    assert(net.tp_lb(tp0) == -fw.get_distance(1, 0));
+    assert(net.tp_ub(tp0) == fw.get_distance(0, 1));
+    assert(net.tp_lb(tp1) == -fw.get_distance(2, 0));
+    assert(net.tp_ub(tp1) == fw.get_distance(0, 2));
+    assert(net.tp_lb(tp2) == -fw.get_distance(3, 0));
+    assert(net.tp_ub(tp2) == fw.get_distance(0, 3));
 }
 
 int main()

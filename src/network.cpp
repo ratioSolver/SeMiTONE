@@ -32,6 +32,19 @@ namespace semitone
     utils::var network::new_real(utils::lin &&xpr) noexcept { return la.new_real(std::move(xpr)); }
     utils::var network::new_tp() noexcept { return dl.new_var(); }
 
+    utils::inf_rational network::arith_lb(const utils::var v) const noexcept { return la.lb(v); }
+    utils::inf_rational network::arith_ub(const utils::var v) const noexcept { return la.ub(v); }
+    utils::inf_rational network::arith_value(const utils::var v) const noexcept { return la.value(v); }
+
+    utils::inf_rational network::arith_lb(const utils::lin &l) const noexcept { return la.lb(l); }
+    utils::inf_rational network::arith_ub(const utils::lin &l) const noexcept { return la.ub(l); }
+    utils::inf_rational network::arith_value(const utils::lin &l) const noexcept { return la.value(l); }
+
+    utils::rational network::tp_lb(const utils::var v) const noexcept { return dl.lb(v); }
+    utils::rational network::tp_ub(const utils::var v) const noexcept { return dl.ub(v); }
+    std::pair<utils::rational, utils::rational> network::tp_bounds(const utils::var v) const noexcept { return dl.bounds(v); }
+    std::pair<utils::rational, utils::rational> network::tp_distance(const utils::var from, const utils::var to) const noexcept { return dl.distance(from, to); }
+
     void network::add_clause(std::vector<utils::lit> &&lits)
     {
         assert(decision_level() == 0);
