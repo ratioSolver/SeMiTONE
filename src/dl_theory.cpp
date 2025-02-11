@@ -49,7 +49,6 @@ namespace semitone
 
     bool dl_theory::propagate(const utils::lit &p) noexcept
     {
-        LOG_TRACE("[" << to_string(p) << "]");
         assert(var_constrs.count(variable(p)));
         if (net.value(variable(p)) == utils::True)
         {
@@ -162,14 +161,6 @@ namespace semitone
                         // we propagate the reason for assigning false to dist->b..
                         record(std::move(cnfl));
                     }
-
-        for (size_t i = 0; i < n_vars; ++i)
-        {
-            std::string row = to_string(dists[i][0]);
-            for (size_t j = 1; j < n_vars; ++j)
-                row += " " + to_string(dists[i][j]);
-            LOG_TRACE(row);
-        }
     }
 
     bool dl_theory::check() noexcept { return true; }

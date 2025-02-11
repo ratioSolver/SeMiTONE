@@ -131,6 +131,7 @@ void test_dl()
     a = net.assume(utils::lit(tp1_0_10_tp2));
     assert(a);
 
+    // we apply Floyd-Warshall algorithm to check the results..
     utils::floyd_warshall<double, 4> fw;
     fw.add_edge(0, 1, 7.0);
     fw.add_edge(1, 0, -3.0);
@@ -140,7 +141,6 @@ void test_dl()
     fw.add_edge(3, 2, 0.0);
 
     fw.compute_all_pairs_shortest_paths();
-    LOG_TRACE(fw);
 
     assert(net.value(origin_3_7_tp0) == utils::True);
     assert(net.value(tp0_2_5_tp1) == utils::True);
