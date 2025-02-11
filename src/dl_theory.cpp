@@ -49,6 +49,7 @@ namespace semitone
 
     bool dl_theory::propagate(const utils::lit &p) noexcept
     {
+        LOG_TRACE("[" << to_string(p) << "]");
         assert(var_constrs.count(variable(p)));
         if (net.value(variable(p)) == utils::True)
         {
@@ -139,52 +140,27 @@ namespace semitone
         for (const auto &c_pairs : c_updates)
             if (const auto &c_dists = dist_constrs.find(c_pairs); c_dists != dist_constrs.cend())
                 for (const auto &c_dist : c_dists->second)
-                    if (net.value(c_dist->get_lit()) == utils::Undefined)
-                    {
-                        if (dists[c_dist->get_to()][c_dist->get_from()] < -c_dist->get_dist())
-                        { // the constraint is inconsistent..
-                            std::vector<utils::lit> cnfl;
-                            cnfl.emplace_back(!c_dist->get_lit());
-                            utils::var c_to = c_dist->get_from();
-                            while (c_to != c_dist->get_to())
+                    if (net.value(c_dist->get_lit()) == utils::Undefined && dists[c_dist->get_to()][c_dist->get_from()] < -c_dist->get_dist())
+                    { // the constraint is inconsistent..
+                        std::vector<utils::lit> cnfl;
+                        cnfl.emplace_back(!c_dist->get_lit());
+                        utils::var c_to = c_dist->get_from();
+                        while (c_to != c_dist->get_to())
+                        {
+                            const auto &c_d = *dist_constr.find({preds[c_dist->get_to()][c_to], c_to})->second;
+                            switch (net.value(c_d.get_lit()))
                             {
-                                const auto &c_d = *dist_constr.find({preds[c_dist->get_to()][c_to], c_to})->second;
-                                switch (net.value(c_d.get_lit()))
-                                {
-                                case utils::True:
-                                    cnfl.emplace_back(!c_d.get_lit());
-                                    break;
-                                case utils::False:
-                                    cnfl.emplace_back(c_d.get_lit());
-                                    break;
-                                }
-                                c_to = preds[c_dist->get_to()][c_to];
+                            case utils::True:
+                                cnfl.emplace_back(!c_d.get_lit());
+                                break;
+                            case utils::False:
+                                cnfl.emplace_back(c_d.get_lit());
+                                break;
                             }
-                            // we propagate the reason for assigning false to dist->b..
-                            record(std::move(cnfl));
+                            c_to = preds[c_dist->get_to()][c_to];
                         }
-                        else if (dists[c_dist->get_from()][c_dist->get_to()] <= c_dist->get_dist())
-                        { // the constraint is redundant..
-                            std::vector<utils::lit> cnfl;
-                            cnfl.emplace_back(c_dist->get_lit());
-                            utils::var c_to = c_dist->get_to();
-                            while (c_to != c_dist->get_from())
-                            {
-                                const auto &c_d = *dist_constr.find({preds[c_dist->get_from()][c_to], c_to})->second;
-                                switch (net.value(c_d.get_lit()))
-                                {
-                                case utils::True:
-                                    cnfl.emplace_back(!c_d.get_lit());
-                                    break;
-                                case utils::False:
-                                    cnfl.emplace_back(c_d.get_lit());
-                                    break;
-                                }
-                                c_to = preds[c_dist->get_from()][c_to];
-                            }
-                            // we propagate the reason for assigning true to dist->b..
-                            record(std::move(cnfl));
-                        }
+                        // we propagate the reason for assigning false to dist->b..
+                        record(std::move(cnfl));
                     }
 
         for (size_t i = 0; i < n_vars; ++i)

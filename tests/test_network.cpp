@@ -117,6 +117,9 @@ void test_dl()
     // tp1 -[0, 10]-> tp2
     auto tp1_0_10_tp2 = net.new_var();
     net.new_distance(utils::lit(tp1_0_10_tp2), tp1, tp2, utils::rational(0), utils::rational(10));
+    // origin -[2, 4]-> tp2
+    auto origin_2_4_tp2 = net.new_var();
+    net.new_distance(utils::lit(origin_2_4_tp2), 0, tp2, utils::rational(2), utils::rational(4));
 
     bool prop = net.propagate();
     assert(prop);
@@ -142,6 +145,7 @@ void test_dl()
     assert(net.value(origin_3_7_tp0) == utils::True);
     assert(net.value(tp0_2_5_tp1) == utils::True);
     assert(net.value(tp1_0_10_tp2) == utils::True);
+    assert(net.value(origin_2_4_tp2) == utils::False);
 
     assert(net.tp_lb(tp0) == -fw.get_distance(1, 0));
     assert(net.tp_ub(tp0) == fw.get_distance(0, 1));
