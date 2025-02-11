@@ -43,7 +43,7 @@ namespace semitone
      * @param ub The upper bound of the integer variable. Defaults to positive infinity.
      * @return utils::var The newly created integer variable.
      */
-    [[nodiscard]] utils::var new_int(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    [[nodiscard]] utils::var new_int(const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
     /**
      * @brief Creates a new integer variable with the given linear expression.
      *
@@ -58,7 +58,7 @@ namespace semitone
      * @param ub The upper bound of the real variable. Defaults to positive infinity.
      * @return utils::var The newly created real variable.
      */
-    [[nodiscard]] utils::var new_real(const utils::inf_rational &lb = utils::inf_rational(utils::rational::negative_infinite), const utils::inf_rational &ub = utils::inf_rational(utils::rational::positive_infinite)) noexcept;
+    [[nodiscard]] utils::var new_real(const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
     /**
      * @brief Creates a new real variable with the given linear expression.
      *

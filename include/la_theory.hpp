@@ -16,9 +16,9 @@ namespace semitone
   public:
     la_theory(network &net) noexcept;
 
-    [[nodiscard]] utils::var new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept;
+    [[nodiscard]] utils::var new_int(const utils::rational &lb, const utils::rational &ub) noexcept;
     [[nodiscard]] utils::var new_int(utils::lin &&xpr) noexcept;
-    [[nodiscard]] utils::var new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept;
+    [[nodiscard]] utils::var new_real(const utils::rational &lb, const utils::rational &ub) noexcept;
     [[nodiscard]] utils::var new_real(utils::lin &&xpr) noexcept;
 
     /**

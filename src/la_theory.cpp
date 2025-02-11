@@ -8,13 +8,13 @@ namespace semitone
 {
     la_theory::la_theory(network &net) noexcept : theory(net) {}
 
-    utils::var la_theory::new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept
+    utils::var la_theory::new_int(const utils::rational &lb, const utils::rational &ub) noexcept
     {
         assert(lb < ub);
         auto var = vals.size();
         is_int_var.push_back(true);
-        c_bounds.emplace_back(bound{lb, {}});
-        c_bounds.emplace_back(bound{ub, {}});
+        c_bounds.emplace_back(bound{utils::inf_rational(lb), {}});
+        c_bounds.emplace_back(bound{utils::inf_rational(ub), {}});
         vals.push_back(utils::inf_rational(utils::rational::zero));
         a_watches.emplace_back();
         t_watches.emplace_back();
@@ -47,13 +47,13 @@ namespace semitone
         return var;
     }
 
-    utils::var la_theory::new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept
+    utils::var la_theory::new_real(const utils::rational &lb, const utils::rational &ub) noexcept
     {
         assert(lb < ub);
         auto var = vals.size();
         is_int_var.push_back(false);
-        c_bounds.emplace_back(bound{lb, {}});
-        c_bounds.emplace_back(bound{ub, {}});
+        c_bounds.emplace_back(bound{utils::inf_rational(lb), {}});
+        c_bounds.emplace_back(bound{utils::inf_rational(ub), {}});
         vals.push_back(utils::inf_rational(utils::rational::zero));
         a_watches.emplace_back();
         t_watches.emplace_back();

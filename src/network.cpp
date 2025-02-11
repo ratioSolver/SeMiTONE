@@ -26,9 +26,9 @@ namespace semitone
         return x;
     }
 
-    utils::var network::new_int(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_int(lb, ub); }
+    utils::var network::new_int(const utils::rational &lb, const utils::rational &ub) noexcept { return la.new_int(lb, ub); }
     utils::var network::new_int(utils::lin &&xpr) noexcept { return la.new_int(std::move(xpr)); }
-    utils::var network::new_real(const utils::inf_rational &lb, const utils::inf_rational &ub) noexcept { return la.new_real(lb, ub); }
+    utils::var network::new_real(const utils::rational &lb, const utils::rational &ub) noexcept { return la.new_real(lb, ub); }
     utils::var network::new_real(utils::lin &&xpr) noexcept { return la.new_real(std::move(xpr)); }
     utils::var network::new_tp() noexcept { return dl.new_var(); }
 
