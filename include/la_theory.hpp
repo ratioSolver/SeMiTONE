@@ -5,14 +5,23 @@
 #include "lin.hpp"
 #include "inf_rational.hpp"
 #include <set>
+#ifdef BUILD_LISTENERS
+#include <unordered_map>
+#endif
 
 namespace semitone
 {
   class la_assertion;
   class la_eq;
+#ifdef BUILD_LISTENERS
+  class la_listener;
+#endif
 
   class la_theory : public theory
   {
+#ifdef BUILD_LISTENERS
+    friend class la_listener;
+#endif
   public:
     la_theory(network &net) noexcept;
 
@@ -196,6 +205,9 @@ namespace semitone
     std::vector<std::vector<utils::ref_wrapper<la_assertion>>> a_watches;     // for each variable `v`, a list of assertions watching `v`..
     std::vector<std::set<utils::var>> t_watches;                              // for each variable `v`, a list of tableau rows watching `v`..
     std::vector<std::map<size_t, bound>> layers;                              // we store the updated bounds..
+#ifdef BUILD_LISTENERS
+    std::unordered_map<utils::var, std::set<la_listener *>> listeners; // for each variable, the listeners that depend on it..
+#endif
   };
 
   enum op
@@ -229,4 +241,32 @@ namespace semitone
     const utils::var x; // the numeric variable..
     utils::lin l;       // the linear expression..
   };
+
+#ifdef BUILD_LISTENERS
+  class la_listener
+  {
+    friend class la_theory;
+
+  public:
+    la_listener(la_theory &th) noexcept : th(th) {}
+    ~la_listener()
+    {
+      for (const auto &v : vars)
+        th.listeners[v].erase(this);
+    }
+
+    virtual void on_arith_change(const utils::var &v) noexcept = 0;
+
+  protected:
+    void listen_arith(const utils::var &v) noexcept
+    {
+      vars.insert(v);
+      th.listeners[v].insert(this);
+    }
+
+  private:
+    la_theory &th;
+    std::set<utils::var> vars;
+  };
+#endif
 } // namespace semitone

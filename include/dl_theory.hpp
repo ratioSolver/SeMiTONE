@@ -6,13 +6,22 @@
 #include <map>
 #include <optional>
 #include <unordered_map>
+#ifdef BUILD_LISTENERS
+#include <set>
+#endif
 
 namespace semitone
 {
   class distance_constraint;
+#ifdef BUILD_LISTENERS
+  class dl_listener;
+#endif
 
   class dl_theory : public theory
   {
+#ifdef BUILD_LISTENERS
+    friend class dl_listener;
+#endif
   public:
     dl_theory(network &net, const size_t &size = 16) noexcept;
 
@@ -59,6 +68,9 @@ namespace semitone
     std::map<std::pair<utils::var, utils::var>, std::vector<utils::ref_wrapper<distance_constraint>>> dist_constrs; // the constraints between two temporal points (when the constraint becomes inconsistent, the corresponding propositional variable is negated)..
     std::map<std::pair<utils::var, utils::var>, utils::ref_wrapper<distance_constraint>> dist_constr;               // the currently enforced constraints..
     std::vector<layer> layers;                                                                                      // we store the updates..
+#ifdef BUILD_LISTENERS
+    std::unordered_map<utils::var, std::set<dl_listener *>> listeners; // for each variable, the listeners that depend on it..
+#endif
   };
 
   class distance_constraint
@@ -77,4 +89,32 @@ namespace semitone
     utils::var to;
     utils::rational dist;
   };
+
+#ifdef BUILD_LISTENERS
+  class dl_listener
+  {
+    friend class dl_theory;
+
+  public:
+    dl_listener(dl_theory &th) noexcept : th(th) {}
+    ~dl_listener()
+    {
+      for (const auto &v : vars)
+        th.listeners[v].erase(this);
+    }
+
+    virtual void on_tp_change(const utils::var &v) noexcept = 0;
+
+  protected:
+    void listen_tp(const utils::var &v) noexcept
+    {
+      vars.insert(v);
+      th.listeners[v].insert(this);
+    }
+
+  private:
+    dl_theory &th;
+    std::set<utils::var> vars;
+  };
+#endif
 } // namespace semitone

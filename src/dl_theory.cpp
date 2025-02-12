@@ -3,6 +3,15 @@
 #include "logging.hpp"
 #include <cassert>
 
+#ifdef BUILD_LISTENERS
+#define FIRE_ON_CHANGE(v)                                    \
+    if (auto it = listeners.find(v); it != listeners.cend()) \
+        for (const auto &l : it->second)                     \
+            l->on_tp_change(v);
+#else
+#define FIRE_ON_CHANGE(v)
+#endif
+
 namespace semitone
 {
     dl_theory::dl_theory(network &net, const size_t &size) noexcept : theory(net), dists(size, std::vector<utils::rational>(size, utils::rational(utils::rational::positive_infinite))), preds(size, std::vector<utils::var>(size))
@@ -187,6 +196,14 @@ namespace semitone
         if (!layers.empty() && !layers.back().old_dists.count({from, to}))              // we have not updated this distance yet
             layers.back().old_dists.emplace(std::make_pair(from, to), dists[from][to]); // save the old distance
         dists[from][to] = dist;                                                         // set the new distance
+        if (from == 0)
+        { // we have set a distance from the source
+            FIRE_ON_CHANGE(to);
+        }
+        if (to == 0)
+        { // we have set a distance to the source
+            FIRE_ON_CHANGE(from);
+        }
     }
 
     void dl_theory::set_pred(utils::var from, utils::var to, utils::var pred) noexcept

@@ -5,6 +5,24 @@
 #include <algorithm>
 #include <cassert>
 
+#ifdef BUILD_LISTENERS
+#define FIRE_ON_CHANGE(v)                                    \
+    if (auto it = listeners.find(v); it != listeners.cend()) \
+    {                                                        \
+        for (const auto &l : it->second)                     \
+            l->on_change(v);                                 \
+        if (decision_level() == 0)                           \
+            listeners.erase(it);                             \
+    }
+#define FIRE_ON_RESET(v)                                     \
+    if (auto it = listeners.find(v); it != listeners.cend()) \
+        for (const auto &l : it->second)                     \
+            l->on_change(v);
+#else
+#define FIRE_ON_CHANGE(v)
+#define FIRE_ON_RESET(v)
+#endif
+
 namespace semitone
 {
     network::network() noexcept : la(new_theory<la_theory>(*this)), dl(new_theory<dl_theory>(*this))
@@ -245,6 +263,7 @@ namespace semitone
             reason[variable(p)] = c;
         trail.push_back(p);
         prop_queue.push(p);
+        FIRE_ON_CHANGE(variable(p));
         return true;
     }
 
@@ -255,6 +274,7 @@ namespace semitone
         level[v] = 0;
         reason[v].reset();
         trail.pop_back();
+        FIRE_ON_RESET(v);
     }
 
     void network::analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept

@@ -16,11 +16,17 @@ namespace semitone
   class theory;
   class la_theory;
   class dl_theory;
+#ifdef BUILD_LISTENERS
+  class listener;
+#endif
 
   class network
   {
     friend class clause;
     friend class theory;
+#ifdef BUILD_LISTENERS
+    friend class listener;
+#endif
 
   public:
     /**
@@ -303,6 +309,9 @@ namespace semitone
     void record(std::vector<utils::lit> &&lits) noexcept;
 
   private:
+    la_theory &la; // the linear arithmetic theory..
+    dl_theory &dl; // the difference logic theory..
+
     std::vector<utils::u_ptr<clause>> clauses;                     // the collection of problem clauses..
     std::vector<std::vector<utils::ref_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
     std::vector<utils::lbool> assigns;                             // for each variable, the current assignment..
@@ -316,9 +325,9 @@ namespace semitone
 
     std::vector<utils::u_ptr<theory>> theories;               // all the theories..
     std::unordered_map<utils::var, std::set<theory *>> binds; // for each variable, the theories that depend on it..
-
-    la_theory &la; // the linear arithmetic theory..
-    dl_theory &dl; // the difference logic theory..
+#ifdef BUILD_LISTENERS
+    std::unordered_map<utils::var, std::set<listener *>> listeners; // for each variable, the listeners that depend on it..
+#endif
   };
 
   /**
@@ -349,6 +358,34 @@ namespace semitone
     network &net;
     std::vector<utils::lit> lits;
   };
+
+#ifdef BUILD_LISTENERS
+  class listener
+  {
+    friend class network;
+
+  public:
+    listener(network &net) noexcept : net(net) {}
+    ~listener()
+    {
+      for (const auto &v : vars)
+        net.listeners[v].erase(this);
+    }
+
+    virtual void on_change(const utils::var &v) noexcept = 0;
+
+  protected:
+    void listen(const utils::var &v) noexcept
+    {
+      vars.insert(v);
+      net.listeners[v].insert(this);
+    }
+
+  private:
+    network &net;
+    std::set<utils::var> vars;
+  };
+#endif
 
   class unsolvable_exception : public std::exception
   {
