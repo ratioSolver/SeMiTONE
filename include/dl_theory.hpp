@@ -45,6 +45,8 @@ namespace semitone
     void set_dist(utils::var from, utils::var to, const utils::rational &dist) noexcept;
     void set_pred(utils::var from, utils::var to, utils::var pred) noexcept;
 
+    friend std::ostream &operator<<(std::ostream &os, const dl_theory &th);
+
   private:
     /**
      * @brief Resize the distance and predecessor matrices.

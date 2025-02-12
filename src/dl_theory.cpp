@@ -231,4 +231,23 @@ namespace semitone
             preds[i][i] = i;
         }
     }
+
+    [[nodiscard]] std::ostream &operator<<(std::ostream &os, const dl_theory &th)
+    {
+        os << "Distance matrix:\n";
+        for (size_t i = 0; i < th.dists.size(); ++i)
+        {
+            for (size_t j = 0; j < th.dists.size(); ++j)
+                os << to_string(th.dists[i][j]) << " ";
+            os << '\n';
+        }
+        os << "Predecessor matrix:\n";
+        for (size_t i = 0; i < th.preds.size(); ++i)
+        {
+            for (size_t j = 0; j < th.preds.size(); ++j)
+                os << std::to_string(th.preds[i][j]) << " ";
+            os << '\n';
+        }
+        return os;
+    }
 } // namespace semitone

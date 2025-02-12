@@ -686,4 +686,36 @@ namespace semitone
             t_watches[x.first].insert(x_i);
         tableau.emplace(x_i, new la_eq(x_i, std::move(xpr)));
     }
+
+    [[nodiscard]] std::ostream &operator<<(std::ostream &os, const la_theory &th)
+    {
+        os << "Variables:\n";
+        for (size_t i = 0; i < th.vals.size(); ++i)
+        {
+            os << "x" << std::to_string(i) << " = " << to_string(th.vals[i]);
+            if (th.is_int(i))
+                os << " (int)";
+            os << " [" << to_string(th.lb(i)) << ", " << to_string(th.ub(i)) << "]\n";
+        }
+        os << "Assertions:\n";
+        for (const auto &[v, asrts] : th.v_asrts)
+            for (const auto &asrt : asrts)
+            {
+                os << "[" << to_string(asrt->b) << "] x" << std::to_string(v) << " ";
+                switch (asrt->o)
+                {
+                case op::leq:
+                    os << "<= ";
+                    break;
+                case op::geq:
+                    os << ">= ";
+                    break;
+                }
+                os << to_string(asrt->v) << "\n";
+            }
+        os << "Tableau:\n";
+        for (const auto &[v, c] : th.tableau)
+            os << "x" << std::to_string(v) << " = " << to_string(c->l) << "\n";
+        return os;
+    }
 } // namespace semitone

@@ -308,6 +308,8 @@ namespace semitone
      */
     void record(std::vector<utils::lit> &&lits) noexcept;
 
+    friend std::ostream &operator<<(std::ostream &os, const network &net);
+
   private:
     la_theory &la; // the linear arithmetic theory..
     dl_theory &dl; // the difference logic theory..

@@ -409,6 +409,28 @@ namespace semitone
         return r;
     }
 
+    [[nodiscard]] std::ostream &operator<<(std::ostream &os, const network &net)
+    {
+        os << "Variables:\n";
+        for (size_t i = 0; i < net.assigns.size(); ++i)
+            switch (net.assigns[i])
+            {
+            case utils::True:
+                os << "b" << i << " = " << "⊤" << '@' << net.level[i] << '\n';
+                break;
+            case utils::False:
+                os << "b" << i << " = " << "⊥" << '@' << net.level[i] << '\n';
+                break;
+            default:
+                os << "b" << i << " = " << "Undef" << '\n';
+                break;
+            }
+        os << "Clauses:\n";
+        for (const auto &c : net.clauses)
+            os << "  " << *c << '\n';
+        return os;
+    }
+
     [[nodiscard]] std::ostream &operator<<(std::ostream &os, const clause &c)
     {
         os << "(" << to_string(c.lits[0]);

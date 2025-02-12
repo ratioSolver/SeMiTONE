@@ -188,6 +188,8 @@ namespace semitone
      */
     void new_row(const utils::var x_i, utils::lin &&xpr) noexcept;
 
+    friend std::ostream &operator<<(std::ostream &os, const la_theory &th);
+
   private:
     std::vector<char> is_int_var; // the type of the variable..
     /**
@@ -223,6 +225,8 @@ namespace semitone
   public:
     la_assertion(const utils::lit b, const utils::var x, const op o, const utils::inf_rational &v) noexcept : b(b), x(x), o(o), v(v) {}
 
+    friend std::ostream &operator<<(std::ostream &os, const la_theory &th);
+
   private:
     const utils::lit b;          // the literal associated to the assertion..
     const utils::var x;          // the numeric variable..
@@ -236,6 +240,8 @@ namespace semitone
 
   public:
     la_eq(const utils::var x, const utils::lin &&l) noexcept : x(x), l(std::move(l)) {}
+
+    friend std::ostream &operator<<(std::ostream &os, const la_theory &th);
 
   private:
     const utils::var x; // the numeric variable..
