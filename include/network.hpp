@@ -204,50 +204,94 @@ namespace semitone
       return *th;
     }
 
-    void add_clause(std::vector<utils::lit> &&lits);
+    /**
+     * @brief Adds a clause to the network.
+     *
+     * This function takes a vector of literals and adds it as a clause to the network.
+     *
+     * @param lits A vector of literals to be added as a clause. The vector is passed using move semantics.
+     * @throws unsolvable_exception if the problem is unsolvable.
+     */
+    void new_clause(std::vector<utils::lit> &&lits);
 
-    void add_lt(utils::lin &&lhs, utils::lin &&rhs);
-    void add_le(utils::lin &&lhs, utils::lin &&rhs) noexcept;
-    void add_eq(utils::lin &&lhs, utils::lin &&rhs) noexcept
+    /**
+     * @brief Creates a new less-than constraint between two linear expressions.
+     *
+     * @param lhs The left-hand side linear expression.
+     * @param rhs The right-hand side linear expression.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     */
+    void new_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit);
+    /**
+     * @brief Creates a new less-than-or-equal constraint between two linear expressions.
+     *
+     * @param lhs The left-hand side linear expression.
+     * @param rhs The right-hand side linear expression.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     */
+    void new_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit);
+    /**
+     * @brief Creates a new equality constraint between two linear expressions.
+     *
+     * @param lhs The left-hand side linear expression.
+     * @param rhs The right-hand side linear expression.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     */
+    void new_eq(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit)
     {
-      add_le(utils::lin(lhs), utils::lin(rhs));
-      add_le(std::move(rhs), std::move(lhs));
+      new_le(lhs, rhs, p);
+      new_le(rhs, lhs, p);
     }
-    void add_ge(utils::lin &&lhs, utils::lin &&rhs) noexcept { add_le(utils::lin(rhs), utils::lin(lhs)); }
-    void add_gt(utils::lin &&lhs, utils::lin &&rhs) noexcept { add_lt(std::move(rhs), std::move(lhs)); }
+    /**
+     * @brief Creates a new greater-than-or-equal constraint between two linear expressions.
+     *
+     * @param lhs The left-hand side linear expression.
+     * @param rhs The right-hand side linear expression.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     */
+    void new_ge(utils::lin &&lhs, utils::lin &&rhs, const utils::lit &p = utils::TRUE_lit) { new_le(rhs, lhs, p); }
+    /**
+     * @brief Creates a new greater-than constraint between two linear expressions.
+     *
+     * @param lhs The left-hand side linear expression.
+     * @param rhs The right-hand side linear expression.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     */
+    void new_gt(utils::lin &&lhs, utils::lin &&rhs, const utils::lit &p = utils::TRUE_lit) { new_lt(rhs, lhs, p); }
 
-    void new_lt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept;
-    void new_le(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept;
-
-    void new_eq(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept
+    /**
+     * @brief Creates a new difference constraint between two variables.
+     *
+     * @param x The first variable.
+     * @param y The second variable.
+     * @param d The difference between the two variables.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     */
+    void new_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p = utils::TRUE_lit);
+    /**
+     * @brief Creates a new difference constraint between two variables.
+     *
+     * @param x The first variable.
+     * @param y The second variable.
+     * @param min The minimum difference between the two variables.
+     * @param max The maximum difference between the two variables.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     */
+    void new_distance(utils::var from, utils::var to, const utils::rational &min, const utils::rational &max, const utils::lit &p = utils::TRUE_lit)
     {
-      new_le(utils::lit(p), utils::lin(lhs), utils::lin(rhs));
-      new_le(std::move(p), std::move(rhs), std::move(lhs));
-    }
-    void new_ge(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { new_le(std::move(p), std::move(rhs), std::move(lhs)); }
-    void new_gt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { new_lt(std::move(p), std::move(rhs), std::move(lhs)); }
-
-    void add_distance(utils::var from, utils::var to, const utils::rational &dist);
-    void add_distance(utils::var from, utils::var to, const utils::rational &min, const utils::rational &max)
-    {
-      add_distance(to, from, -min);
-      add_distance(from, to, max);
-    }
-
-    void new_distance(utils::lit &&p, utils::var from, utils::var to, const utils::rational &dist) noexcept;
-    void new_distance(utils::lit &&p, utils::var from, utils::var to, const utils::rational &min, const utils::rational &max) noexcept
-    {
-      new_distance(utils::lit(p), to, from, -min);
-      new_distance(std::move(p), from, to, max);
+      new_distance(to, from, -min, p);
+      new_distance(from, to, max, p);
     }
 
     /**
-     * @brief Assume the literal `p` and propagate the current set of assumptions returning `false` if a conflict is detected.
+     * @brief Assume the literal `p`.
      *
-     * @param p the literal to assume.
-     * @return bool `true` if the assumption is consistent, `false` otherwise.
+     * This function assumes the literal `p` and propagates it.
+     *
+     * @param p The literal to assume.
+     * @throw unsolvable_exception if the problem is unsolvable.
      */
-    [[nodiscard]] bool assume(const utils::lit &p) noexcept;
+    void assume(const utils::lit &p);
 
     /**
      * @brief Simplify the current set of assumptions.
@@ -259,9 +303,11 @@ namespace semitone
     /**
      * @brief Check whether the current set of assumptions is satisfiable.
      *
-     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
+     * This function checks whether the current set of assumptions is satisfiable.
+     *
+     * @throw unsolvable_exception if the problem is unsolvable.
      */
-    [[nodiscard]] bool propagate() noexcept;
+    void propagate();
 
     /**
      * @brief Advances to the next state.

@@ -32,8 +32,7 @@ namespace semitone
     [[nodiscard]] std::pair<utils::rational, utils::rational> bounds(const utils::var v) const noexcept { return {lb(v), ub(v)}; }
     [[nodiscard]] std::pair<utils::rational, utils::rational> distance(const utils::var from, const utils::var to) const noexcept { return {-dists[to][from], dists[from][to]}; }
 
-    void add_distance(utils::var from, utils::var to, const utils::rational &dist);
-    void new_distance(utils::lit &&p, utils::var from, utils::var to, const utils::rational &dist) noexcept;
+    void new_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p);
 
   private:
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept override;

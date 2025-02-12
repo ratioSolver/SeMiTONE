@@ -94,34 +94,16 @@ namespace semitone
     }
 
     /**
-     * @brief Adds a less-than constraint between two linear expressions.
+     * @brief Creates a new less-than constraint between two linear expressions.
      *
-     * This function adds a less-than constraint between the left-hand side (lhs)
-     * and the right-hand side (rhs) linear expressions. The constraint can be
-     * either strict or non-strict based on the value of the `strict` parameter.
+     * This function creates a new less-than constraint between the two linear expressions `lhs` and `rhs` and optionally conditions it with the literal `p`.
      *
      * @param lhs The left-hand side linear expression.
      * @param rhs The right-hand side linear expression.
-     * @param strict If true, the constraint is strict (lhs < rhs). If false, the
-     *               constraint is non-strict (lhs <= rhs). Default is false.
+     * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
+     * @param strict A flag indicating whether the constraint is strict. Defaults to false.
      */
-    void add_lt(utils::lin &lhs, utils::lin &rhs, bool strict = false);
-    /**
-     * @brief Adds a less-than constraint between two linear expressions, with a
-     *       literal as a guard.
-     *
-     * This function adds a less-than constraint between the left-hand side (lhs)
-     * and the right-hand side (rhs) linear expressions. The constraint can be
-     * either strict or non-strict based on the value of the `strict` parameter.
-     * The constraint is guarded by the literal `p`.
-     *
-     * @param p The guard literal.
-     * @param lhs The left-hand side linear expression.
-     * @param rhs The right-hand side linear expression.
-     * @param strict If true, the constraint is strict (lhs < rhs). If false, the
-     *              constraint is non-strict (lhs <= rhs). Default is false.
-     */
-    void new_lt(utils::lit &&p, utils::lin &lhs, utils::lin &rhs, bool strict = false);
+    void new_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit, bool strict = false);
 
     /**
      * @brief Checks if the given variable is an integer.

@@ -95,127 +95,18 @@ namespace semitone
         return var;
     }
 
-    void la_theory::add_lt(utils::lin &lhs, utils::lin &rhs, bool strict)
+    void la_theory::new_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p, bool strict)
     {
+        assert(net.value(p) != utils::False);
         utils::lin expr = lhs - rhs;
 
         switch (expr.vars.size())
         {
         case 0: // the expression is a constant..
             if (strict && expr.known_term >= 0)
-                throw unsolvable_exception(); // the problem is unsatisfiable..
+                return net.new_clause({!p}); // the constraint is conflicting..
             else if (expr.known_term > 0)
-                throw unsolvable_exception(); // the problem is unsatisfiable..
-            return;                           // the constraint is already satisfied..
-        case 1:
-        { // the expression is a single variable..
-            const auto [v, c] = *expr.vars.cbegin();
-            assert(c != 0);
-            const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0) / c; // the right-hand side of the constraint is the division of the negation of the known term minus an infinitesimal by the coefficient..
-            if (c > 0)
-            { // `v` <= `c_right`..
-                if (ub(v) <= (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                    return; // the constraint is already satisfied..
-                else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                    throw unsolvable_exception(); // the problem is unsatisfiable..
-                // we update the upper bound of `v`..
-                LOG_TRACE("x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                c_bounds[ub_index(v)] = {is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}};
-            }
-            else
-            { // `v` >= `c_right`..
-                if (lb(v) >= (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                    return; // the constraint is already satisfied..
-                else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                    throw unsolvable_exception(); // the problem is unsatisfiable..
-                // we update the lower bound of `v`..
-                LOG_TRACE("x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                c_bounds[lb_index(v)] = {is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}};
-            }
-            return;
-        }
-        default:
-        {
-            // we remove the basic variables from the expression and replace them with their corresponding linear expressions in the tableau
-            std::vector<utils::var> vars;
-            vars.reserve(expr.vars.size());
-            for ([[maybe_unused]] const auto &[v, c] : expr.vars)
-                vars.push_back(v);
-            for (const auto &v : vars)
-                if (tableau.find(v) != tableau.cend())
-                {
-                    auto c = expr.vars.at(v);
-                    expr.vars.erase(v);
-                    expr += c * tableau.at(v)->l;
-                }
-
-            switch (expr.vars.size())
-            {
-            case 0: // the expression is a constant..
-                if (strict && expr.known_term >= 0)
-                    throw unsolvable_exception(); // the problem is unsatisfiable..
-                else if (expr.known_term > 0)
-                    throw unsolvable_exception(); // the problem is unsatisfiable..
-                return;                           // the constraint is already satisfied..
-            case 1:
-            { // the expression is a single variable..
-                const auto [v, c] = *expr.vars.cbegin();
-                assert(c != 0);
-                const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0) / c; // the right-hand side of the constraint is the division of the negation of the known term minus an infinitesimal by the coefficient..
-                if (c > 0)
-                { // `v` <= `c_right`..
-                    if (ub(v) <= (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                        return; // the constraint is already satisfied..
-                    else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                        throw unsolvable_exception(); // the problem is unsatisfiable..
-                    // we update the upper bound of `v`..
-                    LOG_TRACE("x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                    c_bounds[ub_index(v)] = {is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}};
-                }
-                else
-                { // `v` >= `c_right`..
-                    if (lb(v) >= (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                        return; // the constraint is already satisfied..
-                    else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                        throw unsolvable_exception(); // the problem is unsatisfiable..
-                    // we update the lower bound of `v`..
-                    LOG_TRACE("x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                    c_bounds[lb_index(v)] = {is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}};
-                }
-            }
-            break;
-            default:
-            { // the expression is an inequality with multiple variables
-                const utils::inf_rational c_right = utils::inf_rational(-expr.known_term, strict ? -1 : 0);
-                expr.known_term = utils::rational::zero;
-
-                if (ub(expr) <= c_right)
-                    return; // the constraint is already satisfied..
-                else if (lb(expr) > c_right)
-                    throw unsolvable_exception(); // the problem is unsatisfiable..
-
-                // we add a slack variable to the tableau..
-                auto slack = new_real(std::move(expr));
-                // .. and update its upper bound..
-                LOG_TRACE("x" << std::to_string(slack) << " <= " << to_string(c_right));
-                c_bounds[ub_index(slack)] = {c_right, {}};
-            }
-            }
-        }
-        }
-    }
-
-    void la_theory::new_lt(utils::lit &&p, utils::lin &lhs, utils::lin &rhs, bool strict)
-    {
-        utils::lin expr = lhs - rhs;
-
-        switch (expr.vars.size())
-        {
-        case 0: // the expression is a constant..
-            if (strict && expr.known_term >= 0)
-                return net.add_clause({!p}); // the constraint is conflicting..
-            else if (expr.known_term > 0)
-                return net.add_clause({!p}); // the constraint is conflicting..
+                return net.new_clause({!p}); // the constraint is conflicting..
             return;                          // the constraint is already satisfied..
         case 1:
         { // the expression is a single variable..
@@ -227,20 +118,30 @@ namespace semitone
                 if (ub(v) <= (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
                     return; // the constraint is already satisfied..
                 else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                    return net.add_clause({!p}); // the constraint is conflicting..
+                    return net.new_clause({!p}); // the constraint is conflicting..
                 LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                bind(variable(p)); // we get notified when the variable `v` changes..
+                if (net.value(p) == utils::True) // we update the bound..
+                    c_bounds[ub_index(v)] = {is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}};
+                else
+                { // we add the assertion to the list of assertions..
+                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
+                    bind(variable(p)); // we get notified when the variable `v` changes..
+                }
             }
             else
             { // `v` >= `c_right`..
                 if (lb(v) >= (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
                     return; // the constraint is already satisfied..
                 else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                    return net.add_clause({!p}); // the constraint is conflicting..
+                    return net.new_clause({!p}); // the constraint is conflicting..
                 LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                bind(variable(p)); // we get notified when the variable `v` changes..
+                if (net.value(p) == utils::True) // we update the bound..
+                    c_bounds[lb_index(v)] = {is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}};
+                else
+                { // we add the assertion to the list of assertions..
+                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
+                    bind(variable(p)); // we get notified when the variable `v` changes..
+                }
             }
             return;
         }
@@ -263,9 +164,9 @@ namespace semitone
             {
             case 0: // the expression is a constant..
                 if (strict && expr.known_term >= 0)
-                    return net.add_clause({!p}); // the constraint is conflicting..
+                    return net.new_clause({!p}); // the constraint is conflicting..
                 else if (expr.known_term > 0)
-                    return net.add_clause({!p}); // the constraint is conflicting..
+                    return net.new_clause({!p}); // the constraint is conflicting..
                 return;                          // the constraint is already satisfied..
             case 1:
             { // the expression is a single variable..
@@ -277,20 +178,30 @@ namespace semitone
                     if (ub(v) <= (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
                         return; // the constraint is already satisfied..
                     else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                        return net.add_clause({!p}); // the constraint is conflicting..
+                        return net.new_clause({!p}); // the constraint is conflicting..
                     LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                    bind(variable(p)); // we get notified when the variable `v` changes..
+                    if (net.value(p) == utils::True) // we update the bound..
+                        c_bounds[ub_index(v)] = {is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}};
+                    else
+                    { // we add the assertion to the list of assertions..
+                        v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
+                        bind(variable(p)); // we get notified when the variable `v` changes..
+                    }
                 }
                 else
                 { // `v` >= `c_right`..
                     if (lb(v) >= (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
                         return; // the constraint is already satisfied..
                     else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                        return net.add_clause({!p}); // the constraint is conflicting..
+                        return net.new_clause({!p}); // the constraint is conflicting..
                     LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                    bind(variable(p)); // we get notified when the variable `v` changes..
+                    if (net.value(p) == utils::True) // we update the bound..
+                        c_bounds[lb_index(v)] = {is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}};
+                    else
+                    { // we add the assertion to the list of assertions..
+                        v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
+                        bind(variable(p)); // we get notified when the variable `v` changes..
+                    }
                 }
             }
             break;
@@ -302,13 +213,18 @@ namespace semitone
                 if (ub(expr) <= c_right)
                     return; // the constraint is already satisfied..
                 else if (lb(expr) > c_right)
-                    net.add_clause({!p});
+                    net.new_clause({!p});
 
                 // we add a slack variable to the tableau..
                 auto slack = new_real(std::move(expr));
                 LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(slack) << " <= " << to_string(c_right));
-                v_asrts[variable(p)].emplace(new la_assertion(p, slack, op::leq, c_right));
-                bind(variable(p)); // we get notified when the slack variable changes..
+                if (net.value(p) == utils::True) // we update the bound..
+                    c_bounds[ub_index(slack)] = {c_right, {}};
+                else
+                { // we add the assertion to the list of assertions..
+                    v_asrts[variable(p)].emplace(new la_assertion(p, slack, op::leq, c_right));
+                    bind(variable(p)); // we get notified when the slack variable changes..
+                }
             }
             }
         }

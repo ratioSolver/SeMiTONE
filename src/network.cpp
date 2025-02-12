@@ -63,7 +63,7 @@ namespace semitone
     std::pair<utils::rational, utils::rational> network::tp_bounds(const utils::var v) const noexcept { return dl.bounds(v); }
     std::pair<utils::rational, utils::rational> network::tp_distance(const utils::var from, const utils::var to) const noexcept { return dl.distance(from, to); }
 
-    void network::add_clause(std::vector<utils::lit> &&lits)
+    void network::new_clause(std::vector<utils::lit> &&lits)
     {
         assert(decision_level() == 0);
         // we check if the clause is already satisfied and filter out false/duplicate literals..
@@ -98,17 +98,12 @@ namespace semitone
         }
     }
 
-    void network::add_lt(utils::lin &&lhs, utils::lin &&rhs) { la.add_lt(lhs, rhs, true); }
-    void network::add_le(utils::lin &&lhs, utils::lin &&rhs) noexcept { la.add_lt(lhs, rhs); }
+    void network::new_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p, true); }
+    void network::new_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p); }
 
-    void network::new_lt(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(std::move(p), lhs, rhs, true); }
-    void network::new_le(utils::lit &&p, utils::lin &&lhs, utils::lin &&rhs) noexcept { la.new_lt(std::move(p), lhs, rhs); }
+    void network::new_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p) { dl.new_distance(from, to, dist, p); }
 
-    void network::add_distance(utils::var from, utils::var to, const utils::rational &dist) { dl.add_distance(from, to, dist); }
-
-    void network::new_distance(utils::lit &&p, utils::var from, utils::var to, const utils::rational &dist) noexcept { dl.new_distance(std::move(p), from, to, dist); }
-
-    bool network::assume(const utils::lit &p) noexcept
+    void network::assume(const utils::lit &p)
     {
         assert(value(p) == utils::Undefined);
         assert(prop_queue.empty());
@@ -117,14 +112,15 @@ namespace semitone
         decisions.push_back(p);
         for (const auto &th : theories)
             th->push();
-        return enqueue(p) && propagate();
+        [[maybe_unused]] auto e = enqueue(p);
+        assert(e);
+        propagate();
     }
 
     bool network::simplify_db() noexcept
     {
         assert(decision_level() == 0);
-        if (!propagate())
-            return false;
+        propagate();
         size_t i = 0, j = clauses.size();
         while (i < j)
         {
@@ -137,7 +133,7 @@ namespace semitone
         return true;
     }
 
-    bool network::propagate() noexcept
+    void network::propagate()
     {
         utils::lit p;
     main_loop:
@@ -155,8 +151,8 @@ namespace semitone
                     while (!prop_queue.empty())
                         prop_queue.pop(); // we clear the propagation queue..
 
-                    if (decision_level() == 0)
-                        return false; // the problem is unsatisfiable..
+                    if (decision_level() == 0) // the problem is unsolvable..
+                        throw unsolvable_exception();
 
                     std::vector<utils::lit> no_good;
                     size_t bt_level;
@@ -179,8 +175,8 @@ namespace semitone
                         while (!prop_queue.empty())
                             prop_queue.pop();
 
-                        if (decision_level() == 0) // the problem is unsatisfiable..
-                            return false;
+                        if (decision_level() == 0) // the problem is unsolvable..
+                            throw unsolvable_exception();
 
                         // we analyze the theory's conflict, create a no-good from the analysis and backjump..
                         clause cnfl_cl(*this, std::move(th->cnfl));
@@ -208,16 +204,16 @@ namespace semitone
             {
                 assert(prop_queue.empty());
 
-                if (decision_level() == 0) // the problem is unsatisfiable..
-                    return false;
+                if (decision_level() == 0) // the problem is unsolvable..
+                    throw unsolvable_exception();
 
                 assert(!th->cnfl.empty());
                 if (th->cnfl.size() == 1)
                 {
                     while (decision_level() > 0)
                         pop();
-                    if (!enqueue(th->cnfl[0]))
-                        return false;
+                    if (!enqueue(th->cnfl[0])) // the problem is unsolvable..
+                        throw unsolvable_exception();
                     goto main_loop;
                 }
 
@@ -236,8 +232,6 @@ namespace semitone
                 record(std::move(no_good));
                 goto main_loop;
             }
-
-        return true;
     }
 
     void network::pop() noexcept

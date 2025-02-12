@@ -33,27 +33,24 @@ namespace semitone
         return var;
     }
 
-    void dl_theory::add_distance(utils::var from, utils::var to, const utils::rational &dist)
+    void dl_theory::new_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p)
     {
+        assert(net.value(p) != utils::False);
         if (dists[to][from] < -dist)
-            throw unsolvable_exception(); // the problem is unsolvable..
-        if (dists[from][to] <= dist)
-            return; // the constraint is redundant..
-        set_dist(from, to, dist);
-    }
-
-    void dl_theory::new_distance(utils::lit &&p, utils::var from, utils::var to, const utils::rational &dist) noexcept
-    {
-        if (dists[to][from] < -dist)
-            return net.add_clause({!p}); // the constraint is conflicting..
+            return net.new_clause({!p}); // the constraint is conflicting..
         if (dists[from][to] <= dist)
             return; // the constraint is redundant..
 
         LOG_TRACE("[" << to_string(p) << "] tp" << std::to_string(from) << " -> tp" << std::to_string(to) << " : " << to_string(dist));
-        bind(variable(p));
-        auto constr = new distance_constraint(p, from, to, dist);
-        dist_constrs[{from, to}].emplace_back(*constr);
-        var_constrs[variable(p)].emplace_back(constr);
+        if (net.value(p) == utils::True) // we update the distance..
+            set_dist(from, to, dist);
+        else
+        { // we add the constraint to the list of constraints..
+            bind(variable(p));
+            auto constr = new distance_constraint(p, from, to, dist);
+            dist_constrs[{from, to}].emplace_back(*constr);
+            var_constrs[variable(p)].emplace_back(constr);
+        }
     }
 
     bool dl_theory::propagate(const utils::lit &p) noexcept
