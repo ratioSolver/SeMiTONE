@@ -249,7 +249,7 @@ namespace semitone
      * @param rhs The right-hand side linear expression.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_ge(utils::lin &&lhs, utils::lin &&rhs, const utils::lit &p = utils::TRUE_lit) { new_le(rhs, lhs, p); }
+    void new_ge(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit) { new_le(rhs, lhs, p); }
     /**
      * @brief Creates a new greater-than constraint between two linear expressions.
      *
@@ -257,7 +257,7 @@ namespace semitone
      * @param rhs The right-hand side linear expression.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_gt(utils::lin &&lhs, utils::lin &&rhs, const utils::lit &p = utils::TRUE_lit) { new_lt(rhs, lhs, p); }
+    void new_gt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit) { new_lt(rhs, lhs, p); }
 
     /**
      * @brief Creates a new difference constraint between two variables.
