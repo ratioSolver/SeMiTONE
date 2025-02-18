@@ -87,7 +87,7 @@ namespace semitone
         case 0:
             throw unsolvable_exception(); // the problem is unsolvable..
         case 1:
-            LOG_TRACE("( " << to_string(lits[0]) << " )");
+            LOG_TRACE("(" << to_string(lits[0]) << ")");
             if (!enqueue(lits[0]))            // the clause is unit under the current assignment..
                 throw unsolvable_exception(); // the problem is unsolvable..
             break;
