@@ -210,7 +210,7 @@ namespace semitone
      * This function takes a vector of literals and adds it as a clause to the network.
      *
      * @param lits A vector of literals to be added as a clause. The vector is passed using move semantics.
-     * @throws unsolvable_exception if the problem is unsolvable.
+     * @throw unsolvable_exception if the problem is unsolvable.
      */
     void new_clause(std::vector<utils::lit> &&lits);
 
@@ -437,7 +437,13 @@ namespace semitone
 
   class unsolvable_exception : public std::exception
   {
-    const char *what() const noexcept override { return "the problem is unsolvable.."; }
+  public:
+    unsolvable_exception(std::vector<utils::lit> &&cnfl = {}) noexcept : cnfl(std::move(cnfl)) {}
+
+    [[nodiscard]] const char *what() const noexcept override { return "the problem is unsolvable.."; }
+
+  private:
+    std::vector<utils::lit> cnfl;
   };
 
   [[nodiscard]] std::ostream &operator<<(std::ostream &os, const clause &c);
