@@ -119,7 +119,6 @@ namespace semitone
                     return; // the constraint is already satisfied..
                 else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
                     return net.new_clause({!p}); // the constraint is conflicting..
-                LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                 if (net.value(p) == utils::True)
                 { // we update the upper bound..
                     if (!assert_upper(v, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}))
@@ -127,6 +126,7 @@ namespace semitone
                 }
                 else
                 { // we add the assertion to the list of assertions..
+                    LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                     v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                     bind(variable(p)); // we get notified when the variable `v` changes..
                 }
@@ -137,7 +137,6 @@ namespace semitone
                     return; // the constraint is already satisfied..
                 else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
                     return net.new_clause({!p}); // the constraint is conflicting..
-                LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                 if (net.value(p) == utils::True)
                 { // we update the lower bound..
                     if (!assert_lower(v, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}))
@@ -145,6 +144,7 @@ namespace semitone
                 }
                 else
                 { // we add the assertion to the list of assertions..
+                    LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                     v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                     bind(variable(p)); // we get notified when the variable `v` changes..
                 }
@@ -185,7 +185,6 @@ namespace semitone
                         return; // the constraint is already satisfied..
                     else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
                         return net.new_clause({!p}); // the constraint is conflicting..
-                    LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                     if (net.value(p) == utils::True)
                     { // we update the upper bound..
                         if (!assert_upper(v, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}))
@@ -193,6 +192,7 @@ namespace semitone
                     }
                     else
                     { // we add the assertion to the list of assertions..
+                        LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                         v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                         bind(variable(p)); // we get notified when the variable `v` changes..
                     }
@@ -203,7 +203,6 @@ namespace semitone
                         return; // the constraint is already satisfied..
                     else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
                         return net.new_clause({!p}); // the constraint is conflicting..
-                    LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                     if (net.value(p) == utils::True)
                     { // we update the lower bound..
                         if (!assert_lower(v, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}))
@@ -211,6 +210,7 @@ namespace semitone
                     }
                     else
                     { // we add the assertion to the list of assertions..
+                        LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                         v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                         bind(variable(p)); // we get notified when the variable `v` changes..
                     }
@@ -229,7 +229,6 @@ namespace semitone
 
                 // we add a slack variable to the tableau..
                 auto slack = new_real(std::move(expr));
-                LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(slack) << " <= " << to_string(c_right));
                 if (net.value(p) == utils::True)
                 { // we update the upper bound..
                     if (!assert_upper(slack, c_right, {}))
@@ -237,6 +236,7 @@ namespace semitone
                 }
                 else
                 { // we add the assertion to the list of assertions..
+                    LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(slack) << " <= " << to_string(c_right));
                     v_asrts[variable(p)].emplace(new la_assertion(p, slack, op::leq, c_right));
                     bind(variable(p)); // we get notified when the slack variable changes..
                 }
