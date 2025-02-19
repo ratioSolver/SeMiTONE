@@ -218,10 +218,10 @@ namespace smt
         for (size_t i = 0; i < c_size; ++i)
         {
             dists[i].resize(size, utils::rational(utils::rational::positive_infinite));
-            preds[i].resize(size, std::numeric_limits<INT_TYPE>::max());
+            preds[i].resize(size, std::numeric_limits<utils::var>::max());
         }
         dists.resize(size, std::vector<utils::rational>(size, utils::rational(utils::rational::positive_infinite)));
-        preds.resize(size, std::vector<utils::var>(size, std::numeric_limits<INT_TYPE>::max()));
+        preds.resize(size, std::vector<utils::var>(size, std::numeric_limits<utils::var>::max()));
         for (size_t i = c_size; i < size; ++i)
         {
             dists[i][i] = utils::rational(utils::rational::zero);
@@ -242,7 +242,7 @@ namespace smt
         for (size_t i = 0; i < th.preds.size(); ++i)
         {
             for (size_t j = 0; j < th.preds.size(); ++j)
-                os << std::to_string(th.preds[i][j]) << " ";
+                os << (th.preds[i][j] == std::numeric_limits<utils::var>::max() ? "-" : std::to_string(th.preds[i][j])) << " ";
             os << '\n';
         }
         return os;
