@@ -190,7 +190,7 @@ namespace semitone
     std::vector<std::set<utils::var>> t_watches;                              // for each variable `v`, a list of tableau rows watching `v`..
     std::vector<std::map<size_t, bound>> layers;                              // we store the updated bounds..
 #ifdef BUILD_LISTENERS
-    std::unordered_map<utils::var, std::set<la_listener *>> listeners; // for each variable, the listeners that depend on it..
+    std::unordered_map<utils::var, std::set<la_listener *>> var_listeners; // for each variable, the listeners that depend on it..
 #endif
   };
 
@@ -237,10 +237,10 @@ namespace semitone
 
   public:
     la_listener(la_theory &th) noexcept : th(th) {}
-    ~la_listener()
+    virtual ~la_listener()
     {
       for (const auto &v : vars)
-        th.listeners[v].erase(this);
+        th.var_listeners[v].erase(this);
     }
 
     virtual void on_arith_change(const utils::var &v) noexcept = 0;
@@ -249,7 +249,7 @@ namespace semitone
     void listen_arith(const utils::var &v) noexcept
     {
       vars.insert(v);
-      th.listeners[v].insert(this);
+      th.var_listeners[v].insert(this);
     }
 
   private:

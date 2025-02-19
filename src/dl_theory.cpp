@@ -4,12 +4,12 @@
 #include <cassert>
 
 #ifdef BUILD_LISTENERS
-#define FIRE_ON_CHANGE(v)                                    \
-    if (auto it = listeners.find(v); it != listeners.cend()) \
-        for (const auto &l : it->second)                     \
+#define VAR_CHANGED(v)                                            \
+    if (auto it = var_listeners.find(v); it != var_listeners.cend()) \
+        for (const auto &l : it->second)                             \
             l->on_tp_change(v);
 #else
-#define FIRE_ON_CHANGE(v)
+#define VAR_CHANGED(v)
 #endif
 
 namespace semitone
@@ -195,11 +195,11 @@ namespace semitone
         dists[from][to] = dist;                                                         // set the new distance
         if (from == 0)
         { // we have set a distance from the source
-            FIRE_ON_CHANGE(to);
+            VAR_CHANGED(to);
         }
         if (to == 0)
         { // we have set a distance to the source
-            FIRE_ON_CHANGE(from);
+            VAR_CHANGED(from);
         }
     }
 

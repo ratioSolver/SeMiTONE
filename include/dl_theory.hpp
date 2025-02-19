@@ -70,7 +70,7 @@ namespace semitone
     std::map<std::pair<utils::var, utils::var>, utils::ref_wrapper<distance_constraint>> dist_constr;               // the currently enforced constraints..
     std::vector<layer> layers;                                                                                      // we store the updates..
 #ifdef BUILD_LISTENERS
-    std::unordered_map<utils::var, std::set<dl_listener *>> listeners; // for each variable, the listeners that depend on it..
+    std::unordered_map<utils::var, std::set<dl_listener *>> var_listeners; // for each variable, the listeners that depend on it..
 #endif
   };
 
@@ -98,10 +98,10 @@ namespace semitone
 
   public:
     dl_listener(dl_theory &th) noexcept : th(th) {}
-    ~dl_listener()
+    virtual ~dl_listener()
     {
       for (const auto &v : vars)
-        th.listeners[v].erase(this);
+        th.var_listeners[v].erase(this);
     }
 
     virtual void on_tp_change(const utils::var &v) noexcept = 0;
@@ -110,7 +110,7 @@ namespace semitone
     void listen_tp(const utils::var &v) noexcept
     {
       vars.insert(v);
-      th.listeners[v].insert(this);
+      th.var_listeners[v].insert(this);
     }
 
   private:

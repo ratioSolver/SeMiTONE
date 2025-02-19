@@ -6,21 +6,29 @@
 #include <cassert>
 
 #ifdef BUILD_LISTENERS
-#define FIRE_ON_CHANGE(v)                                    \
-    if (auto it = listeners.find(v); it != listeners.cend()) \
-    {                                                        \
-        for (const auto &l : it->second)                     \
-            l->on_change(v);                                 \
-        if (decision_level() == 0)                           \
-            listeners.erase(it);                             \
+#define VAR_CHANGED(v)                                               \
+    if (auto it = var_listeners.find(v); it != var_listeners.cend()) \
+    {                                                                \
+        for (const auto &l : it->second)                             \
+            l->on_change(v);                                         \
+        if (decision_level() == 0)                                   \
+            var_listeners.erase(it);                                 \
     }
-#define FIRE_ON_RESET(v)                                     \
-    if (auto it = listeners.find(v); it != listeners.cend()) \
-        for (const auto &l : it->second)                     \
+#define VAR_RESET(v)                                                 \
+    if (auto it = var_listeners.find(v); it != var_listeners.cend()) \
+        for (const auto &l : it->second)                             \
             l->on_change(v);
+#define PUSH()                      \
+    for (const auto &l : listeners) \
+        l->push();
+#define POP()                       \
+    for (const auto &l : listeners) \
+        l->pop();
 #else
-#define FIRE_ON_CHANGE(v)
-#define FIRE_ON_RESET(v)
+#define VAR_CHANGED(v)
+#define VAR_RESET(v)
+#define PUSH()
+#define POP()
 #endif
 
 namespace semitone
@@ -112,6 +120,7 @@ namespace semitone
         decisions.push_back(p);
         for (const auto &th : theories)
             th->push();
+        PUSH();
         [[maybe_unused]] auto e = enqueue(p);
         assert(e);
         propagate();
@@ -244,6 +253,7 @@ namespace semitone
 
         for (const auto &th : theories)
             th->pop();
+        POP();
     }
 
     bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
@@ -257,7 +267,7 @@ namespace semitone
             reason[variable(p)] = c;
         trail.push_back(p);
         prop_queue.push(p);
-        FIRE_ON_CHANGE(variable(p));
+        VAR_CHANGED(variable(p));
         return true;
     }
 
@@ -268,7 +278,7 @@ namespace semitone
         level[v] = 0;
         reason[v].reset();
         trail.pop_back();
-        FIRE_ON_RESET(v);
+        VAR_RESET(v);
     }
 
     void network::analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept

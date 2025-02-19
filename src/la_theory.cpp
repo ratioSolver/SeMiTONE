@@ -5,12 +5,12 @@
 #include <cassert>
 
 #ifdef BUILD_LISTENERS
-#define FIRE_ON_CHANGE(v)                                    \
-    if (auto it = listeners.find(v); it != listeners.cend()) \
-        for (const auto &l : it->second)                     \
+#define VAR_CHANGED(v)                                               \
+    if (auto it = var_listeners.find(v); it != var_listeners.cend()) \
+        for (const auto &l : it->second)                             \
             l->on_arith_change(v);
 #else
-#define FIRE_ON_CHANGE(v)
+#define VAR_CHANGED(v)
 #endif
 
 namespace semitone
@@ -525,11 +525,11 @@ namespace semitone
         for (const auto &c : t_watches[x_i])
         { // x_j = x_j + a_ji(v - x_i)..
             vals[c] += tableau.at(c)->l.vars.at(x_i) * (v - vals[x_i]);
-            FIRE_ON_CHANGE(c);
+            VAR_CHANGED(c);
         }
         // x_i = v..
         vals[x_i] = v;
-        FIRE_ON_CHANGE(x_i);
+        VAR_CHANGED(x_i);
     }
     void la_theory::pivot_and_update(const utils::var x_i, const utils::var x_j, const utils::inf_rational &v) noexcept
     {
@@ -542,18 +542,18 @@ namespace semitone
 
         // x_i = v
         vals[x_i] = v;
-        FIRE_ON_CHANGE(x_i);
+        VAR_CHANGED(x_i);
 
         // x_j += theta
         vals[x_j] += theta;
-        FIRE_ON_CHANGE(x_j);
+        VAR_CHANGED(x_j);
 
         // the tableau rows containing `x_j` as a non-basic variable..
         for (const auto &c : t_watches[x_j])
             if (c != x_i)
             { // x_k += a_kj * theta..
                 vals[c] += tableau.at(c)->l.vars.at(x_j) * theta;
-                FIRE_ON_CHANGE(c);
+                VAR_CHANGED(c);
             }
 
         pivot(x_i, x_j);

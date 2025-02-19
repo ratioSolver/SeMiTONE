@@ -18,6 +18,7 @@ namespace semitone
   class dl_theory;
 #ifdef BUILD_LISTENERS
   class listener;
+  class prop_listener;
 #endif
 
   class network
@@ -26,6 +27,7 @@ namespace semitone
     friend class theory;
 #ifdef BUILD_LISTENERS
     friend class listener;
+    friend class prop_listener;
 #endif
 
   public:
@@ -391,7 +393,8 @@ namespace semitone
 
     std::unordered_map<utils::var, std::set<theory *>> binds; // for each variable, the theories that depend on it..
 #ifdef BUILD_LISTENERS
-    std::unordered_map<utils::var, std::set<listener *>> listeners; // for each variable, the listeners that depend on it..
+    std::set<listener *> listeners;                                          // the listeners..
+    std::unordered_map<utils::var, std::set<prop_listener *>> var_listeners; // for each variable, the listeners that depend on it..
 #endif
   };
 
@@ -430,11 +433,26 @@ namespace semitone
     friend class network;
 
   public:
-    listener(network &net) noexcept : net(net) {}
-    ~listener()
+    listener(network &net) noexcept : net(net) { net.listeners.insert(this); }
+    virtual ~listener() { net.listeners.erase(this); }
+
+    virtual void push() = 0;
+    virtual void pop() = 0;
+
+  private:
+    network &net;
+  };
+
+  class prop_listener
+  {
+    friend class network;
+
+  public:
+    prop_listener(network &net) noexcept : net(net) {}
+    virtual ~prop_listener()
     {
       for (const auto &v : vars)
-        net.listeners[v].erase(this);
+        net.var_listeners[v].erase(this);
     }
 
     virtual void on_change(const utils::var &v) noexcept = 0;
@@ -443,7 +461,7 @@ namespace semitone
     void listen(const utils::var &v) noexcept
     {
       vars.insert(v);
-      net.listeners[v].insert(this);
+      net.var_listeners[v].insert(this);
     }
 
   private:
