@@ -36,6 +36,23 @@ namespace semitone
     network() noexcept;
 
     /**
+     * @brief Retrieves the linear arithmetic theory.
+     *
+     * This function returns a reference to the linear arithmetic theory.
+     *
+     * @return A reference to the linear arithmetic theory.
+     */
+    la_theory &get_linear_arithmetic_theory() noexcept { return la; }
+    /**
+     * @brief Retrieves the difference logic theory.
+     *
+     * This function returns a reference to the difference logic theory.
+     *
+     * @return A reference to the difference logic theory.
+     */
+    dl_theory &get_difference_logic_theory() noexcept { return dl; }
+
+    /**
      * @brief Create a new propositional variable
      *
      * @return The new variable.
