@@ -363,7 +363,7 @@ namespace smt
      * @param out_learnt the learnt clause.
      * @param out_btlevel the backtracking level.
      */
-    void analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept;
+    void analyze(std::vector<utils::lit> &&cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept;
 
     /**
      * @brief Record the learnt clause `lits`.

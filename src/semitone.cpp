@@ -162,7 +162,7 @@ namespace smt
                     std::vector<utils::lit> no_good;
                     size_t bt_level;
                     // we analyze the conflict..
-                    analyze(*ws[i], no_good, bt_level);
+                    analyze(std::vector<utils::lit>(ws[i]->lits), no_good, bt_level);
                     while (decision_level() > bt_level)
                         pop();
                     // we record the no-good..
@@ -184,12 +184,10 @@ namespace smt
                             throw unsolvable_exception();
 
                         // we analyze the theory's conflict, create a no-good from the analysis and backjump..
-                        clause cnfl_cl(*this, std::move(th->cnfl));
-
-                        // .. and we analyze the conflict..
                         std::vector<utils::lit> no_good;
                         size_t bt_level = 0;
-                        analyze(cnfl_cl, no_good, bt_level);
+                        analyze(std::move(th->cnfl), no_good, bt_level);
+                        th->cnfl.clear();
 
                         // we backjump..
                         while (decision_level() > bt_level)
@@ -223,12 +221,10 @@ namespace smt
                 }
 
                 // we analyze the theory's conflict, create a no-good from the analysis and backjump..
-                clause cnfl_cl(*this, std::move(th->cnfl));
-
-                // .. and we analyze the conflict..
                 std::vector<utils::lit> no_good;
                 size_t bt_level = 0;
-                analyze(cnfl_cl, no_good, bt_level);
+                analyze(std::move(th->cnfl), no_good, bt_level);
+                th->cnfl.clear();
 
                 // we backjump..
                 while (decision_level() > bt_level)
@@ -277,12 +273,15 @@ namespace smt
         VAR_RESET(v);
     }
 
-    void semitone::analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
+    void semitone::analyze(std::vector<utils::lit> &&cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
     {
         std::set<utils::var> seen;
         int counter = 0; // this is the number of variables of the current decision level that have already been seen..
         utils::lit p;
-        std::vector<utils::lit> p_reason = cnfl.get_reason(p);
+        std::vector<utils::lit> p_reason;
+        p_reason.reserve(cnfl.size());
+        for (const auto &lt : cnfl)
+            p_reason.push_back(!lt);
         out_learnt.push_back(p); // we make room for the next to be enqueued literal..
         out_btlevel = 0;
         do
@@ -412,10 +411,10 @@ namespace smt
 
     std::vector<utils::lit> clause::get_reason(const utils::lit &p) const noexcept
     {
-        assert(is_undefined(p) || p == lits[0]);
+        assert(p == lits[0]);
         std::vector<utils::lit> r;
-        r.reserve(is_undefined(p) ? lits.size() : lits.size() - 1);
-        for (size_t i = is_undefined(p) ? 0 : 1; i < lits.size(); ++i)
+        r.reserve(lits.size() - 1);
+        for (size_t i = 1; i < lits.size(); ++i)
         {
             assert(net.value(lits[i]) == utils::False); // when this function is called, the clause is unit..
             r.push_back(!lits[i]);
