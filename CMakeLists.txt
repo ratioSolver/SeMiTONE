@@ -6,7 +6,7 @@ enable_testing()
 
 option(BUILD_LISTENERS "Builds SeMiTONE listeners" OFF)
 
-add_library(SeMiTONE src/network.cpp src/theory.cpp src/la_theory.cpp src/dl_theory.cpp)
+add_library(SeMiTONE src/semitone.cpp src/theory.cpp src/la_theory.cpp src/dl_theory.cpp)
 target_compile_features(SeMiTONE PUBLIC cxx_std_17)
 target_include_directories(SeMiTONE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 if(NOT TARGET json)

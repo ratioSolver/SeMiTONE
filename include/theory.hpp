@@ -3,16 +3,16 @@
 #include "lit.hpp"
 #include <vector>
 
-namespace semitone
+namespace smt
 {
-  class network;
+  class semitone;
 
   class theory
   {
-    friend class network;
+    friend class semitone;
 
   public:
-    theory(network &net) noexcept;
+    theory(semitone &net) noexcept;
     virtual ~theory() noexcept = default;
 
   protected:
@@ -61,7 +61,7 @@ namespace semitone
     virtual void pop() noexcept = 0;
 
   protected:
-    network &net;
+    semitone &net;
     std::vector<utils::lit> cnfl;
   };
-} // namespace semitone
+} // namespace smt

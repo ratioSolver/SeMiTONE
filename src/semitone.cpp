@@ -1,4 +1,4 @@
-#include "network.hpp"
+#include "semitone.hpp"
 #include "la_theory.hpp"
 #include "dl_theory.hpp"
 #include "logging.hpp"
@@ -27,17 +27,17 @@
 #define POP()
 #endif
 
-namespace semitone
+namespace smt
 {
-    network::network() noexcept : la(new_theory<la_theory>(*this)), dl(new_theory<dl_theory>(*this))
+    semitone::semitone() noexcept : la(new_theory<la_theory>(*this)), dl(new_theory<dl_theory>(*this))
     {
-        [[maybe_unused]] utils::var c_false = new_var(); // the false constant..
+        [[maybe_unused]] utils::var c_false = mk_var(); // the false constant..
         assert(c_false == utils::FALSE_var);
         assigns[utils::FALSE_var] = utils::False;
         level[utils::FALSE_var] = 0;
     }
 
-    utils::var network::new_var() noexcept
+    utils::var semitone::mk_var() noexcept
     {
         const auto x = assigns.size();
         assigns.push_back(utils::Undefined);
@@ -48,26 +48,26 @@ namespace semitone
         return x;
     }
 
-    utils::var network::new_int(const utils::rational &lb, const utils::rational &ub) noexcept { return la.new_int(lb, ub); }
-    utils::var network::new_int(utils::lin &&xpr) noexcept { return la.new_int(std::move(xpr)); }
-    utils::var network::new_real(const utils::rational &lb, const utils::rational &ub) noexcept { return la.new_real(lb, ub); }
-    utils::var network::new_real(utils::lin &&xpr) noexcept { return la.new_real(std::move(xpr)); }
-    utils::var network::new_tp() noexcept { return dl.new_var(); }
+    utils::var semitone::mk_int(const utils::rational &lb, const utils::rational &ub) noexcept { return la.new_int(lb, ub); }
+    utils::var semitone::mk_int(utils::lin &&xpr) noexcept { return la.new_int(std::move(xpr)); }
+    utils::var semitone::mk_real(const utils::rational &lb, const utils::rational &ub) noexcept { return la.new_real(lb, ub); }
+    utils::var semitone::mk_real(utils::lin &&xpr) noexcept { return la.new_real(std::move(xpr)); }
+    utils::var semitone::mk_tp() noexcept { return dl.new_var(); }
 
-    utils::inf_rational network::arith_lb(const utils::var v) const noexcept { return la.lb(v); }
-    utils::inf_rational network::arith_ub(const utils::var v) const noexcept { return la.ub(v); }
-    utils::inf_rational network::arith_value(const utils::var v) const noexcept { return la.value(v); }
+    utils::inf_rational semitone::arith_lb(const utils::var v) const noexcept { return la.lb(v); }
+    utils::inf_rational semitone::arith_ub(const utils::var v) const noexcept { return la.ub(v); }
+    utils::inf_rational semitone::arith_val(const utils::var v) const noexcept { return la.value(v); }
 
-    utils::inf_rational network::arith_lb(const utils::lin &l) const noexcept { return la.lb(l); }
-    utils::inf_rational network::arith_ub(const utils::lin &l) const noexcept { return la.ub(l); }
-    utils::inf_rational network::arith_value(const utils::lin &l) const noexcept { return la.value(l); }
+    utils::inf_rational semitone::arith_lb(const utils::lin &l) const noexcept { return la.lb(l); }
+    utils::inf_rational semitone::arith_ub(const utils::lin &l) const noexcept { return la.ub(l); }
+    utils::inf_rational semitone::arith_val(const utils::lin &l) const noexcept { return la.value(l); }
 
-    utils::rational network::tp_lb(const utils::var v) const noexcept { return dl.lb(v); }
-    utils::rational network::tp_ub(const utils::var v) const noexcept { return dl.ub(v); }
-    std::pair<utils::rational, utils::rational> network::tp_bounds(const utils::var v) const noexcept { return dl.bounds(v); }
-    std::pair<utils::rational, utils::rational> network::tp_distance(const utils::var from, const utils::var to) const noexcept { return dl.distance(from, to); }
+    utils::rational semitone::tp_lb(const utils::var v) const noexcept { return dl.lb(v); }
+    utils::rational semitone::tp_ub(const utils::var v) const noexcept { return dl.ub(v); }
+    std::pair<utils::rational, utils::rational> semitone::tp_bounds(const utils::var v) const noexcept { return dl.bounds(v); }
+    std::pair<utils::rational, utils::rational> semitone::tp_distance(const utils::var from, const utils::var to) const noexcept { return dl.distance(from, to); }
 
-    void network::new_clause(std::vector<utils::lit> &&lits)
+    void semitone::add_clause(std::vector<utils::lit> &&lits)
     {
         assert(decision_level() == 0);
         // we check if the clause is already satisfied and filter out false/duplicate literals..
@@ -102,12 +102,12 @@ namespace semitone
         }
     }
 
-    void network::new_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p, true); }
-    void network::new_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p); }
+    void semitone::add_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p, true); }
+    void semitone::add_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p); }
 
-    void network::new_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p) { dl.new_distance(from, to, dist, p); }
+    void semitone::add_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p) { dl.new_distance(from, to, dist, p); }
 
-    void network::assume(const utils::lit &p)
+    void semitone::assume(const utils::lit &p)
     {
         assert(value(p) == utils::Undefined);
         assert(prop_queue.empty());
@@ -122,7 +122,7 @@ namespace semitone
         propagate();
     }
 
-    bool network::simplify_db() noexcept
+    bool semitone::simplify_db() noexcept
     {
         assert(decision_level() == 0);
         propagate();
@@ -138,7 +138,7 @@ namespace semitone
         return true;
     }
 
-    void network::propagate()
+    void semitone::propagate()
     {
         utils::lit p;
     main_loop:
@@ -239,7 +239,7 @@ namespace semitone
             }
     }
 
-    void network::pop() noexcept
+    void semitone::pop() noexcept
     {
         LOG_DEBUG("-[" << to_string(decisions.back()) << "]");
         while (trail_lim.back() < trail.size())
@@ -252,7 +252,7 @@ namespace semitone
         POP();
     }
 
-    bool network::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
+    bool semitone::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
     {
         LOG_TRACE(to_string(p) << "@" << decision_level());
         if (auto val = value(p); val != utils::Undefined)
@@ -267,7 +267,7 @@ namespace semitone
         return true;
     }
 
-    void network::pop_one() noexcept
+    void semitone::pop_one() noexcept
     {
         auto v = variable(trail.back());
         assigns[v] = utils::Undefined;
@@ -277,7 +277,7 @@ namespace semitone
         VAR_RESET(v);
     }
 
-    void network::analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
+    void semitone::analyze(clause &cnfl, std::vector<utils::lit> &out_learnt, size_t &out_btlevel) noexcept
     {
         std::set<utils::var> seen;
         int counter = 0; // this is the number of variables of the current decision level that have already been seen..
@@ -317,7 +317,7 @@ namespace semitone
         out_learnt[0] = !p;                                         // the asserting literal..
     }
 
-    void network::record(std::vector<utils::lit> &&lits) noexcept
+    void semitone::record(std::vector<utils::lit> &&lits) noexcept
     {
         assert(value(lits[0]) == utils::Undefined); // the asserting literal must be unassigned..
         assert(std::all_of(std::next(lits.cbegin()), lits.cend(), [this](auto &p)
@@ -343,7 +343,7 @@ namespace semitone
         }
     }
 
-    clause::clause(network &net, std::vector<utils::lit> &&ls) noexcept : net(net), lits(std::move(ls))
+    clause::clause(semitone &net, std::vector<utils::lit> &&ls) noexcept : net(net), lits(std::move(ls))
     {
         assert(lits.size() >= 2);
         net.watches[index(!lits[0])].emplace_back(*this);
@@ -409,7 +409,7 @@ namespace semitone
         return r;
     }
 
-    [[nodiscard]] std::ostream &operator<<(std::ostream &os, const network &net)
+    [[nodiscard]] std::ostream &operator<<(std::ostream &os, const semitone &net)
     {
         os << "Variables:\n";
         for (size_t i = 0; i < net.assigns.size(); ++i)

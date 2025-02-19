@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <set>
 
-namespace semitone
+namespace smt
 {
   class clause;
   class theory;
@@ -20,7 +20,7 @@ namespace semitone
   class prop_listener;
 #endif
 
-  class network
+  class semitone
   {
     friend class clause;
     friend class theory;
@@ -33,7 +33,8 @@ namespace semitone
      * @brief Construct a new sat core object.
      *
      */
-    network() noexcept;
+    semitone() noexcept;
+    virtual ~semitone() = default;
 
     /**
      * @brief Retrieves the linear arithmetic theory.
@@ -57,7 +58,7 @@ namespace semitone
      *
      * @return The new variable.
      */
-    [[nodiscard]] utils::var new_var() noexcept;
+    [[nodiscard]] utils::var mk_var() noexcept;
 
     /**
      * @brief Creates a new integer variable with optional lower and upper bounds.
@@ -66,14 +67,14 @@ namespace semitone
      * @param ub The upper bound of the integer variable. Defaults to positive infinity.
      * @return utils::var The newly created integer variable.
      */
-    [[nodiscard]] utils::var new_int(const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
+    [[nodiscard]] utils::var mk_int(const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
     /**
      * @brief Creates a new integer variable with the given linear expression.
      *
      * @param xpr The linear expression.
      * @return utils::var The newly created integer variable.
      */
-    [[nodiscard]] utils::var new_int(utils::lin &&xpr) noexcept;
+    [[nodiscard]] utils::var mk_int(utils::lin &&xpr) noexcept;
     /**
      * @brief Creates a new real variable with optional lower and upper bounds.
      *
@@ -81,21 +82,21 @@ namespace semitone
      * @param ub The upper bound of the real variable. Defaults to positive infinity.
      * @return utils::var The newly created real variable.
      */
-    [[nodiscard]] utils::var new_real(const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
+    [[nodiscard]] utils::var mk_real(const utils::rational &lb = utils::rational::negative_infinite, const utils::rational &ub = utils::rational::positive_infinite) noexcept;
     /**
      * @brief Creates a new real variable with the given linear expression.
      *
      * @param xpr The linear expression.
      * @return utils::var The newly created real variable.
      */
-    [[nodiscard]] utils::var new_real(utils::lin &&xpr) noexcept;
+    [[nodiscard]] utils::var mk_real(utils::lin &&xpr) noexcept;
 
     /**
      * @brief Creates a new temporal point.
      *
      * @return utils::var The newly created temporal point.
      */
-    [[nodiscard]] utils::var new_tp() noexcept;
+    [[nodiscard]] utils::var mk_tp() noexcept;
 
     /**
      * @brief Return the value of a variable.
@@ -143,7 +144,7 @@ namespace semitone
      * @param v The variable.
      * @return The value of the variable.
      */
-    [[nodiscard]] utils::inf_rational arith_value(const utils::var v) const noexcept;
+    [[nodiscard]] utils::inf_rational arith_val(const utils::var v) const noexcept;
 
     /**
      * @brief Return the lower bound of a linear expression.
@@ -165,7 +166,7 @@ namespace semitone
      * @param l The linear expression.
      * @return The value of the linear expression.
      */
-    [[nodiscard]] utils::inf_rational arith_value(const utils::lin &l) const noexcept;
+    [[nodiscard]] utils::inf_rational arith_val(const utils::lin &l) const noexcept;
 
     /**
      * @brief Return the lower bound of a temporal point.
@@ -229,7 +230,7 @@ namespace semitone
      * @param lits A vector of literals to be added as a clause. The vector is passed using move semantics.
      * @throw unsolvable_exception if the problem is unsolvable.
      */
-    void new_clause(std::vector<utils::lit> &&lits);
+    void add_clause(std::vector<utils::lit> &&lits);
 
     /**
      * @brief Creates a new less-than constraint between two linear expressions.
@@ -238,7 +239,7 @@ namespace semitone
      * @param rhs The right-hand side linear expression.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit);
+    void add_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit);
     /**
      * @brief Creates a new less-than-or-equal constraint between two linear expressions.
      *
@@ -246,7 +247,7 @@ namespace semitone
      * @param rhs The right-hand side linear expression.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit);
+    void add_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit);
     /**
      * @brief Creates a new equality constraint between two linear expressions.
      *
@@ -254,10 +255,10 @@ namespace semitone
      * @param rhs The right-hand side linear expression.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_eq(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit)
+    void add_eq(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit)
     {
-      new_le(lhs, rhs, p);
-      new_le(rhs, lhs, p);
+      add_le(lhs, rhs, p);
+      add_le(rhs, lhs, p);
     }
     /**
      * @brief Creates a new greater-than-or-equal constraint between two linear expressions.
@@ -266,7 +267,7 @@ namespace semitone
      * @param rhs The right-hand side linear expression.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_ge(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit) { new_le(rhs, lhs, p); }
+    void add_ge(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit) { add_le(rhs, lhs, p); }
     /**
      * @brief Creates a new greater-than constraint between two linear expressions.
      *
@@ -274,7 +275,7 @@ namespace semitone
      * @param rhs The right-hand side linear expression.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_gt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit) { new_lt(rhs, lhs, p); }
+    void add_gt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit) { add_lt(rhs, lhs, p); }
 
     /**
      * @brief Creates a new difference constraint between two variables.
@@ -284,7 +285,7 @@ namespace semitone
      * @param d The difference between the two variables.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p = utils::TRUE_lit);
+    void add_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p = utils::TRUE_lit);
     /**
      * @brief Creates a new difference constraint between two variables.
      *
@@ -294,10 +295,10 @@ namespace semitone
      * @param max The maximum difference between the two variables.
      * @param p An optional literal that can be used to conditionally apply the constraint. Defaults to utils::TRUE_lit.
      */
-    void new_distance(utils::var from, utils::var to, const utils::rational &min, const utils::rational &max, const utils::lit &p = utils::TRUE_lit)
+    void add_distance(utils::var from, utils::var to, const utils::rational &min, const utils::rational &max, const utils::lit &p = utils::TRUE_lit)
     {
-      new_distance(to, from, -min, p);
-      new_distance(from, to, max, p);
+      add_distance(to, from, -min, p);
+      add_distance(from, to, max, p);
     }
 
     /**
@@ -376,7 +377,7 @@ namespace semitone
     virtual void popped() noexcept {}
 #endif
 
-    friend std::ostream &operator<<(std::ostream &os, const network &net);
+    friend std::ostream &operator<<(std::ostream &os, const semitone &net);
 
   private:
     std::vector<utils::u_ptr<theory>> theories; // all the theories..
@@ -405,7 +406,7 @@ namespace semitone
    */
   class clause final
   {
-    friend class network;
+    friend class semitone;
 
   public:
     /**
@@ -414,7 +415,7 @@ namespace semitone
      * @param net the sat core.
      * @param ls the literals of the clause.
      */
-    clause(network &net, std::vector<utils::lit> &&ls) noexcept;
+    clause(semitone &net, std::vector<utils::lit> &&ls) noexcept;
 
   private:
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept;
@@ -425,17 +426,17 @@ namespace semitone
     friend std::ostream &operator<<(std::ostream &os, const clause &c);
 
   private:
-    network &net;
+    semitone &net;
     std::vector<utils::lit> lits;
   };
 
 #ifdef BUILD_LISTENERS
   class prop_listener
   {
-    friend class network;
+    friend class semitone;
 
   public:
-    prop_listener(network &net) noexcept : net(net) {}
+    prop_listener(semitone &net) noexcept : net(net) {}
     virtual ~prop_listener()
     {
       for (const auto &v : vars)
@@ -452,7 +453,7 @@ namespace semitone
     }
 
   private:
-    network &net;
+    semitone &net;
     std::set<utils::var> vars;
   };
 #endif
@@ -469,4 +470,4 @@ namespace semitone
   };
 
   [[nodiscard]] std::ostream &operator<<(std::ostream &os, const clause &c);
-} // namespace semitone
+} // namespace smt

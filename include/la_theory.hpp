@@ -9,7 +9,7 @@
 #include <unordered_map>
 #endif
 
-namespace semitone
+namespace smt
 {
   class la_assertion;
   class la_eq;
@@ -23,7 +23,7 @@ namespace semitone
     friend class la_listener;
 #endif
   public:
-    la_theory(network &net) noexcept;
+    la_theory(semitone &net) noexcept;
 
     [[nodiscard]] utils::var new_int(const utils::rational &lb, const utils::rational &ub) noexcept;
     [[nodiscard]] utils::var new_int(utils::lin &&xpr) noexcept;
@@ -257,4 +257,4 @@ namespace semitone
     std::set<utils::var> vars;
   };
 #endif
-} // namespace semitone
+} // namespace smt

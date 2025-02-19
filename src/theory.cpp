@@ -1,10 +1,10 @@
 #include "theory.hpp"
-#include "network.hpp"
+#include "semitone.hpp"
 #include <cassert>
 
-namespace semitone
+namespace smt
 {
-    theory::theory(network &net) noexcept : net(net) {}
+    theory::theory(semitone &net) noexcept : net(net) {}
 
     void theory::bind(const utils::var &v) noexcept
     {

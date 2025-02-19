@@ -1,5 +1,5 @@
 #include "la_theory.hpp"
-#include "network.hpp"
+#include "semitone.hpp"
 #include "logging.hpp"
 #include <algorithm>
 #include <cassert>
@@ -13,9 +13,9 @@
 #define VAR_CHANGED(v)
 #endif
 
-namespace semitone
+namespace smt
 {
-    la_theory::la_theory(network &net) noexcept : theory(net) {}
+    la_theory::la_theory(semitone &net) noexcept : theory(net) {}
 
     utils::var la_theory::new_int(const utils::rational &lb, const utils::rational &ub) noexcept
     {
@@ -104,9 +104,9 @@ namespace semitone
         {
         case 0: // the expression is a constant..
             if (strict && expr.known_term >= 0)
-                return net.new_clause({!p}); // the constraint is conflicting..
+                return net.add_clause({!p}); // the constraint is conflicting..
             else if (expr.known_term > 0)
-                return net.new_clause({!p}); // the constraint is conflicting..
+                return net.add_clause({!p}); // the constraint is conflicting..
             return;                          // the constraint is already satisfied..
         case 1:
         { // the expression is a single variable..
@@ -118,7 +118,7 @@ namespace semitone
                 if (ub(v) <= (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
                     return; // the constraint is already satisfied..
                 else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                    return net.new_clause({!p}); // the constraint is conflicting..
+                    return net.add_clause({!p}); // the constraint is conflicting..
                 if (net.value(p) == utils::True)
                 { // we update the upper bound..
                     if (!assert_upper(v, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}))
@@ -136,7 +136,7 @@ namespace semitone
                 if (lb(v) >= (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
                     return; // the constraint is already satisfied..
                 else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                    return net.new_clause({!p}); // the constraint is conflicting..
+                    return net.add_clause({!p}); // the constraint is conflicting..
                 if (net.value(p) == utils::True)
                 { // we update the lower bound..
                     if (!assert_lower(v, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}))
@@ -170,9 +170,9 @@ namespace semitone
             {
             case 0: // the expression is a constant..
                 if (strict && expr.known_term >= 0)
-                    return net.new_clause({!p}); // the constraint is conflicting..
+                    return net.add_clause({!p}); // the constraint is conflicting..
                 else if (expr.known_term > 0)
-                    return net.new_clause({!p}); // the constraint is conflicting..
+                    return net.add_clause({!p}); // the constraint is conflicting..
                 return;                          // the constraint is already satisfied..
             case 1:
             { // the expression is a single variable..
@@ -184,7 +184,7 @@ namespace semitone
                     if (ub(v) <= (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
                         return; // the constraint is already satisfied..
                     else if (lb(v) > (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
-                        return net.new_clause({!p}); // the constraint is conflicting..
+                        return net.add_clause({!p}); // the constraint is conflicting..
                     if (net.value(p) == utils::True)
                     { // we update the upper bound..
                         if (!assert_upper(v, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right, {}))
@@ -202,7 +202,7 @@ namespace semitone
                     if (lb(v) >= (is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right))
                         return; // the constraint is already satisfied..
                     else if (ub(v) < (is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right))
-                        return net.new_clause({!p}); // the constraint is conflicting..
+                        return net.add_clause({!p}); // the constraint is conflicting..
                     if (net.value(p) == utils::True)
                     { // we update the lower bound..
                         if (!assert_lower(v, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right, {}))
@@ -225,7 +225,7 @@ namespace semitone
                 if (ub(expr) <= c_right)
                     return; // the constraint is already satisfied..
                 else if (lb(expr) > c_right)
-                    net.new_clause({!p});
+                    net.add_clause({!p});
 
                 // we add a slack variable to the tableau..
                 auto slack = new_real(std::move(expr));

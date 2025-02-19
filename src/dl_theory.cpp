@@ -1,10 +1,10 @@
 #include "dl_theory.hpp"
-#include "network.hpp"
+#include "semitone.hpp"
 #include "logging.hpp"
 #include <cassert>
 
 #ifdef BUILD_LISTENERS
-#define VAR_CHANGED(v)                                            \
+#define VAR_CHANGED(v)                                               \
     if (auto it = var_listeners.find(v); it != var_listeners.cend()) \
         for (const auto &l : it->second)                             \
             l->on_tp_change(v);
@@ -12,9 +12,9 @@
 #define VAR_CHANGED(v)
 #endif
 
-namespace semitone
+namespace smt
 {
-    dl_theory::dl_theory(network &net, const size_t &size) noexcept : theory(net), dists(size, std::vector<utils::rational>(size, utils::rational(utils::rational::positive_infinite))), preds(size, std::vector<utils::var>(size))
+    dl_theory::dl_theory(semitone &net, const size_t &size) noexcept : theory(net), dists(size, std::vector<utils::rational>(size, utils::rational(utils::rational::positive_infinite))), preds(size, std::vector<utils::var>(size))
     {
         assert(size > 1);
         for (size_t i = 0; i < size; ++i)
@@ -37,7 +37,7 @@ namespace semitone
     {
         assert(net.value(p) != utils::False);
         if (dists[to][from] < -dist)
-            return net.new_clause({!p}); // the constraint is conflicting..
+            return net.add_clause({!p}); // the constraint is conflicting..
         if (dists[from][to] <= dist)
             return; // the constraint is redundant..
 

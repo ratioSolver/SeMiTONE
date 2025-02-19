@@ -10,7 +10,7 @@
 #include <set>
 #endif
 
-namespace semitone
+namespace smt
 {
   class distance_constraint;
 #ifdef BUILD_LISTENERS
@@ -23,7 +23,7 @@ namespace semitone
     friend class dl_listener;
 #endif
   public:
-    dl_theory(network &net, const size_t &size = 16) noexcept;
+    dl_theory(semitone &net, const size_t &size = 16) noexcept;
 
     [[nodiscard]] utils::var new_var() noexcept;
 
@@ -118,4 +118,4 @@ namespace semitone
     std::set<utils::var> vars;
   };
 #endif
-} // namespace semitone
+} // namespace smt
