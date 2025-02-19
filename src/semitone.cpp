@@ -96,9 +96,9 @@ namespace smt
                 throw unsolvable_exception(); // the problem is unsolvable..
             break;
         default:
-            auto c = new clause(*this, std::move(lits));
+            auto c = utils::make_u_ptr<clause>(*this, std::move(lits));
             LOG_TRACE(*c);
-            clauses.emplace_back(c); // we add the clause to the problem..
+            clauses.emplace_back(std::move(c)); // we add the clause to the problem..
         }
     }
 
@@ -335,11 +335,11 @@ namespace smt
                       { return level[variable(a)] > level[variable(b)]; });
 
             auto l0 = lits[0];
-            auto c = new clause(*this, std::move(lits));
+            auto c = utils::make_u_ptr<clause>(*this, std::move(lits));
             LOG_TRACE(*c);
             [[maybe_unused]] bool e = enqueue(l0, *c);
             assert(e);
-            clauses.emplace_back(c);
+            clauses.emplace_back(std::move(c));
         }
     }
 
@@ -348,6 +348,20 @@ namespace smt
         assert(lits.size() >= 2);
         net.watches[index(!lits[0])].emplace_back(*this);
         net.watches[index(!lits[1])].emplace_back(*this);
+    }
+    clause::~clause()
+    {
+        auto &ws0 = net.watches[index(!lits[0])];
+        ws0.erase(std::remove_if(ws0.begin(), ws0.end(), [&](const auto &w)
+                                 { return &*w == this; }),
+                  ws0.end());
+        auto &ws1 = net.watches[index(!lits[1])];
+        ws1.erase(std::remove_if(ws1.begin(), ws1.end(), [&](const auto &w)
+                                 { return &*w == this; }),
+                  ws1.end());
+        for (auto &l : lits)
+            if (net.reason[variable(l)].has_value() && &*net.reason[variable(l)].value() == this)
+                net.reason[variable(l)].reset();
     }
 
     bool clause::propagate(const utils::lit &p) noexcept

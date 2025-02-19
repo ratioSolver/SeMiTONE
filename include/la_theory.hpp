@@ -182,13 +182,13 @@ namespace smt
       utils::inf_rational value;      // the value of the bound..
       std::vector<utils::lit> reason; // the reason for the value..
     };
-    std::vector<bound> c_bounds;                                              // the current bounds..
-    std::vector<utils::inf_rational> vals;                                    // the current values..
-    std::map<const utils::var, std::set<utils::u_ptr<la_assertion>>> v_asrts; // the assertions (literal to assertions) used for enforcing (negating) assertions..
-    std::map<const utils::var, utils::u_ptr<la_eq>> tableau;                  // the tableau..
-    std::vector<std::vector<utils::ref_wrapper<la_assertion>>> a_watches;     // for each variable `v`, a list of assertions watching `v`..
-    std::vector<std::set<utils::var>> t_watches;                              // for each variable `v`, a list of tableau rows watching `v`..
-    std::vector<std::map<size_t, bound>> layers;                              // we store the updated bounds..
+    std::vector<bound> c_bounds;                                                 // the current bounds..
+    std::vector<utils::inf_rational> vals;                                       // the current values..
+    std::map<const utils::var, std::vector<utils::u_ptr<la_assertion>>> v_asrts; // the assertions (literal to assertions) used for enforcing (negating) assertions..
+    std::map<const utils::var, utils::u_ptr<la_eq>> tableau;                     // the tableau..
+    std::vector<std::vector<utils::ref_wrapper<la_assertion>>> a_watches;        // for each variable `v`, a list of assertions watching `v`..
+    std::vector<std::set<utils::var>> t_watches;                                 // for each variable `v`, a list of tableau rows watching `v`..
+    std::vector<std::map<size_t, bound>> layers;                                 // we store the updated bounds..
 #ifdef BUILD_LISTENERS
     std::unordered_map<utils::var, std::set<la_listener *>> var_listeners; // for each variable, the listeners that depend on it..
 #endif

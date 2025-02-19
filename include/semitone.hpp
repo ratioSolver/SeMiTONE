@@ -416,6 +416,7 @@ namespace smt
      * @param ls the literals of the clause.
      */
     clause(semitone &net, std::vector<utils::lit> &&ls) noexcept;
+    ~clause();
 
   private:
     [[nodiscard]] bool propagate(const utils::lit &p) noexcept;

@@ -127,7 +127,7 @@ namespace smt
                 else
                 { // we add the assertion to the list of assertions..
                     LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
+                    v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                     bind(variable(p)); // we get notified when the variable `v` changes..
                 }
             }
@@ -145,7 +145,7 @@ namespace smt
                 else
                 { // we add the assertion to the list of assertions..
                     LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                    v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
+                    v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                     bind(variable(p)); // we get notified when the variable `v` changes..
                 }
             }
@@ -193,7 +193,7 @@ namespace smt
                     else
                     { // we add the assertion to the list of assertions..
                         LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                        v_asrts[variable(p)].emplace(new la_assertion(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
+                        v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                         bind(variable(p)); // we get notified when the variable `v` changes..
                     }
                 }
@@ -211,7 +211,7 @@ namespace smt
                     else
                     { // we add the assertion to the list of assertions..
                         LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                        v_asrts[variable(p)].emplace(new la_assertion(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
+                        v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                         bind(variable(p)); // we get notified when the variable `v` changes..
                     }
                 }
@@ -237,7 +237,7 @@ namespace smt
                 else
                 { // we add the assertion to the list of assertions..
                     LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(slack) << " <= " << to_string(c_right));
-                    v_asrts[variable(p)].emplace(new la_assertion(p, slack, op::leq, c_right));
+                    v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, slack, op::leq, c_right));
                     bind(variable(p)); // we get notified when the slack variable changes..
                 }
             }
