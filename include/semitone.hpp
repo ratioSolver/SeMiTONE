@@ -384,10 +384,10 @@ namespace smt
     la_theory &la;                              // the linear arithmetic theory..
     dl_theory &dl;                              // the difference logic theory..
 
-    std::vector<utils::u_ptr<clause>> clauses;                     // the collection of problem clauses..
-    std::vector<std::vector<utils::ref_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
     std::vector<utils::lbool> assigns;                             // for each variable, the current assignment..
     std::vector<std::optional<utils::ref_wrapper<clause>>> reason; // for each variable, the clause that implied its value..
+    std::vector<std::vector<utils::ref_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
+    std::vector<utils::u_ptr<clause>> clauses;                     // the collection of problem clauses..
     std::vector<size_t> level;                                     // for each variable, the decision level it was assigned..
 
     std::queue<utils::lit> prop_queue; // propagation queue..
