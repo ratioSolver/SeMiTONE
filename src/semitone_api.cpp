@@ -14,12 +14,12 @@ namespace semitone
         for (size_t i = 0; i < rhs.vals.size(); ++i)
         {
             json::json var;
-            var["name"] = std::to_string(i);
-            var["value"] = to_string(rhs.value(i));
+            var["name"] = std::to_string(i).c_str();
+            var["value"] = to_string(rhs.value(i)).c_str();
             if (!is_negative_infinite(rhs.lb(i)))
-                var["lb"] = to_string(rhs.lb(i));
+                var["lb"] = to_string(rhs.lb(i)).c_str();
             if (!is_positive_infinite(rhs.ub(i)))
-                var["ub"] = to_string(rhs.ub(i));
+                var["ub"] = to_string(rhs.ub(i)).c_str();
             j_vars.push_back(std::move(var));
         }
         j_th["vars"] = std::move(j_vars);
@@ -28,7 +28,7 @@ namespace semitone
         for (const auto &c_asrts : rhs.v_asrts)
         {
             json::json j_asrt;
-            j_asrt["lit"] = to_string(c_asrts.second->b);
+            j_asrt["lit"] = to_string(c_asrts.second->b).c_str();
             switch (rhs.get_sat().value(c_asrts.second->b))
             {
             case utils::True:
@@ -41,7 +41,7 @@ namespace semitone
                 j_asrt["val"] = "U";
                 break;
             }
-            j_asrt["constr"] = "x" + std::to_string(c_asrts.first) + (c_asrts.second->o == geq ? " >= " : " <= ") + to_string(c_asrts.second->v);
+            j_asrt["constr"] = ("x" + std::to_string(c_asrts.first) + (c_asrts.second->o == geq ? " >= " : " <= ") + to_string(c_asrts.second->v)).c_str();
             j_asrts.push_back(std::move(j_asrt));
         }
         j_th["asrts"] = std::move(j_asrts);
@@ -50,8 +50,8 @@ namespace semitone
         for (auto it = rhs.tableau.cbegin(); it != rhs.tableau.cend(); ++it)
         {
             json::json j_row;
-            j_row["var"] = "x" + std::to_string(it->first);
-            j_row["expr"] = to_string(it->second->l);
+            j_row["var"] = ("x" + std::to_string(it->first)).c_str();
+            j_row["expr"] = to_string(it->second->l).c_str();
         }
         j_th["tableau"] = std::move(j_tabl);
 
