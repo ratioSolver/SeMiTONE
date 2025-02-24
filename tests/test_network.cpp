@@ -138,6 +138,30 @@ void test_dl()
     assert(net.tp_ub(tp2) == fw.get_distance(0, 3));
 }
 
+void test_next()
+{
+    smt::semitone net;
+
+    auto b0 = net.mk_var();
+    auto b1 = net.mk_var();
+    auto b2 = net.mk_var();
+
+    net.add_clause({utils::lit(b0), utils::lit(b1)});
+    net.add_clause({utils::lit(b0), utils::lit(b2)});
+
+    net.assume(utils::lit(b0, false));
+
+    assert(net.value(b0) == utils::False);
+    assert(net.value(b1) == utils::True);
+    assert(net.value(b2) == utils::True);
+
+    net.next();
+
+    assert(net.value(b0) == utils::True);
+    assert(net.value(b1) == utils::Undefined);
+    assert(net.value(b2) == utils::Undefined);
+}
+
 int main()
 {
     test_network0();
@@ -146,6 +170,8 @@ int main()
     test_net();
 
     test_dl();
+
+    test_next();
 
     return 0;
 }

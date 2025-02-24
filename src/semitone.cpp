@@ -122,7 +122,7 @@ namespace smt
         propagate();
     }
 
-    bool semitone::simplify_db() noexcept
+    void semitone::simplify_db()
     {
         assert(decision_level() == 0);
         propagate();
@@ -135,7 +135,6 @@ namespace smt
                 ++i;
         }
         clauses.resize(j);
-        return true;
     }
 
     void semitone::propagate()
@@ -233,6 +232,24 @@ namespace smt
                 record(std::move(no_good));
                 goto main_loop;
             }
+    }
+
+    void semitone::next() noexcept
+    {
+        LOG_DEBUG("next..");
+        assert(decision_level() > 0);
+        std::vector<utils::lit> no_good;
+        no_good.reserve(decisions.size());
+        for (const auto &l : decisions)
+            no_good.push_back(!l);
+        pop();
+
+        assert(!no_good.empty());
+        assert(value(no_good.back()) == utils::Undefined);
+
+        // we reverse the no-good and store it..
+        std::reverse(no_good.begin(), no_good.end());
+        record(std::move(no_good));
     }
 
     void semitone::pop() noexcept

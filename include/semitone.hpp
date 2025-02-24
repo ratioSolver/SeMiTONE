@@ -313,10 +313,8 @@ namespace smt
 
     /**
      * @brief Simplify the current set of assumptions.
-     *
-     * @return bool `true` if the current set of assumptions is satisfiable, `false` otherwise.
      */
-    [[nodiscard]] bool simplify_db() noexcept;
+    void simplify_db();
 
     /**
      * @brief Check whether the current set of assumptions is satisfiable.
@@ -331,10 +329,8 @@ namespace smt
      * @brief Advances to the next state.
      *
      * This function advances the state to the next state by propagating the negation of the current assumptions.
-     *
-     * @return true if the state was successfully advanced, false otherwise.
      */
-    [[nodiscard]] bool next() noexcept;
+    void next() noexcept;
 
     /**
      * @brief Pop the last decision from the trail.
