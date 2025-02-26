@@ -17,7 +17,7 @@
 #define VAR_RESET(v)                                                 \
     if (auto it = var_listeners.find(v); it != var_listeners.cend()) \
         for (const auto &l : it->second)                             \
-            l->on_change(v);
+            l->on_reset(v);
 #define PUSH() pushed()
 #define POP() popped()
 #else

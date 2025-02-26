@@ -441,6 +441,7 @@ namespace smt
     }
 
     virtual void on_change(const utils::var &v) noexcept = 0;
+    virtual void on_reset(const utils::var &v) noexcept = 0;
 
   protected:
     void listen(const utils::var &v) noexcept
