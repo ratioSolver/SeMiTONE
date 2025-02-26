@@ -42,14 +42,19 @@ namespace smt
             return; // the constraint is redundant..
 
         LOG_TRACE("[" << to_string(p) << "] tp" << std::to_string(from) << " -> tp" << std::to_string(to) << " : " << to_string(dist));
-        if (net.value(p) == utils::True) // we update the distance..
-            set_dist(from, to, dist);
+        // we add the constraint to the list of constraints..
+        auto constr = utils::make_u_ptr<distance_constraint>(p, from, to, dist);
+        if (net.value(p) == utils::True)
+        { // we update the distance..
+            dist_constr.emplace(std::make_pair(from, to), *constr);
+            var_constrs[0].emplace_back(std::move(constr));
+            propagate(from, to, dist);
+        }
         else
-        { // we add the constraint to the list of constraints..
-            bind(variable(p));
-            auto constr = new distance_constraint(p, from, to, dist);
+        { // we bind the propositional variable..
             dist_constrs[{from, to}].emplace_back(*constr);
-            var_constrs[variable(p)].emplace_back(constr);
+            var_constrs[variable(p)].emplace_back(std::move(constr));
+            bind(variable(p));
         }
     }
 
@@ -101,6 +106,8 @@ namespace smt
     void dl_theory::propagate(utils::var from, utils::var to, const utils::rational &dist) noexcept
     {
         LOG_TRACE("tp" << from << " -> tp" << to << " : " << to_string(dist));
+        assert(from != to);               // we cannot have a distance from a point to itself..
+        assert(dists[to][from] >= -dist); // we cannot have negative-weight cycles..
         assert(!is_infinite(dist));
         set_dist(from, to, dist);
         set_pred(from, to, from);
