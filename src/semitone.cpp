@@ -250,6 +250,7 @@ namespace smt
         // we reverse the no-good and store it..
         std::reverse(no_good.begin(), no_good.end());
         record(std::move(no_good));
+        propagate();
     }
 
     void semitone::pop() noexcept

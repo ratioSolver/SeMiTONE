@@ -206,6 +206,13 @@ namespace smt
     [[nodiscard]] size_t decision_level() const noexcept { return trail_lim.size(); }
 
     /**
+     * @brief Retrieves the list of decisions made during the solving process.
+     *
+     * @return A constant reference to the vector containing the decisions.
+     */
+    [[nodiscard]] const std::vector<utils::lit> &get_decisions() const noexcept { return decisions; }
+
+    /**
      * @brief Create a new theory of type `Tp` with the given arguments.
      *
      * @tparam Tp the type of the theory.
