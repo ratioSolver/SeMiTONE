@@ -209,17 +209,8 @@ namespace smt
                 if (decision_level() == 0) // the problem is unsolvable..
                     throw unsolvable_exception();
 
-                assert(!th->cnfl.empty());
-                if (th->cnfl.size() == 1)
-                {
-                    while (decision_level() > 0)
-                        pop();
-                    if (!enqueue(th->cnfl[0])) // the problem is unsolvable..
-                        throw unsolvable_exception();
-                    goto main_loop;
-                }
-
                 // we analyze the theory's conflict, create a no-good from the analysis and backjump..
+                assert(!th->cnfl.empty());
                 std::vector<utils::lit> no_good;
                 size_t bt_level = 0;
                 analyze(std::move(th->cnfl), no_good, bt_level);
