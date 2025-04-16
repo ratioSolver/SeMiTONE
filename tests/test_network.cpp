@@ -1,6 +1,7 @@
 #include "semitone.hpp"
 #include "logging.hpp"
 #include "floyd_warshall.hpp"
+#include "dl_theory.hpp"
 #include <cassert>
 
 void test_network0()
@@ -87,7 +88,7 @@ void test_net()
     assert(net.value(s2_geq_m3) == utils::False);
 }
 
-void test_dl()
+void test_dl0()
 {
     smt::semitone net;
 
@@ -138,6 +139,39 @@ void test_dl()
     assert(net.tp_ub(tp2) == fw.get_distance(0, 3));
 }
 
+void test_dl1()
+{
+    smt::semitone net;
+
+    auto tp0 = net.mk_tp();
+    auto tp1 = net.mk_tp();
+    auto tp2 = net.mk_tp();
+
+    // origin -1-> tp0
+    auto origin_1_tp0 = net.mk_var();
+    net.add_distance(0, tp0, utils::rational(1), utils::lit(origin_1_tp0));
+    // tp0 -1-> tp1
+    auto tp0_1_tp1 = net.mk_var();
+    net.add_distance(tp0, tp1, utils::rational(1), utils::lit(tp0_1_tp1));
+    // tp1 -1-> tp2
+    auto tp1_1_tp2 = net.mk_var();
+    net.add_distance(tp1, tp2, utils::rational(1), utils::lit(tp1_1_tp2));
+
+    net.propagate();
+
+    net.assume(utils::lit(origin_1_tp0));
+    net.assume(utils::lit(tp0_1_tp1));
+    net.assume(utils::lit(tp1_1_tp2));
+
+    // tp1 -0.1-> tp2
+    auto tp1_01_tp2 = net.mk_var();
+    net.add_distance(tp1, tp2, utils::rational(1, 10), utils::lit(tp1_01_tp2));
+
+    net.propagate();
+
+    net.assume(utils::lit(tp1_01_tp2));
+}
+
 void test_next()
 {
     smt::semitone net;
@@ -169,7 +203,8 @@ int main()
 
     test_net();
 
-    test_dl();
+    test_dl0();
+    test_dl1();
 
     test_next();
 

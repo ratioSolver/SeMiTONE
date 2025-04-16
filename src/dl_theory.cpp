@@ -110,7 +110,8 @@ namespace smt
         assert(dists[to][from] >= -dist); // we cannot have negative-weight cycles..
         assert(!is_infinite(dist));
         set_dist(from, to, dist);
-        set_pred(from, to, from);
+        if (preds[from][to] != from)
+            set_pred(from, to, from);
         std::vector<utils::var> set_i;
         std::vector<utils::var> set_j;
         std::vector<std::pair<utils::var, utils::var>> c_updates;
@@ -123,7 +124,8 @@ namespace smt
             if (dists[u][from] < dists[u][to] - dist)
             { // u -> from -> to is shorter than u -> to..
                 set_dist(u, to, dists[u][from] + dist);
-                set_pred(u, to, preds[from][to]);
+                if (preds[u][to] != preds[from][to])
+                    set_pred(u, to, preds[from][to]);
                 set_i.emplace_back(u);
                 c_updates.emplace_back(u, to);
                 c_updates.emplace_back(to, u);
@@ -131,7 +133,8 @@ namespace smt
             if (dists[to][u] < dists[from][u] - dist)
             { // from -> to -> u is shorter than from -> u..
                 set_dist(from, u, dists[to][u] + dist);
-                set_pred(from, u, preds[to][u]);
+                if (preds[from][u] != preds[to][u])
+                    set_pred(from, u, preds[to][u]);
                 set_j.emplace_back(u);
                 c_updates.emplace_back(from, u);
                 c_updates.emplace_back(u, from);
@@ -144,7 +147,8 @@ namespace smt
                 if (i != j && dists[i][to] + dists[to][j] < dists[i][j])
                 { // i -> from -> to -> j is shorter than i -> j--
                     set_dist(i, j, dists[i][to] + dists[to][j]);
-                    set_pred(i, j, preds[to][j]);
+                    if (preds[i][j] != preds[to][j])
+                        set_pred(i, j, preds[to][j]);
                     c_updates.emplace_back(i, j);
                     c_updates.emplace_back(j, i);
                 }
