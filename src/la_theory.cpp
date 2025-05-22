@@ -225,7 +225,7 @@ namespace smt
                 if (ub(expr) <= c_right)
                     return; // the constraint is already satisfied..
                 else if (lb(expr) > c_right)
-                    net.add_clause({!p});
+                    return net.add_clause({!p}); // the constraint is conflicting..
 
                 // we add a slack variable to the tableau..
                 auto slack = new_real(std::move(expr));

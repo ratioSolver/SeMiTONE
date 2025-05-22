@@ -102,10 +102,22 @@ namespace smt
         }
     }
 
-    void semitone::add_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p, true); }
-    void semitone::add_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p) { la.new_lt(lhs, rhs, p); }
+    void semitone::add_lt(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p)
+    {
+        assert(value(p) != utils::False);
+        la.new_lt(lhs, rhs, p, true);
+    }
+    void semitone::add_le(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p)
+    {
+        assert(value(p) != utils::False);
+        la.new_lt(lhs, rhs, p);
+    }
 
-    void semitone::add_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p) { dl.new_distance(from, to, dist, p); }
+    void semitone::add_distance(utils::var from, utils::var to, const utils::rational &dist, const utils::lit &p)
+    {
+        assert(value(p) != utils::False);
+        dl.new_distance(from, to, dist, p);
+    }
 
     void semitone::assume(const utils::lit &p)
     {
