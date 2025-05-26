@@ -265,7 +265,8 @@ namespace smt
     void add_eq(const utils::lin &lhs, const utils::lin &rhs, const utils::lit &p = utils::TRUE_lit)
     {
       add_le(lhs, rhs, p);
-      add_le(rhs, lhs, p);
+      if (value(p) != utils::False) // the previous constraint is not conflicting..
+        add_le(rhs, lhs, p);
     }
     /**
      * @brief Creates a new greater-than-or-equal constraint between two linear expressions.
