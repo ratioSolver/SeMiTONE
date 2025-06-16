@@ -96,7 +96,7 @@ namespace smt
                 throw unsolvable_exception(); // the problem is unsolvable..
             break;
         default:
-            auto c = utils::make_u_ptr<clause>(*this, std::move(lits));
+            auto c = std::make_unique<clause>(*this, std::move(lits));
             LOG_TRACE(*c);
             clauses.emplace_back(std::move(c)); // we add the clause to the problem..
         }
@@ -157,10 +157,10 @@ namespace smt
         { // we first propagate sat constraints..
             p = prop_queue.front();
             prop_queue.pop();
-            std::vector<utils::ref_wrapper<clause>> ws;
+            std::vector<std::reference_wrapper<clause>> ws;
             std::swap(watches[index(p)], ws);
             for (size_t i = 0; i < ws.size(); ++i)
-                if (!ws[i]->propagate(p))
+                if (!ws[i].get().propagate(p))
                 { // the constraint is conflicting..
                     for (size_t j = i + 1; j < ws.size(); ++j)
                         watches[index(p)].push_back(ws[j]); // we re-add the remaining watches..
@@ -173,7 +173,7 @@ namespace smt
                     std::vector<utils::lit> no_good;
                     size_t bt_level;
                     // we analyze the conflict..
-                    analyze(std::vector<utils::lit>(ws[i]->lits), no_good, bt_level);
+                    analyze(std::vector<utils::lit>(ws[i].get().lits), no_good, bt_level);
                     while (decision_level() > bt_level)
                         pop();
                     // we record the no-good..
@@ -269,7 +269,7 @@ namespace smt
         POP();
     }
 
-    bool semitone::enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c) noexcept
+    bool semitone::enqueue(const utils::lit &p, const std::optional<std::reference_wrapper<clause>> &c) noexcept
     {
         LOG_TRACE(to_string(p) << "@" << decision_level());
         if (auto val = value(p); val != utils::Undefined)
@@ -325,7 +325,7 @@ namespace smt
                 p = trail.back();
                 assert(level[variable(p)] == decision_level()); // this variable must have been assigned at the current decision level..
                 if (reason[variable(p)])                        // `p` can be the asserting literal..
-                    p_reason = reason[variable(p)].value()->get_reason(p);
+                    p_reason = reason[variable(p)].value().get().get_reason(p);
                 pop_one();
             } while (!seen.count(variable(p)));
             counter--;
@@ -355,7 +355,7 @@ namespace smt
                       { return level[variable(a)] > level[variable(b)]; });
 
             auto l0 = lits[0];
-            auto c = utils::make_u_ptr<clause>(*this, std::move(lits));
+            auto c = std::make_unique<clause>(*this, std::move(lits));
             LOG_TRACE(*c);
             [[maybe_unused]] bool e = enqueue(l0, *c);
             assert(e);
@@ -373,14 +373,14 @@ namespace smt
     {
         auto &ws0 = net.watches[index(!lits[0])];
         ws0.erase(std::remove_if(ws0.begin(), ws0.end(), [&](const auto &w)
-                                 { return &*w == this; }),
+                                 { return &w.get() == this; }),
                   ws0.end());
         auto &ws1 = net.watches[index(!lits[1])];
         ws1.erase(std::remove_if(ws1.begin(), ws1.end(), [&](const auto &w)
-                                 { return &*w == this; }),
+                                 { return &w.get() == this; }),
                   ws1.end());
         for (auto &l : lits)
-            if (net.reason[variable(l)] && &*net.reason[variable(l)].value() == this)
+            if (net.reason[variable(l)] && &net.reason[variable(l)].value().get() == this)
                 net.reason[variable(l)].reset();
     }
 

@@ -43,7 +43,7 @@ namespace smt
 
         LOG_TRACE("[" << to_string(p) << "] tp" << std::to_string(from) << " -> tp" << std::to_string(to) << " : " << to_string(dist));
         // we add the constraint to the list of constraints..
-        auto constr = utils::make_u_ptr<distance_constraint>(p, from, to, dist);
+        auto constr = std::make_unique<distance_constraint>(p, from, to, dist);
         if (net.value(p) == utils::True)
         { // we update the distance..
             dist_constr.emplace(std::make_pair(from, to), *constr);
@@ -72,7 +72,7 @@ namespace smt
                     utils::var c_to = constr->get_from();
                     while (c_to != constr->get_to())
                     {
-                        const auto &c_d = *dist_constr.find({preds[constr->get_to()][c_to], c_to})->second;
+                        const auto &c_d = dist_constr.find({preds[constr->get_to()][c_to], c_to})->second.get();
                         switch (net.value(c_d.get_lit()))
                         {
                         case utils::True:
@@ -156,14 +156,14 @@ namespace smt
         for (const auto &c_pairs : c_updates)
             if (const auto &c_dists = dist_constrs.find(c_pairs); c_dists != dist_constrs.cend())
                 for (const auto &c_dist : c_dists->second)
-                    if (net.value(c_dist->get_lit()) == utils::Undefined && dists[c_dist->get_to()][c_dist->get_from()] < -c_dist->get_dist())
+                    if (net.value(c_dist.get().get_lit()) == utils::Undefined && dists[c_dist.get().get_to()][c_dist.get().get_from()] < -c_dist.get().get_dist())
                     { // the constraint is inconsistent..
                         std::vector<utils::lit> cnfl;
-                        cnfl.emplace_back(!c_dist->get_lit());
-                        utils::var c_to = c_dist->get_from();
-                        while (c_to != c_dist->get_to())
+                        cnfl.emplace_back(!c_dist.get().get_lit());
+                        utils::var c_to = c_dist.get().get_from();
+                        while (c_to != c_dist.get().get_to())
                         {
-                            const auto &c_d = *dist_constr.find({preds[c_dist->get_to()][c_to], c_to})->second;
+                            const auto &c_d = dist_constr.find({preds[c_dist.get().get_to()][c_to], c_to})->second.get();
                             switch (net.value(c_d.get_lit()))
                             {
                             case utils::True:
@@ -173,7 +173,7 @@ namespace smt
                                 cnfl.emplace_back(c_d.get_lit());
                                 break;
                             }
-                            c_to = preds[c_dist->get_to()][c_to];
+                            c_to = preds[c_dist.get().get_to()][c_to];
                         }
                         // we propagate the reason for assigning false to dist->b..
                         record(std::move(cnfl));

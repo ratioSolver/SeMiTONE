@@ -127,7 +127,7 @@ namespace smt
                 else
                 { // we add the assertion to the list of assertions..
                     LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                    v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
+                    v_asrts[variable(p)].emplace_back(std::make_unique<la_assertion>(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                     bind(variable(p)); // we get notified when the variable `v` changes..
                 }
             }
@@ -145,7 +145,7 @@ namespace smt
                 else
                 { // we add the assertion to the list of assertions..
                     LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                    v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
+                    v_asrts[variable(p)].emplace_back(std::make_unique<la_assertion>(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                     bind(variable(p)); // we get notified when the variable `v` changes..
                 }
             }
@@ -193,7 +193,7 @@ namespace smt
                     else
                     { // we add the assertion to the list of assertions..
                         LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " <= " << to_string(is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
-                        v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
+                        v_asrts[variable(p)].emplace_back(std::make_unique<la_assertion>(p, v, op::leq, is_int(v) ? utils::inf_rational(floor(c_right.get_rational())) : c_right));
                         bind(variable(p)); // we get notified when the variable `v` changes..
                     }
                 }
@@ -211,7 +211,7 @@ namespace smt
                     else
                     { // we add the assertion to the list of assertions..
                         LOG_TRACE("[ " << to_string(p) << " ] x" << std::to_string(v) << " >= " << to_string(is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
-                        v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
+                        v_asrts[variable(p)].emplace_back(std::make_unique<la_assertion>(p, v, op::geq, is_int(v) ? utils::inf_rational(ceil(c_right.get_rational())) : c_right));
                         bind(variable(p)); // we get notified when the variable `v` changes..
                     }
                 }
@@ -237,7 +237,7 @@ namespace smt
                 else
                 { // we add the assertion to the list of assertions..
                     LOG_TRACE("[" << to_string(p) << "] x" << std::to_string(slack) << " <= " << to_string(c_right));
-                    v_asrts[variable(p)].emplace_back(utils::make_u_ptr<la_assertion>(p, slack, op::leq, c_right));
+                    v_asrts[variable(p)].emplace_back(std::make_unique<la_assertion>(p, slack, op::leq, c_right));
                     bind(variable(p)); // we get notified when the slack variable changes..
                 }
             }
@@ -357,14 +357,14 @@ namespace smt
 
             // unate propagation..
             for (const auto &c : a_watches[x_i])
-                switch (c->o)
+                switch (c.get().o)
                 {
                 case leq:
-                    if (auto c_b = net.value(c->b); c_b != utils::False && c_bounds[lb_index(c->x)].value >= c->v)
+                    if (auto c_b = net.value(c.get().b); c_b != utils::False && c_bounds[lb_index(c.get().x)].value >= c.get().v)
                     { // either the literal `b` is false or the (precomputed) reason for the lower bound of `x` is false..
                         assert(cnfl.empty());
-                        cnfl.push_back(!c->b);
-                        for (const auto &w : c_bounds[lb_index(c->x)].reason)
+                        cnfl.push_back(!c.get().b);
+                        for (const auto &w : c_bounds[lb_index(c.get().x)].reason)
                             cnfl.push_back(!w);
                         switch (c_b)
                         {
@@ -377,11 +377,11 @@ namespace smt
                     }
                     break;
                 case geq:
-                    if (auto c_b = net.value(c->b); c_b != utils::True && c_bounds[lb_index(c->x)].value > c->v)
+                    if (auto c_b = net.value(c.get().b); c_b != utils::True && c_bounds[lb_index(c.get().x)].value > c.get().v)
                     { // either the literal `b` is true or the (precomputed) reason for the lower bound of `x` is false..
                         assert(cnfl.empty());
-                        cnfl.push_back(c->b);
-                        for (const auto &w : c_bounds[lb_index(c->x)].reason)
+                        cnfl.push_back(c.get().b);
+                        for (const auto &w : c_bounds[lb_index(c.get().x)].reason)
                             cnfl.push_back(!w);
                         switch (c_b)
                         {
@@ -450,14 +450,14 @@ namespace smt
 
             // unate propagation..
             for (const auto &c : a_watches[x_i])
-                switch (c->o)
+                switch (c.get().o)
                 {
                 case leq:
-                    if (auto c_b = net.value(c->b); c_b != utils::True && c_bounds[ub_index(c->x)].value <= c->v)
+                    if (auto c_b = net.value(c.get().b); c_b != utils::True && c_bounds[ub_index(c.get().x)].value <= c.get().v)
                     { // either the literal `b` is true or the (precomputed) reason for the upper bound of `x` is false..
                         assert(cnfl.empty());
-                        cnfl.push_back(c->b);
-                        for (const auto &w : c_bounds[ub_index(c->x)].reason)
+                        cnfl.push_back(c.get().b);
+                        for (const auto &w : c_bounds[ub_index(c.get().x)].reason)
                             cnfl.push_back(!w);
                         switch (c_b)
                         {
@@ -470,11 +470,11 @@ namespace smt
                     }
                     break;
                 case geq:
-                    if (auto c_b = net.value(c->b); c_b != utils::False && c_bounds[ub_index(c->x)].value < c->v)
+                    if (auto c_b = net.value(c.get().b); c_b != utils::False && c_bounds[ub_index(c.get().x)].value < c.get().v)
                     { // either the literal `b` is false or the (precomputed) reason for the upper bound of `x` is false..
                         assert(cnfl.empty());
-                        cnfl.push_back(!c->b);
-                        for (const auto &w : c_bounds[ub_index(c->x)].reason)
+                        cnfl.push_back(!c.get().b);
+                        for (const auto &w : c_bounds[ub_index(c.get().x)].reason)
                             cnfl.push_back(!w);
                         switch (c_b)
                         {

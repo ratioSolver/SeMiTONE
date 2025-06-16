@@ -1,13 +1,13 @@
 #pragma once
 
 #include "theory.hpp"
-#include "memory.hpp"
 #include "bool.hpp"
 #include "lin.hpp"
 #include "inf_rational.hpp"
 #include <optional>
 #include <queue>
 #include <unordered_map>
+#include <memory>
 #include <set>
 
 namespace smt
@@ -224,9 +224,10 @@ namespace smt
     Tp &new_theory(Args &&...args)
     {
       static_assert(std::is_base_of_v<theory, Tp>, "Tp must be a subclass of theory");
-      auto th = new Tp(std::forward<Args>(args)...);
-      theories.push_back(th);
-      return *th;
+      auto th = std::make_unique<Tp>(std::forward<Args>(args)...);
+      Tp &ref = *th;
+      theories.push_back(std::move(th));
+      return ref;
     }
 
     /**
@@ -353,7 +354,7 @@ namespace smt
      * @param c The constraint that implied the literal.
      * @return `true` if the assignment is consistent, `false` otherwise.
      */
-    [[nodiscard]] bool enqueue(const utils::lit &p, const std::optional<utils::ref_wrapper<clause>> &c = std::nullopt) noexcept;
+    [[nodiscard]] bool enqueue(const utils::lit &p, const std::optional<std::reference_wrapper<clause>> &c = std::nullopt) noexcept;
 
     /**
      * @brief Pop the last literal from the trail.
@@ -384,15 +385,15 @@ namespace smt
     friend std::ostream &operator<<(std::ostream &os, const semitone &net);
 
   private:
-    std::vector<utils::u_ptr<theory>> theories; // all the theories..
-    la_theory &la;                              // the linear arithmetic theory..
-    dl_theory &dl;                              // the difference logic theory..
+    std::vector<std::unique_ptr<theory>> theories; // all the theories..
+    la_theory &la;                                 // the linear arithmetic theory..
+    dl_theory &dl;                                 // the difference logic theory..
 
-    std::vector<utils::lbool> assigns;                             // for each variable, the current assignment..
-    std::vector<std::optional<utils::ref_wrapper<clause>>> reason; // for each variable, the clause that implied its value..
-    std::vector<std::vector<utils::ref_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
-    std::vector<utils::u_ptr<clause>> clauses;                     // the collection of problem clauses..
-    std::vector<size_t> level;                                     // for each variable, the decision level it was assigned..
+    std::vector<utils::lbool> assigns;                                 // for each variable, the current assignment..
+    std::vector<std::optional<std::reference_wrapper<clause>>> reason; // for each variable, the clause that implied its value..
+    std::vector<std::vector<std::reference_wrapper<clause>>> watches;  // for each literal `p`, a list of clauses watching `p`..
+    std::vector<std::unique_ptr<clause>> clauses;                      // the collection of problem clauses..
+    std::vector<size_t> level;                                         // for each variable, the decision level it was assigned..
 
     std::queue<utils::lit> prop_queue; // propagation queue..
     std::vector<utils::lit> trail;     // the list of assignment in chronological order..
