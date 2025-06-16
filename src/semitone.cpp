@@ -380,7 +380,7 @@ namespace smt
                                  { return &*w == this; }),
                   ws1.end());
         for (auto &l : lits)
-            if (net.reason[variable(l)].has_value() && &*net.reason[variable(l)].value() == this)
+            if (net.reason[variable(l)] && &*net.reason[variable(l)].value() == this)
                 net.reason[variable(l)].reset();
     }
 

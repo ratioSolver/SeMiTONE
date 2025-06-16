@@ -191,7 +191,7 @@ namespace smt
         for (const auto &[vars, pred] : layers.back().old_preds)
             preds[vars.first][vars.second] = pred;
         for (const auto &[vars, dist] : layers.back().old_constrs)
-            if (dist.has_value()) // we replace the current constraint..
+            if (dist) // we replace the current constraint..
                 dist_constr.emplace(vars, *dist);
             else // we make some cleanings..
                 dist_constr.erase(vars);
